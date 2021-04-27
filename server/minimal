@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+// 自动加载
+require_once __DIR__ . '/vendor/autoload.php';
+
+// 引入对象
+use Minimal\Application;
+
+// 显示错误
+ini_set('display_errors', 'stderr');
+// 报告错误
+error_reporting(E_ALL);
+// 时区设置
+date_default_timezone_set('Asia/Shanghai');
+
+// 应用对象
+$app = new Application(__DIR__);
+
+// 执行应用
+$app->execute($argv);
