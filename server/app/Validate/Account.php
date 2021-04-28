@@ -28,25 +28,86 @@ class Account
         $validate = new Validate($params);
 
         // 登录方式
-        $action = $validate->string('action')->default('default')->unset()->value();
+        $action = $validate->string('action', '登录方式')
+            ->default('username')
+            ->in('username', 'mobile', 'email')
+            ->unset()->value();
 
         // 按情况验证参数字段
         if ($action == 'mobile') {
-            // 手机 + 短信验证码
+            // 手机 + 短信验证码/密码
             self::signinByMobile($validate);
         } else if ($action == 'email') {
-            // 邮箱 + 邮箱验证码
+            // 邮箱 + 邮箱验证码/密码
             self::signinByEmail($validate);
         } else {
             // 账号 + 密码
-            // 手机 + 密码
-            // 邮箱 + 密码
             self::signinByUsername($validate);
         }
 
         // 返回结果
         return $validate->check();
     }
+
+    /**
+     * 根据用户名登录
+     */
+    public static function signinByUsername(Validate $validate) : void
+    {
+        $validate->string('username', '账号')->require()->length(6, 64)->alphaDash();
+        $validate->string('password', '密码')->require()->length(6, 32);
+    }
+
+    /**
+     * 根据手机验证码登录
+     */
+    public static function signinByMobile(Validate $validate) : void
+    {
+        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('phone', '手机号码')
+            ->require()->length(5, 30)->digit()
+            ->call(function($value, $values){
+                return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
+            }, message: '很抱歉、该手机号码不存在！');
+
+        $validate->string('password', '密码')->length(6, 32)->requireWithout('verify_code');
+
+        $length = Config::get('sms.length', 4);
+        $validate->string('verify_code', '短信验证码')
+            ->digit()->length($length, $length)
+            ->requireWithout('password')
+            ->call(function($value, $values){
+                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
+            })
+            ->unset();
+    }
+
+    /**
+     * 根据邮箱验证码登录
+     */
+    public static function signinByEmail(Validate $validate) : void
+    {
+        $validate->string('email', '邮箱地址')
+            ->require()->length(6, 64)->email()
+            ->call(function($value){
+                return !empty(AccountCommon::findByEmail($value));
+            }, message: '很抱歉、邮箱地址不存在！');
+
+        $validate->string('password', '密码')->length(6, 32)->requireWithout('verify_code');
+
+        $length = Config::get('mail.length', 4);
+        $validate->string('verify_code', '邮箱验证码')
+            ->digit()->length($length, $length)
+            ->requireWithout('password')
+            ->call(function($value, $values){
+                return MailCommon::check($values['email'] ?? '', $value);
+            })
+            ->unset();
+    }
+
+
+
+
 
     /**
      * 注册
@@ -60,7 +121,10 @@ class Account
         $validate = new Validate($params);
 
         // 注册方式
-        $action = $validate->string('action')->default('default')->unset()->value();
+        $action = $validate->string('action', '注册方式')
+            ->default('username')
+            ->in('username', 'mobile', 'email')
+            ->unset()->value();
 
         // 按情况验证参数字段
         if ($action == 'mobile') {
@@ -143,30 +207,48 @@ class Account
             ->unset();
     }
 
+
+
+
+
     /**
-     * 根据用户名登录
+     * 忘记密码
      */
-    public static function signinByUsername(Validate $validate) : void
+    public static function forgot(array $params) : array
     {
-        // 根据用户名来判断情况
-        $username = $validate->string('username', '账号')->require()->value();
-        if (ctype_digit($username)) {
-            // 手机登录
-            $validate->int('zone', '国家区号')->default('86')->length(1, 24)->digit();
-            $validate->int('phone', '手机号码')->default($username)->length(5, 30)->digit();
-        } else if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            // 邮箱登录
-            $validate->string('email', '邮箱地址')->default($username)->length(6, 64)->email();
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 找回方式
+        $action = $validate->string('action', '找回方式')
+            ->default('mobile')
+            ->in('mobile', 'email')
+            ->unset()->value();
+
+        // 修改什么密码
+        $validate->string('type', '修改类型')->require()->in('password', 'safeword')->default('password');
+
+        // 按情况处理
+        if ($action == 'mobile') {
+            // 手机 + 验证码/密码
+            self::forgotByMobile($validate);
+        } else if ($action == 'email') {
+            // 邮箱 + 验证码/密码
+            self::forgotByEmail($validate);
         }
 
-        // 密码
-        $validate->string('password', '密码')->require()->length(6, 32);
+        // 获取密码
+        $validate->string('newword', '新的密码')->require()->length(6, 32)->confirm('renewword');
+        $validate->string('renewword', '确认密码')->require()->length(6, 32)->confirm('newword')->unset();
+
+        // 返回结果
+        return $validate->check();
     }
 
     /**
-     * 根据手机验证码登录
+     * 忘记密码，根据手机验证码/密码
      */
-    public static function signinByMobile(Validate $validate) : void
+    public static function forgotByMobile(Validate $validate) : void
     {
         $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
@@ -175,9 +257,12 @@ class Account
                 return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
             }, message: '很抱歉、该手机号码不存在！');
 
+        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+
         $length = Config::get('sms.length', 4);
         $validate->string('verify_code', '短信验证码')
-            ->require()->digit()->length($length, $length)
+            ->digit()->length($length, $length)
+            ->requireWithout('oldword')
             ->call(function($value, $values){
                 return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
             })
@@ -185,9 +270,9 @@ class Account
     }
 
     /**
-     * 根据邮箱验证码登录
+     * 忘记密码，根据邮箱验证码/密码
      */
-    public static function signinByEmail(Validate $validate) : void
+    public static function forgotByEmail(Validate $validate) : void
     {
         $validate->string('email', '邮箱地址')
             ->require()->length(6, 64)->email()
@@ -195,9 +280,115 @@ class Account
                 return !empty(AccountCommon::findByEmail($value));
             }, message: '很抱歉、邮箱地址不存在！');
 
+        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+
         $length = Config::get('mail.length', 4);
+        $validate->string('verify_code', '邮箱验证码')
+            ->digit()->length($length, $length)
+            ->requireWithout('oldword')
+            ->call(function($value, $values){
+                return MailCommon::check($values['email'] ?? '', $value);
+            })
+            ->unset();
+    }
+
+
+
+
+
+    /**
+     *
+     * 重置密码
+     */
+    public static function resetPwd(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 重置方式
+        $action = $validate->string('action', '重置方式')
+            ->default('username')
+            ->in('username', 'mobile', 'email')
+            ->unset()->value();
+
+        // 修改什么密码
+        $validate->string('type', '密码类型')->require()->in('password', 'safeword')->default('password');
+
+        // 按情况处理
+        if ($action == 'mobile') {
+            // 手机 + 验证码/密码
+            self::resetPwdByMobile($validate);
+        } else if ($action == 'email') {
+            // 邮箱 + 验证码/密码
+            self::resetPwdByEmail($validate);
+        } else {
+            // 账号 + 旧密码
+            self::resetPwdByUsername($validate);
+        }
+
+        // 获取密码
+        $validate->string('newword', '新的密码')->require()->length(6, 32)->confirm('renewword');
+        $validate->string('renewword', '确认密码')->require()->length(6, 32)->confirm('newword')->unset();
+
+        // 返回结果
+        return $validate->check();
+    }
+
+    /**
+     * 重置密码，根据账号和旧密码
+     */
+    public static function resetPwdByUsername(Validate $validate) : void
+    {
+        $validate->string('username', '账号')
+            ->require()->length(6, 64)->alphaDash()
+            ->call(function($value){
+                return !empty(AccountCommon::findByUsername($value));
+            }, message: '很抱歉、该账号不存在！');
+
+        $validate->string('oldword', '旧的密码')->require()->length(6, 32);
+    }
+
+    /**
+     * 重置密码，根据手机验证码/密码
+     */
+    public static function resetPwdByMobile(Validate $validate) : void
+    {
+        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('phone', '手机号码')
+            ->require()->length(5, 30)->digit()
+            ->call(function($value, $values){
+                return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
+            }, message: '很抱歉、该手机号码不存在！');
+
+        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+
+        $length = Config::get('sms.length', 4);
         $validate->string('verify_code', '短信验证码')
-            ->require()->digit()->length($length, $length)
+            ->digit()->length($length, $length)
+            ->requireWithout('oldword')
+            ->call(function($value, $values){
+                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
+            })
+            ->unset();
+    }
+
+    /**
+     * 重置密码，根据邮箱验证码/密码
+     */
+    public static function resetPwdByEmail(Validate $validate) : void
+    {
+        $validate->string('email', '邮箱地址')
+            ->require()->length(6, 64)->email()
+            ->call(function($value){
+                return !empty(AccountCommon::findByEmail($value));
+            }, message: '很抱歉、邮箱地址不存在！');
+
+        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+
+        $length = Config::get('mail.length', 4);
+        $validate->string('verify_code', '邮箱验证码')
+            ->digit()->length($length, $length)
+            ->requireWithout('oldword')
             ->call(function($value, $values){
                 return MailCommon::check($values['email'] ?? '', $value);
             })

@@ -107,4 +107,123 @@ class Account
             throw $th;
         }
     }
+
+    /**
+     * 个人资料
+     */
+    public function profile($req, $res)
+    {
+    }
+
+    /**
+     * 忘记密码
+     */
+    public function forgot($req, $res)
+    {
+        // 参数检查
+        $data = AccountValidate::forgot($req->post ?? []);
+
+        try {
+            // 开启事务
+            Db::beginTransaction();
+
+            // 查询账号
+            if (isset($data['zone']) && isset($data['phone'])) {
+                // 手机
+                $account = AccountCommon::findByPhone($data['zone'], $data['phone']);
+                if (empty($account)) {
+                    throw new Exception('很抱歉、该手机号码不存在！');
+                }
+            } else if (isset($data['email'])) {
+                // 邮箱
+                $account = AccountCommon::findByEmail($data['email']);
+                if (empty($account)) {
+                    throw new Exception('很抱歉、该邮箱地址不存在！');
+                }
+            }
+
+            // 验证旧密码
+            if (isset($data['oldword']) && $account[$data['type']] !== AccountCommon::encrypt($data['oldword'])) {
+                throw new Exception('很抱歉、旧的密码不正确！', 0, [$account, $data]);
+            }
+
+            // 修改资料
+            $bool = AccountCommon::change($account['uid'], [
+                $data['type']   =>  $data['newword']
+            ]);
+            if (!$bool) {
+                throw new Exception('很抱歉、修改失败请重试！');
+            }
+
+            // 提交事务
+            Db::commit();
+
+            // 返回结果
+            return [];
+        } catch (Throwable $th) {
+            // 事务回滚
+            Db::rollback();
+            // 抛出异常
+            throw $th;
+        }
+    }
+
+    /**
+     * 重置密码
+     */
+    public function resetPwd($req, $res)
+    {
+        // 参数检查
+        $data = AccountValidate::resetPwd($req->post ?? []);
+
+        try {
+            // 开启事务
+            Db::beginTransaction();
+
+            // 查询账号
+            if (isset($data['zone']) && isset($data['phone'])) {
+                // 手机
+                $account = AccountCommon::findByPhone($data['zone'], $data['phone']);
+                if (empty($account)) {
+                    throw new Exception('很抱歉、该手机号码不存在！');
+                }
+            } else if (isset($data['email'])) {
+                // 邮箱
+                $account = AccountCommon::findByEmail($data['email']);
+                if (empty($account)) {
+                    throw new Exception('很抱歉、该邮箱地址不存在！');
+                }
+            } else {
+                // 账号
+                $account = AccountCommon::findByUsername($data['username']);
+                if (empty($account)) {
+                    throw new Exception('很抱歉、该账号不存在！');
+                }
+            }
+
+            // 验证旧密码
+            if (isset($data['oldword']) && $account[$data['type']] !== AccountCommon::encrypt($data['oldword'])) {
+                throw new Exception('很抱歉、旧的密码不正确！', 0, [$account, $data]);
+            }
+
+            // 修改资料
+            $bool = AccountCommon::change($account['uid'], [
+                $data['type']   =>  $data['newword']
+            ]);
+            if (!$bool) {
+                throw new Exception('很抱歉、修改失败请重试！');
+            }
+
+            // 提交事务
+            Db::commit();
+
+            // 返回结果
+            return [];
+        } catch (Throwable $th) {
+            // 事务回滚
+            Db::rollback();
+            // 抛出异常
+            throw $th;
+        }
+    }
 }

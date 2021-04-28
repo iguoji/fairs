@@ -134,6 +134,28 @@ class Account
     }
 
     /**
+     * 修改资料
+     */
+    public static function change(string $uid, array $data) : bool
+    {
+        // 密码加密
+        if (isset($data['password'])) {
+            $data['password'] = self::encrypt($data['password']);
+        }
+        if (isset($data['safeword'])) {
+            $data['safeword'] = self::encrypt($data['safeword']);
+        }
+
+        // 修改时间
+        if (!isset($data['updated_at'])) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+        }
+
+        // 修改数据
+        return Db::table('account')->where('uid', $uid)->update($data) > 0;
+    }
+
+    /**
      * 查询 - 根据用户编号
      */
     public static function findByUid(string $uid) : array
