@@ -7,7 +7,9 @@ use Minimal\Facades\Config;
 use Minimal\Foundation\Validate;
 use App\Common\Sms as SmsCommon;
 use App\Common\Mail as MailCommon;
+use App\Common\Region as RegionCommon;
 use App\Common\Account as AccountCommon;
+use App\Common\Authentic as AuthenticCommon;
 
 /**
  * 账户验证类
@@ -63,11 +65,11 @@ class Account
      */
     public static function signinByMobile(Validate $validate) : void
     {
-        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
             ->require()->length(5, 30)->digit()
             ->call(function($value, $values){
-                return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
+                return !empty(AccountCommon::findByPhone($values['country'] ?? '', $value));
             }, message: '很抱歉、该手机号码不存在！');
 
         $validate->string('password', '密码')->length(6, 32)->requireWithout('verify_code');
@@ -77,7 +79,7 @@ class Account
             ->digit()->length($length, $length)
             ->requireWithout('password')
             ->call(function($value, $values){
-                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
+                return SmsCommon::check($values['country'] ?? '', $values['phone'] ?? '', $value);
             })
             ->unset();
     }
@@ -171,18 +173,18 @@ class Account
      */
     public static function signupByMobile(Validate $validate) : void
     {
-        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
             ->require()->length(5, 30)->digit()
             ->call(function($value, $values){
-                return empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
+                return empty(AccountCommon::findByPhone($values['country'] ?? '', $value));
             }, message: '很抱歉、该手机号码已被注册！');
 
         $length = Config::get('sms.length', 4);
         $validate->string('verify_code', '短信验证码')
             ->require()->digit()->length($length, $length)
             ->call(function($value, $values){
-                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
+                return SmsCommon::check($values['country'] ?? '', $values['phone'] ?? '', $value);
             })
             ->unset();
     }
@@ -205,6 +207,43 @@ class Account
                 return MailCommon::check($values['email'] ?? '', $value);
             })
             ->unset();
+    }
+
+
+
+
+
+    /**
+     * 修改资料
+     */
+    public static function edit(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        $validate->string('nickname', '昵称')->length(2, 20)->chsDash();
+        $validate->string('avatar', '头像')->length(2, 150);
+        $validate->int('gender', '性别')->in(1, 2)->digit();
+        $validate->string('birthday', '出生年月')->date('Y-m-d');
+
+        $validate->string('country', '国家')->length(1, 24)->digit()->call(function($value){
+            return RegionCommon::exists(country: $value);
+        })->unset();
+        $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
+            return RegionCommon::exists(country: $values['country'] ?? '', province: $value);
+        })->requireWith('country');
+        $validate->string('city', '市')->length(1, 30)->digit()->call(function($value, $values){
+            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
+        })->requireWith('country', 'province');
+        $validate->string('county', '区县')->length(1, 30)->digit()->call(function($value, $values){
+            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
+        })->requireWith('country', 'province', 'city');
+        $validate->string('town', '乡镇')->length(1, 30)->digit()->call(function($value, $values){
+            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
+        })->requireWith('country', 'province', 'city', 'county');
+
+        // 返回结果
+        return $validate->check();
     }
 
 
@@ -250,11 +289,11 @@ class Account
      */
     public static function forgotByMobile(Validate $validate) : void
     {
-        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
             ->require()->length(5, 30)->digit()
             ->call(function($value, $values){
-                return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
+                return !empty(AccountCommon::findByPhone($values['country'] ?? '', $value));
             }, message: '很抱歉、该手机号码不存在！');
 
         $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
@@ -264,7 +303,7 @@ class Account
             ->digit()->length($length, $length)
             ->requireWithout('oldword')
             ->call(function($value, $values){
-                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
+                return SmsCommon::check($values['country'] ?? '', $values['phone'] ?? '', $value);
             })
             ->unset();
     }
@@ -307,23 +346,25 @@ class Account
 
         // 重置方式
         $action = $validate->string('action', '重置方式')
-            ->default('username')
-            ->in('username', 'mobile', 'email')
-            ->unset()->value();
+            ->default('oldword')
+            ->in('oldword', 'mobile', 'email')
+            ->value();
 
         // 修改什么密码
         $validate->string('type', '密码类型')->require()->in('password', 'safeword')->default('password');
 
         // 按情况处理
         if ($action == 'mobile') {
-            // 手机 + 验证码/密码
-            self::resetPwdByMobile($validate);
+            // 手机验证码
+            $length = Config::get('sms.length', 4);
+            $validate->string('verify_code', '短信验证码')->require()->digit()->length($length, $length);
         } else if ($action == 'email') {
-            // 邮箱 + 验证码/密码
-            self::resetPwdByEmail($validate);
+            // 邮箱验证码
+            $length = Config::get('mail.length', 4);
+            $validate->string('verify_code', '邮箱验证码')->require()->digit()->length($length, $length);
         } else {
-            // 账号 + 旧密码
-            self::resetPwdByUsername($validate);
+            // 旧密码
+            $validate->string('oldword', '旧的密码')->require()->length(6, 32);
         }
 
         // 获取密码
@@ -334,64 +375,39 @@ class Account
         return $validate->check();
     }
 
-    /**
-     * 重置密码，根据账号和旧密码
-     */
-    public static function resetPwdByUsername(Validate $validate) : void
-    {
-        $validate->string('username', '账号')
-            ->require()->length(6, 64)->alphaDash()
-            ->call(function($value){
-                return !empty(AccountCommon::findByUsername($value));
-            }, message: '很抱歉、该账号不存在！');
 
-        $validate->string('oldword', '旧的密码')->require()->length(6, 32);
-    }
+
 
     /**
-     * 重置密码，根据手机验证码/密码
+     * 实名认证
      */
-    public static function resetPwdByMobile(Validate $validate) : void
+    public static function authentic(array $params) : array
     {
-        $validate->int('zone', '国家区号')->require()->length(1, 24)->digit();
-        $validate->int('phone', '手机号码')
-            ->require()->length(5, 30)->digit()
-            ->call(function($value, $values){
-                return !empty(AccountCommon::findByPhone($values['zone'] ?? '', $value));
-            }, message: '很抱歉、该手机号码不存在！');
+        $validate = new Validate($params);
 
-        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+        $type = Config::get('app.account.authentic', AuthenticCommon::IDCARD);
+        $fields = AuthenticCommon::FIELDS[$type] ?? [];
 
-        $length = Config::get('sms.length', 4);
-        $validate->string('verify_code', '短信验证码')
-            ->digit()->length($length, $length)
-            ->requireWithout('oldword')
-            ->call(function($value, $values){
-                return SmsCommon::check($values['zone'] ?? '', $values['phone'] ?? '', $value);
-            })
-            ->unset();
-    }
+        $validate->string('name', $fields['name'] ?? '真实姓名')->require(array_key_exists('name', $fields))->length(2, 30)->chsAlpha();
+        $validate->string('code', $fields['code'] ?? '身份证号码')->require(array_key_exists('code', $fields))->length(6, 30)->digit();
 
-    /**
-     * 重置密码，根据邮箱验证码/密码
-     */
-    public static function resetPwdByEmail(Validate $validate) : void
-    {
-        $validate->string('email', '邮箱地址')
-            ->require()->length(6, 64)->email()
-            ->call(function($value){
-                return !empty(AccountCommon::findByEmail($value));
-            }, message: '很抱歉、邮箱地址不存在！');
+        $validate->string('country', $fields['country'] ?? '国家')->require(array_key_exists('country', $fields))->length(1, 24)->digit()->call(function($value){
+            return RegionCommon::exists(country: $value);
+        });
+        $validate->string('province', $fields['province'] ?? '省份')->require(array_key_exists('province', $fields))->length(1, 30)->digit()->call(function($value, $values){
+            return RegionCommon::exists(country: $values['country'] ?? '', province: $value);
+        })->requireWith('country');
 
-        $validate->string('oldword', '旧的密码')->length(6, 32)->requireWithout('verify_code');
+        $validate->int('phone', $fields['phone'] ?? '手机号码')->require(array_key_exists('phone', $fields))->length(5, 30)->digit()->requireWith('country');
 
-        $length = Config::get('mail.length', 4);
-        $validate->string('verify_code', '邮箱验证码')
-            ->digit()->length($length, $length)
-            ->requireWithout('oldword')
-            ->call(function($value, $values){
-                return MailCommon::check($values['email'] ?? '', $value);
-            })
-            ->unset();
+        $validate->string('front', $fields['front'] ?? '正面照片')->require(array_key_exists('front', $fields))->length(2, 150);
+        $validate->string('back', $fields['back'] ?? '反面照片')->require(array_key_exists('back', $fields))->length(2, 150);
+        $validate->string('face', $fields['face'] ?? '人脸照片')->require(array_key_exists('face', $fields))->length(2, 150);
+        $validate->string('hold', $fields['hold'] ?? '手持照片')->require(array_key_exists('hold', $fields))->length(2, 150);
+        $validate->string('video', $fields['video'] ?? '视频')->require(array_key_exists('video', $fields))->length(2, 150);
+
+        $data = $validate->check();
+
+        return $data;
     }
 }

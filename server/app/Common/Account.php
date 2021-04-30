@@ -97,9 +97,7 @@ class Account
         $config = Config::get('app.account.signin', []);
 
         // 删除老令牌
-        if (Cache::has('account:signin:' . $account['uid'])) {
-            Cache::remove('account:signin:token:' . Cache::get('account:signin:' . $account['uid']));
-        }
+        Token::removeByUid($account['uid']);
 
         // 产生令牌
         $token = $token ?? self::encrypt($account['uid'], (string) time());
@@ -109,19 +107,19 @@ class Account
 
         // 保存令牌
         $data['token'] = $token;
-        Cache::set('account:signin:token:' . $token, $account['uid'], $config['expire']);
-        Cache::set('account:signin:' . $account['uid'], $token, $config['expire']);
+        Token::set($account['uid'], $token, $config['expire'] ?? null);
 
         // 返回结果
         return $data;
     }
 
     /**
-     * 资料
+     * 个人资料
      */
     public static function profile(array $account) : array
     {
-        return array_intersect_key($account, [
+        // 可用字段
+        $data = array_map(fn($v) => $v ?? '', array_intersect_key($account, [
             'type'      =>  1,
             'level'     =>  1,
             'status'    =>  1,
@@ -130,7 +128,13 @@ class Account
             'avatar'    =>  '',
             'gender'    =>  '',
             'birthday'  =>  '',
-        ]);
+        ]));
+
+        // 实名认证
+        $data['authentic'] = Authentic::status($account['uid'], Config::get('app.account.authentic', Authentic::IDCARD));
+
+        // 返回结果
+        return $data;
     }
 
     /**
@@ -155,6 +159,10 @@ class Account
         return Db::table('account')->where('uid', $uid)->update($data) > 0;
     }
 
+
+
+
+
     /**
      * 查询 - 根据用户编号
      */
@@ -174,9 +182,9 @@ class Account
     /**
      * 查询 - 根据手机号码
      */
-    public static function findByPhone(int|string $zone, int|string $phone) : array
+    public static function findByPhone(int|string $country, int|string $phone) : array
     {
-        return Db::table('account')->where('zone', (string) $zone)->where('phone', (string) $phone)->first();
+        return Db::table('account')->where('country', (string) $country)->where('phone', (string) $phone)->first();
     }
 
     /**

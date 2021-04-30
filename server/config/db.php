@@ -3,7 +3,7 @@
 return [
     'host'          =>  '192.168.2.12',
     'port'          =>  3306,
-    'dbname'        =>  'minimall',
+    'dbname'        =>  'fairs',
     'username'      =>  'root',
     'password'      =>  '123456',
     'charset'       =>  'utf8',

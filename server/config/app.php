@@ -3,6 +3,8 @@
 return [
     // 账户
     'account'       =>  [
+        // 认证
+        'authentic' =>  \App\Common\Authentic::IDCARD,
         // 登录
         'signin'    =>  [
             // 有效期
