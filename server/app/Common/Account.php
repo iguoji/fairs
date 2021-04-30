@@ -119,7 +119,7 @@ class Account
     public static function profile(array $account) : array
     {
         // 可用字段
-        $data = array_map(fn($v) => $v ?? '', array_intersect_key($account, [
+        $data = array_intersect_key($account, [
             'type'      =>  1,
             'level'     =>  1,
             'status'    =>  1,
@@ -128,7 +128,7 @@ class Account
             'avatar'    =>  '',
             'gender'    =>  '',
             'birthday'  =>  '',
-        ]));
+        ]);
 
         // 实名认证
         $data['authentic'] = Authentic::status($account['uid'], Config::get('app.account.authentic', Authentic::IDCARD));

@@ -17,5 +17,11 @@ return [
         '/account/address/edit'         =>      [['POST'],      [\App\Open\Address::class, 'edit'],             \App\Middleware\Token::class],
         '/account/address/remove'       =>      [['POST'],      [\App\Open\Address::class, 'remove'],           \App\Middleware\Token::class],
         '/account/address/default'      =>      [['POST'],      [\App\Open\Address::class, 'default'],          \App\Middleware\Token::class],
+
+        '/account/bank'                 =>      [['POST'],      [\App\Open\AccountBank::class, 'my'],           \App\Middleware\Token::class],
+        '/account/bank/save'            =>      [['POST'],      [\App\Open\AccountBank::class, 'save'],         \App\Middleware\Token::class],
+        '/account/bank/edit'            =>      [['POST'],      [\App\Open\AccountBank::class, 'edit'],         \App\Middleware\Token::class],
+        '/account/bank/remove'          =>      [['POST'],      [\App\Open\AccountBank::class, 'remove'],       \App\Middleware\Token::class],
+        '/account/bank/default'         =>      [['POST'],      [\App\Open\AccountBank::class, 'default'],      \App\Middleware\Token::class],
     ]
 ];

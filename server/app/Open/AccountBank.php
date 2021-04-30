@@ -6,43 +6,51 @@ namespace App\Open;
 use Throwable;
 use Minimal\Facades\Db;
 use Minimal\Foundation\Exception;
-use App\Common\Account as AccountCommon;
-use App\Common\Address as AddressCommon;
-use App\Validate\Address as AddressValidate;
+use App\Common\Bank as BankCommon;
+use App\Common\AccountBank as AccountBankCommon;
+use App\Validate\AccountBank as AccountBankValidate;
 
 /**
- * 收货地址类
+ * 银行卡类
  */
-class Address
+class AccountBank
 {
     /**
-     * 我的地址
+     * 我的银行卡
      */
     public function my($req, $res)
     {
-        return AddressCommon::my($req->uid);
+        return AccountBankCommon::my($req->uid);
     }
 
     /**
-     * 新增地址
+     * 新增银行卡
      */
     public function save($req, $res)
     {
         // 参数检查
-        $data = AddressValidate::save($req->post ?? []);
+        $data = AccountBankValidate::save($req->post ?? []);
 
         try {
             // 开启事务
             Db::beginTransaction();
 
+            // 银行数据
+            $bank = BankCommon::read($data['bank']);
+            // 已帮卡数量
+            $myBindCount = AccountBankCommon::singleCount($data['bank'], $req->uid);
+            if ($bank['single_max_count'] > 0 && $myBindCount >= $bank['single_max_count']) {
+                throw new Exception('很抱歉、您已达到' . $bank['name'] . '的可绑定数量上限！');
+            }
+
             // 取消现有默认
             if (!empty($data['is_default'])) {
-                AddressCommon::cancelCurrentDefault($req->uid);
+                AccountBankCommon::cancelCurrentDefault($req->uid);
             }
 
             // 执行保存
             $data['uid'] = $req->uid;
-            if (!AddressCommon::save($data)) {
+            if (!AccountBankCommon::save($data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -60,12 +68,12 @@ class Address
     }
 
     /**
-     * 编辑地址
+     * 编辑银行卡
      */
     public function edit($req, $res)
     {
         // 参数检查
-        $data = AddressValidate::edit($req->uid, $req->post ?? []);
+        $data = AccountBankValidate::edit($req->uid, $req->post ?? []);
 
         try {
             // 开启事务
@@ -73,13 +81,13 @@ class Address
 
             // 取消现有默认
             if (!empty($data['is_default'])) {
-                AddressCommon::cancelCurrentDefault($req->uid);
+                AccountBankCommon::cancelCurrentDefault($req->uid);
             }
 
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!AddressCommon::edit($id, $data)) {
+            if (!AccountBankCommon::edit($id, $data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -97,19 +105,19 @@ class Address
     }
 
     /**
-     * 删除地址
+     * 删除银行卡
      */
     public function remove($req, $res)
     {
         // 参数检查
-        $data = AddressValidate::remove($req->uid, $req->post ?? []);
+        $data = AccountBankValidate::remove($req->uid, $req->post ?? []);
 
         try {
             // 开启事务
             Db::beginTransaction();
 
             // 执行删除
-            if (!AddressCommon::remove($data['id'])) {
+            if (!AccountBankCommon::remove($data['id'])) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -127,25 +135,25 @@ class Address
     }
 
     /**
-     * 设置为默认地址
+     * 设置为默认银行卡
      */
     public function default($req, $res)
     {
         // 参数检查
-        $data = AddressValidate::default($req->uid, $req->post ?? []);
+        $data = AccountBankValidate::default($req->uid, $req->post ?? []);
 
         try {
             // 开启事务
             Db::beginTransaction();
 
             // 取消现有默认
-            AddressCommon::cancelCurrentDefault($req->uid);
+            AccountBankCommon::cancelCurrentDefault($req->uid);
 
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!AddressCommon::edit($id, $data)) {
-                throw new Exception('很抱歉、操作失败请重试！');
+            if (!empty($data['is_default']) && !AccountBankCommon::edit($id, $data)) {
+                throw new Exception('很抱歉、操作失败请重试！', 0, [Db::lastSql(), $data]);
             }
 
             // 提交事务

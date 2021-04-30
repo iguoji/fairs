@@ -44,38 +44,21 @@ DROP TABLE IF EXISTS `bank`;
 CREATE TABLE `bank` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
 	
-	`type` CHAR(10) DEFAULT 'DC' COMMENT '类型，DC储蓄卡, CC信用卡, SCC准贷记卡, PC预付费卡',
-	`status` TINYINT NOT NULL DEFAULT 2 COMMENT '状态，0失效，1正常',
+	`type` CHAR(10) DEFAULT 'DC' COMMENT '类型，DC储蓄卡, CC信用卡, SCC准贷记卡, PC预付费卡, WEB网络',
+	`status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态，0失效，1正常',
 	
-	`zone` VARCHAR(30) COMMENT '电话区号(不含国家)',
-	`zip` VARCHAR(20) COMMENT '邮编号码',
 	
-	`country` VARCHAR(30) COMMENT '国家代码',
-	`country_name` VARCHAR(50) COMMENT '国家名称',
-	
-	`province` VARCHAR(30) COMMENT '省份代码',
-	`province_name` VARCHAR(50) COMMENT '省份名称',
-	
-	`city` VARCHAR(30) COMMENT '市区代码',
-	`city_name` VARCHAR(50) COMMENT '市区名称',
-	
-	`county` VARCHAR(30) COMMENT '区县代码',
-	`county_name` VARCHAR(50) COMMENT '区县名称',
-	
-	`town` VARCHAR(30) COMMENT '乡镇代码',
-	`town_name` VARCHAR(50) COMMENT '乡镇名称',
-	
-	`village` VARCHAR(30) COMMENT '村庄代码',
-	`village_type` VARCHAR(20) COMMENT '村庄类型',
-	`village_name` VARCHAR(50) COMMENT '村庄名称',
-	
-	`address` TEXT COMMENT '完整地址',
+	`code` VARCHAR(30) COMMENT '代码',
+	`name` VARCHAR(50) COMMENT '名称',
+	`sort` INT DEFAULT 0 COMMENT '排列顺序',
+	`single_max_count` INT DEFAULT 0 COMMENT '每人可绑定最大数量',
 	
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
-	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
-	
-	INDEX codes(`country`, `province`, `city`, `county`, `town`, `village`)
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间'
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='银行表';
+INSERT INTO `bank` VALUES
+	(NULL, 'WEB', 1, 'ALIPAY', '支付宝', 666666, 1, CURRENT_TIMESTAMP(), NULL),
+	(NULL, 'WEB', 1, 'WECHAT', '微信', 666660, 1, CURRENT_TIMESTAMP(), NULL);
 
 # 账户表
 DROP TABLE IF EXISTS `account`;
@@ -190,6 +173,27 @@ CREATE TABLE `account_address` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户地址表';
+
+# 账户银行卡表
+DROP TABLE IF EXISTS `account_bank`;
+CREATE TABLE `account_bank` (
+	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+	
+	`is_default` TINYINT NOT NULL DEFAULT 0 COMMENT '默认，0不是，1是',
+	
+	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`bank` INT NOT NULL COMMENT '银行卡',
+	`name` VARCHAR(50) COMMENT '姓名',
+	`card` VARCHAR(50) COMMENT '卡号',
+	`address` VARCHAR(100) COMMENT '银行地址',
+	
+	`in` DECIMAL(20,2) DEFAULT 0 COMMENT '总转入',
+	`out` DECIMAL(20,2) DEFAULT 0 COMMENT '总转出',
+	
+	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
+	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户银行卡表';
 
 # 钱包表
 DROP TABLE IF EXISTS `wallet`;
