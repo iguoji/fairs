@@ -210,6 +210,9 @@ CREATE TABLE `wallet` (
 	`score` DECIMAL(20,2) DEFAULT 0 COMMENT '可用积分',
 	`score2` DECIMAL(20,2) DEFAULT 0 COMMENT '冻结积分',
 	
+	`commission` DECIMAL(20,2) DEFAULT 0 COMMENT '可用佣金',
+	`commission2` DECIMAL(20,2) DEFAULT 0 COMMENT '冻结佣金',
+	
 	`spend` DECIMAL(20,2) DEFAULT 0 COMMENT '消费额',
 	`spend2` DECIMAL(20,2) DEFAULT 0 COMMENT '冻结消费额',
 	
@@ -217,3 +220,23 @@ CREATE TABLE `wallet` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='钱包表';
+
+# 钱包记录表
+DROP TABLE IF EXISTS `wallet_record`;
+CREATE TABLE `wallet_record` (
+	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+	
+	`type` INT NOT NULL DEFAULT 0 COMMENT '类型',
+	
+	`oid` VARCHAR(32) NOT NULL COMMENT '订单编号',
+	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`coin` VARCHAR(20) NOT NULL COMMENT '资金类型，引用wallet表字段名称',
+	
+	`before` DECIMAL(20,2) DEFAULT 0 COMMENT '之前金额',
+	`number` DECIMAL(20,2) DEFAULT 0 COMMENT '操作余额',
+	`after` DECIMAL(20,2) DEFAULT 0 COMMENT '之后金额',
+	
+	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
+	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='钱包记录表';

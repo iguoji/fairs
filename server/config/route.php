@@ -7,8 +7,11 @@ return [
         '/account/forgot'               =>      [['POST'],      [\App\Open\Account::class, 'forgot']],
 
         '/account/resetPwd'             =>      [['POST'],      [\App\Open\Account::class, 'resetPwd'],         \App\Middleware\Token::class],
+        '/account/safeword'             =>      [['POST'],      [\App\Open\Account::class, 'safeword'],         \App\Middleware\Token::class],
         '/account/profile'              =>      [['POST'],      [\App\Open\Account::class, 'profile'],          \App\Middleware\Token::class],
         '/account/edit'                 =>      [['POST'],      [\App\Open\Account::class, 'edit'],             \App\Middleware\Token::class],
+        '/account/bindPhone'            =>      [['POST'],      [\App\Open\Account::class, 'bindPhone'],        \App\Middleware\Token::class],
+        '/account/bindEmail'            =>      [['POST'],      [\App\Open\Account::class, 'bindEmail'],        \App\Middleware\Token::class],
 
         '/account/authentic'            =>      [['POST'],      [\App\Open\Account::class, 'authentic'],        \App\Middleware\Token::class],
 

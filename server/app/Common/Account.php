@@ -130,6 +130,19 @@ class Account
             'birthday'  =>  '',
         ]);
 
+        // 个人钱包
+        $data['wallet'] = array_intersect_key(Wallet::get($account['uid']), [
+            'money'         =>  0,
+            'money2'        =>  0,
+            'score'         =>  0,
+            'score2'        =>  0,
+            'commission'    =>  0,
+            'commission2'   =>  0,
+            'spend'         =>  0,
+            'spend2'        =>  0,
+        ]);
+
+
         // 实名认证
         $data['authentic'] = Authentic::status($account['uid'], Config::get('app.account.authentic', Authentic::IDCARD));
 

@@ -26,6 +26,18 @@ class AccountBank
     }
 
     /**
+     * 总绑卡数量
+     */
+    public static function count(string $uid = null) : int
+    {
+        $query = Db::table('account_bank');
+        if (!is_null($uid)) {
+            $query->where('uid', $uid);
+        }
+        return $query->count('id');
+    }
+
+    /**
      * 单人指定银行绑卡数量
      */
     public static function singleCount(int $bank, string $uid = null) : int

@@ -289,7 +289,11 @@ class Account
      */
     public static function forgotByMobile(Validate $validate) : void
     {
-        $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
+        $validate->int('country', '国家区号')
+            ->require()->length(1, 24)->digit()
+            ->call(function($value){
+                return RegionCommon::exists(country: $value);
+            });
         $validate->int('phone', '手机号码')
             ->require()->length(5, 30)->digit()
             ->call(function($value, $values){
@@ -336,7 +340,6 @@ class Account
 
 
     /**
-     *
      * 重置密码
      */
     public static function resetPwd(array $params) : array
@@ -370,6 +373,144 @@ class Account
         // 获取密码
         $validate->string('newword', '新的密码')->require()->length(6, 32)->confirm('renewword');
         $validate->string('renewword', '确认密码')->require()->length(6, 32)->confirm('newword')->unset();
+
+        // 返回结果
+        return $validate->check();
+    }
+
+
+
+
+    /**
+     * 绑定安全密码
+     */
+    public static function safeword(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 绑定方式
+        $action = $validate->string('action', '绑定方式')
+            ->default('password')
+            ->in('password', 'mobile', 'email')
+            ->value();
+
+        // 按情况处理
+        if ($action == 'mobile') {
+            // 手机验证码
+            $length = Config::get('sms.length', 4);
+            $validate->string('verify_code', '短信验证码')->require()->digit()->length($length, $length);
+        } else if ($action == 'email') {
+            // 邮箱验证码
+            $length = Config::get('mail.length', 4);
+            $validate->string('verify_code', '邮箱验证码')->require()->digit()->length($length, $length);
+        } else {
+            // 登录密码
+            $validate->string('password', '登录密码')->require()->length(6, 32);
+        }
+
+        // 获取密码
+        $validate->string('safeword', '安全密码')->require()->length(6, 32)->confirm('resafeword');
+        $validate->string('resafeword', '确认密码')->require()->length(6, 32)->confirm('safeword')->unset();
+
+        // 返回结果
+        return $validate->check();
+    }
+
+
+
+
+    /**
+     * 绑定手机
+     */
+    public static function bindPhone(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 绑定方式
+        $action = $validate->string('action', '绑定方式')
+            ->default('password')
+            ->in('password', 'safeword', 'email')
+            ->value();
+
+        // 手机号码
+        $validate->int('country', '国家区号')
+            ->require()->length(1, 24)->digit()
+            ->call(function($value){
+                return RegionCommon::exists(country: $value);
+            });
+        $validate->int('phone', '手机号码')
+            ->require()->length(5, 30)->digit()
+            ->call(function($value, $values){
+                return empty(AccountCommon::findByPhone($values['country'] ?? '', $value));
+            }, message: '很抱歉、该手机号码已被绑定！');
+
+        // 手机验证码
+        $length = Config::get('sms.length', 4);
+        $validate->string('verify_code', '短信验证码')
+            ->require()->digit()->length($length, $length)
+            ->call(function($value, $values){
+                return SmsCommon::check($values['country'] ?? '', $values['phone'] ?? '', $value);
+            })->unset();
+
+        // 按情况处理
+        if ($action == 'email') {
+            // 邮箱验证码
+            $length = Config::get('mail.length', 4);
+            $validate->string('email_code', '邮箱验证码')->require()->digit()->length($length, $length);
+        } else {
+            // 登录密码
+            $validate->string('password', '登录密码')->length(6, 32)->requireWithout('safeword');
+            // 安全密码
+            $validate->string('safeword', '安全密码')->length(6, 32)->requireWithout('password');
+        }
+
+        // 返回结果
+        return $validate->check();
+    }
+
+
+
+    /**
+     * 绑定邮箱
+     */
+    public static function bindEmail(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 绑定方式
+        $action = $validate->string('action', '绑定方式')
+            ->default('password')
+            ->in('password', 'safeword', 'mobile')
+            ->value();
+
+        // 邮箱地址
+        $validate->string('email', '邮箱地址')
+            ->require()->length(6, 64)->email()
+            ->call(function($value){
+                return empty(AccountCommon::findByEmail($value));
+            }, message: '很抱歉、该邮箱地址已被绑定！');
+        $length = Config::get('mail.length', 4);
+        $validate->string('verify_code', '邮箱验证码')
+            ->require()->digit()->length($length, $length)
+            ->call(function($value, $values){
+                return MailCommon::check($values['email'] ?? '', $value);
+            })
+            ->unset();
+
+        // 按情况处理
+        if ($action == 'mobile') {
+            // 手机验证码
+            $length = Config::get('sms.length', 4);
+            $validate->string('mobile_code', '短信验证码')->require()->digit()->length($length, $length);
+        } else {
+            // 登录密码
+            $validate->string('password', '登录密码')->length(6, 32)->requireWithout('safeword');
+            // 安全密码
+            $validate->string('safeword', '安全密码')->length(6, 32)->requireWithout('password');
+        }
 
         // 返回结果
         return $validate->check();
