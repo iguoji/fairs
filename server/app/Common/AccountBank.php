@@ -66,7 +66,7 @@ class AccountBank
             $data['created_at'] = date('Y-m-d H:i:s');
         }
 
-        return Db::table('account_bank')->insert($data);
+        return Db::table('account_bank')->insert($data) > 0;
     }
 
     /**

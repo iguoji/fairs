@@ -41,7 +41,7 @@ class Authentic
         }
 
         // 保存数据
-        return Db::table('account_authenticate')->insert($data);
+        return Db::table('account_authenticate')->insert($data) > 0;
     }
 
     /**

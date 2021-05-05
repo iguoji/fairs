@@ -1,6 +1,6 @@
 {
-    "name": "iguoji/minimall",
-    "description": "mini mall",
+    "name": "iguoji/fairs",
+    "description": "mall",
     "keywords": ["framework", "php"],
     "homepage": "https://github.com/iguoji/minimall",
     "license": "Apache-2.0",
@@ -19,5 +19,6 @@
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true
-    }
+    },
+    "minimum-stability": "dev"
 }

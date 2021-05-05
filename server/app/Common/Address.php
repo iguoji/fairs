@@ -46,7 +46,7 @@ class Address
             $data['created_at'] = date('Y-m-d H:i:s');
         }
 
-        return Db::table('account_address')->insert($data);
+        return Db::table('account_address')->insert($data) > 0;
     }
 
     /**

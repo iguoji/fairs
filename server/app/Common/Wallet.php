@@ -19,7 +19,7 @@ class Wallet
         return Db::table('wallet')->insert([
             'uid'       =>  $uid,
             'created_at'=>  date('Y-m-d H:i:s'),
-        ]);
+        ]) > 0;
     }
 
     /**
@@ -95,6 +95,6 @@ class Wallet
             'before'    =>  $before,
             'number'    =>  $number,
             'after'     =>  $after ?? $before + $number,
-        ]);
+        ]) > 0;
     }
 }

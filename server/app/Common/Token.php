@@ -13,10 +13,10 @@ class Token
     /**
      * 保存令牌
      */
-    public static function set(string $uid, string $token, int $expire = null) : void
+    public static function set(string $uid, string $token, int $expire = null, string $module = 'account') : void
     {
         // UID -> Token
-        Cache::set('middleware:token:account:' . $uid, $token, $expire);
+        Cache::set('middleware:token:' . $module . ':' . $uid, $token, $expire);
 
         // Token -> UID
         Cache::set('middleware:token:' . $token, $uid, $expire);
@@ -33,10 +33,10 @@ class Token
     /**
      * 获取令牌、根据用户编号
      */
-    public static function getByUid(string $uid) : string
+    public static function getByUid(string $uid, string $module = 'account') : string
     {
-        if (Cache::has('middleware:token:account:' . $uid)) {
-            return self::get(Cache::get('middleware:token:account:' . $uid));
+        if (Cache::has('middleware:token:' . $module . ':' . $uid)) {
+            return self::get(Cache::get('middleware:token:' . $module . ':' . $uid));
         }
         return '';
     }
@@ -60,9 +60,9 @@ class Token
     /**
      * 删除令牌 - 根据用户编号
      */
-    public static function removeByUid(string $uid) : void
+    public static function removeByUid(string $uid, string $module = 'account') : void
     {
-        $token = self::getByUid($uid);
+        $token = self::getByUid($uid, $module);
         if (!empty($token)) {
             self::remove($token);
         }
