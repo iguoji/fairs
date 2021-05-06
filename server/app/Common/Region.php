@@ -13,7 +13,7 @@ class Region
     /**
      * 指定地区是否存在
      */
-    public static function exists(string $country = null, string $province = null, string $city = null, string $county = null, string $town = null, string $village = null) : bool
+    public static function has(string $country = null, string $province = null, string $city = null, string $county = null, string $town = null, string $village = null) : bool
     {
         if (!func_num_args()) {
             return false;

@@ -17,11 +17,12 @@ class AccountBank
     {
         return Db::table('account_bank', 'ab')
             ->join('bank', 'b', 'b.id', 'ab.bank')
+            ->where('ab.deleted_at')
             ->orderByDesc('ab.is_default')
             ->orderByDesc('ab.updated_at')
             ->all(
                 'ab.id', 'ab.is_default', 'ab.name', 'ab.card',
-                ['b.name', 'bank'], 'b.type', 'ab.address'
+                ['b.name' => 'bank'], 'b.type', 'ab.address'
             );
     }
 
@@ -52,15 +53,15 @@ class AccountBank
     /**
      * 读取银行卡
      */
-    public static function read(int $id) : array
+    public static function get(int $id) : array
     {
-        return Db::table('account_bank')->where('id', $id)->first();
+        return Db::table('account_bank')->where('id', $id)->where('deleted_at')->first();
     }
 
     /**
      * 添加银行卡
      */
-    public static function save(array $data) : bool
+    public static function add(array $data) : bool
     {
         if (!isset($data['created_at'])) {
             $data['created_at'] = date('Y-m-d H:i:s');
@@ -72,7 +73,7 @@ class AccountBank
     /**
      * 修改银行卡
      */
-    public static function edit(int $id, array $data) : bool
+    public static function upd(int $id, array $data) : bool
     {
         if (!isset($data['updated_at'])) {
             $data['updated_at'] = date('Y-m-d H:i:s');
@@ -93,19 +94,11 @@ class AccountBank
     }
 
     /**
-     * 删除银行卡
-     */
-    public static function remove(int $id) : bool
-    {
-        return Db::table('account_bank')->where('id', $id)->delete() > 0;
-    }
-
-    /**
      * 是否存在
      */
-    public static function exists(int $id, string $uid = null) : bool
+    public static function has(int $id, string $uid = null) : bool
     {
-        $query = Db::table('account_bank')->where('id', $id);
+        $query = Db::table('account_bank')->where('id', $id)->where('deleted_at');
         if (!is_null($uid)) {
             $query->where('uid', $uid);
         }

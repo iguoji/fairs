@@ -19,19 +19,19 @@ class Address
         $validate->int('is_default', '是否设为默认地址')->in(0, 1)->default(0);
 
         $validate->string('country', '国家')->require()->length(1, 24)->digit()->call(function($value){
-            return RegionCommon::exists(country: $value);
+            return RegionCommon::has(country: $value);
         });
         $validate->string('province', '省份')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $value);
         })->requireWith('country');
         $validate->string('city', '市')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
         })->requireWith('country', 'province');
         $validate->string('county', '区县')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
         })->requireWith('country', 'province', 'city');
         $validate->string('town', '乡镇')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
         })->requireWith('country', 'province', 'city', 'county');
 
         $validate->string('address', '详细地址')->require();
@@ -50,24 +50,24 @@ class Address
         $validate = new Validate($params);
 
         $validate->int('id', '收货地址编号')->require()->digit()->call(function($value) use($uid){
-            return AddressCommon::exists((int) $value, $uid);
+            return AddressCommon::has((int) $value, $uid);
         }, message: '很抱歉、收货地址编号不存在！');
         $validate->int('is_default', '是否设为默认地址')->in(0, 1)->default(0);
 
         $validate->string('country', '国家')->require()->length(1, 24)->digit()->call(function($value){
-            return RegionCommon::exists(country: $value);
+            return RegionCommon::has(country: $value);
         });
         $validate->string('province', '省份')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $value);
         })->requireWith('country');
         $validate->string('city', '市')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
         })->requireWith('country', 'province');
         $validate->string('county', '区县')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
         })->requireWith('country', 'province', 'city');
         $validate->string('town', '乡镇')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return RegionCommon::exists(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
+            return RegionCommon::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
         })->requireWith('country', 'province', 'city', 'county');
 
         $validate->string('address', '详细地址')->require();
@@ -86,7 +86,7 @@ class Address
         $validate = new Validate($params);
 
         $validate->int('id', '收货地址编号')->require()->digit()->call(function($value) use($uid){
-            return AddressCommon::exists((int) $value, $uid);
+            return AddressCommon::has((int) $value, $uid);
         }, message: '很抱歉、收货地址编号不存在！');
 
         return $validate->check();
@@ -100,7 +100,7 @@ class Address
         $validate = new Validate($params);
 
         $validate->int('id', '收货地址编号')->require()->digit()->call(function($value) use($uid){
-            return AddressCommon::exists((int) $value, $uid);
+            return AddressCommon::has((int) $value, $uid);
         }, message: '很抱歉、收货地址编号不存在！');
 
         $validate->int('is_default', '是否设为默认地址')->in(0, 1)->default(1);

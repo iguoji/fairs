@@ -14,7 +14,7 @@ class Rbac
     /**
      * 获取指定角色的所有权限
      */
-    public static function getRolePowers(int $role) : array
+    public static function getRolePower(int $role) : array
     {
         return Db::table('rbac_relation', 'rr')
             ->join('rbac_node', 'rn', 'rn.id', 'rr.node')
@@ -22,7 +22,10 @@ class Rbac
             ->where('rr.deleted_at', null)
             ->where('rn.deleted_at', null)
             ->orderByDesc('rn.sort')
-            ->all('rr.id', 'rn.type', 'rn.status', 'rn.parent', 'rn.sort', 'rn.name', 'rn.path', 'rn.icon');
+            ->all(
+                'rr.id',
+                'rn.type', 'rn.status', 'rn.parent', 'rn.sort', 'rn.name', 'rn.path', 'rn.icon'
+            );
     }
 
     /**
@@ -59,12 +62,16 @@ class Rbac
         ]) > 0;
     }
 
+
+
+
+
     /**
      * 获取指定角色
      */
     public static function getRole(int $id) : array
     {
-        return Db::table('rbac_role')->where('id', $id)->where('deleted_at', null)->first();
+        return Db::table('rbac_role')->where('id', $id)->where('deleted_at')->first();
     }
 
     /**
@@ -72,7 +79,7 @@ class Rbac
      */
     public static function getRoles(int $parent = 0) : array
     {
-        return Db::table('rbac_role')->where('parent', $parent)->where('deleted_at', null)->all();
+        return Db::table('rbac_role')->where('parent', $parent)->where('deleted_at')->all();
     }
 
     /**
@@ -108,17 +115,21 @@ class Rbac
      */
     public static function delRole(int $id) : bool
     {
-        return Db::table('rbac_role')->where('id', $id)->update([
+        return static::updRole($id, [
             'deleted_at'    =>  date('Y-m-d H:i:s')
-        ]) > 0;
+        ]);
     }
+
+
+
+
 
     /**
      * 获取指定节点
      */
     public static function getNode(int $id) : array
     {
-        return Db::table('rbac_node')->where('id', $id)->where('deleted_at', null)->first();
+        return Db::table('rbac_node')->where('id', $id)->where('deleted_at')->first();
     }
 
     /**
@@ -126,7 +137,7 @@ class Rbac
      */
     public static function getNodes(int $parent = 0) : array
     {
-        return Db::table('rbac_node')->where('parent', $parent)->where('deleted_at', null)->orderByDesc('sort')->all();
+        return Db::table('rbac_node')->where('parent', $parent)->where('deleted_at')->orderByDesc('sort')->all();
     }
 
     /**
@@ -162,8 +173,8 @@ class Rbac
      */
     public static function delNode(int $id) : bool
     {
-        return Db::table('rbac_node')->where('id', $id)->update([
+        return static::updNode($id, [
             'deleted_at'    =>  date('Y-m-d H:i:s')
-        ]) > 0;
+        ]);
     }
 }

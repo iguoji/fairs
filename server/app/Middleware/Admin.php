@@ -5,8 +5,6 @@ namespace App\Middleware;
 
 use Closure;
 use Swoole\Http\Request;
-use Minimal\Facades\Log;
-use Minimal\Facades\Cache;
 use Minimal\Contracts\Middleware;
 use Minimal\Foundation\Exception;
 use App\Common\Token as TokenCommon;

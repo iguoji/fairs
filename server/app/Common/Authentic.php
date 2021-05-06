@@ -33,7 +33,7 @@ class Authentic
     /**
      * 提交认证
      */
-    public static function post(array $data, int $type = self::IDCARD) : bool
+    public static function add(array $data, int $type = self::IDCARD) : bool
     {
         // 补充时间
         if (!isset($data['created_at'])) {

@@ -36,7 +36,7 @@ class AccountBank
             Db::beginTransaction();
 
             // 银行数据
-            $bank = BankCommon::read($data['bank']);
+            $bank = BankCommon::get($data['bank']);
             // 已帮卡数量
             $myBindCount = AccountBankCommon::singleCount($data['bank'], $req->uid);
             if ($bank['single_max_count'] > 0 && $myBindCount >= $bank['single_max_count']) {
@@ -50,7 +50,7 @@ class AccountBank
 
             // 执行保存
             $data['uid'] = $req->uid;
-            if (!AccountBankCommon::save($data)) {
+            if (!AccountBankCommon::add($data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -87,7 +87,7 @@ class AccountBank
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!AccountBankCommon::edit($id, $data)) {
+            if (!AccountBankCommon::upd($id, $data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -117,7 +117,9 @@ class AccountBank
             Db::beginTransaction();
 
             // 执行删除
-            if (!AccountBankCommon::remove($data['id'])) {
+            if (!AccountBankCommon::upd($data['id'], [
+                'deleted_at'    =>  date('Y-m-d H:i:s')
+            ])) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -152,8 +154,8 @@ class AccountBank
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!empty($data['is_default']) && !AccountBankCommon::edit($id, $data)) {
-                throw new Exception('很抱歉、操作失败请重试！', 0, [Db::lastSql(), $data]);
+            if (!empty($data['is_default']) && !AccountBankCommon::upd($id, $data)) {
+                throw new Exception('很抱歉、操作失败请重试！');
             }
 
             // 提交事务

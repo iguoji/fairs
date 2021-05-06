@@ -4,8 +4,8 @@ return [
     '*'     =>  [
         '/'                             =>      [['GET'],               [\App\Open\Index::class,    'index'],                                       ],
 
-        '/admin/signin'                 =>      [['GET', 'POST'],       [\App\Admin\Index::class,   'singin'],          \App\Middleware\Admin::class],
-        '/admin/index'                  =>      [['GET'],               [\App\Admin\Index::class,   'index'],                                       ],
+        '/admin/index'                  =>      [['GET'],               [\App\Admin\Index::class,   'index'],           \App\Middleware\Admin::class],
+        '/admin/signin'                 =>      [['GET', 'POST'],       [\App\Admin\Rbac::class,   'signin'],                                       ],
 
 
 

@@ -45,51 +45,8 @@ class Account
         return md5(sha1($secret) . crc32($chars));
     }
 
-
-
-
-
     /**
-     * 注册
-     */
-    public static function signup(array $data) : string
-    {
-        // 用户编号
-        if (!isset($data['uid'])) {
-            $data['uid'] = self::uid();
-        }
-
-        // 密码加密
-        if (isset($data['password'])) {
-            $data['password'] = self::encrypt($data['password']);
-        }
-        if (isset($data['safeword'])) {
-            $data['safeword'] = self::encrypt($data['safeword']);
-        }
-
-        // 默认参数
-        $data = array_merge([
-            'type'      =>  1,
-            'status'    =>  1,
-            'level'     =>  1,
-            'created_at'=>  date('Y-m-d H:i:s'),
-        ], $data);
-
-        // 保存数据
-        if (!Db::table('account')->insert($data)) {
-            throw new Exception('很抱歉、账户注册失败请重试！');
-        }
-
-        // 保存编号
-        $id = Db::lastInsertId();
-        Cache::set('account:uid:' . $data['uid'], $id);
-
-        // 返回结果
-        return $data['uid'];
-    }
-
-    /**
-     * 登录
+     * 登录账户
      */
     public static function signin(array $account, string $token = null) : array
     {
@@ -150,10 +107,51 @@ class Account
         return $data;
     }
 
+
+
+    /**
+     * 添加账号
+     */
+    public static function add(array $data) : string
+    {
+        // 用户编号
+        if (!isset($data['uid'])) {
+            $data['uid'] = self::uid();
+        }
+
+        // 密码加密
+        if (isset($data['password'])) {
+            $data['password'] = self::encrypt($data['password']);
+        }
+        if (isset($data['safeword'])) {
+            $data['safeword'] = self::encrypt($data['safeword']);
+        }
+
+        // 默认参数
+        $data = array_merge([
+            'type'      =>  1,
+            'status'    =>  1,
+            'level'     =>  1,
+            'created_at'=>  date('Y-m-d H:i:s'),
+        ], $data);
+
+        // 保存数据
+        if (!Db::table('account')->insert($data)) {
+            throw new Exception('很抱歉、账户注册失败请重试！');
+        }
+
+        // 保存编号
+        $id = Db::lastInsertId();
+        Cache::set('account:uid:' . $data['uid'], $id);
+
+        // 返回结果
+        return $data['uid'];
+    }
+
     /**
      * 修改资料
      */
-    public static function change(string $uid, array $data) : bool
+    public static function upd(string $uid, array $data) : bool
     {
         // 密码加密
         if (isset($data['password'])) {
@@ -172,39 +170,35 @@ class Account
         return Db::table('account')->where('uid', $uid)->update($data) > 0;
     }
 
-
-
-
-
     /**
      * 查询 - 根据用户编号
      */
-    public static function findByUid(string $uid) : array
+    public static function get(string $uid) : array
     {
-        return Db::table('account')->where('uid', $uid)->first();
+        return Db::table('account')->where('uid', $uid)->where('deleted_at')->first();
     }
 
     /**
      * 查询 - 根据用户名
      */
-    public static function findByUsername(string $username) : array
+    public static function getByUsername(string $username) : array
     {
-        return Db::table('account')->where('username', $username)->first();
+        return Db::table('account')->where('username', $username)->where('deleted_at')->first();
     }
 
     /**
      * 查询 - 根据手机号码
      */
-    public static function findByPhone(int|string $country, int|string $phone) : array
+    public static function getByPhone(int|string $country, int|string $phone) : array
     {
-        return Db::table('account')->where('country', (string) $country)->where('phone', (string) $phone)->first();
+        return Db::table('account')->where('country', (string) $country)->where('phone', (string) $phone)->where('deleted_at')->first();
     }
 
     /**
      * 查询 - 根据邮箱地址
      */
-    public static function findByEmail(string $email) : array
+    public static function getByEmail(string $email) : array
     {
-        return Db::table('account')->where('email', $email)->first();
+        return Db::table('account')->where('email', $email)->where('deleted_at')->first();
     }
 }

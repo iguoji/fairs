@@ -42,7 +42,7 @@ class Address
 
             // 执行保存
             $data['uid'] = $req->uid;
-            if (!AddressCommon::save($data)) {
+            if (!AddressCommon::add($data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -79,7 +79,7 @@ class Address
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!AddressCommon::edit($id, $data)) {
+            if (!AddressCommon::upd($id, $data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -109,7 +109,9 @@ class Address
             Db::beginTransaction();
 
             // 执行删除
-            if (!AddressCommon::remove($data['id'])) {
+            if (!AddressCommon::upd($data['id'], [
+                'deleted_at'    =>  date('Y-m-d H:i:s')
+            ])) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 
@@ -144,7 +146,7 @@ class Address
             // 执行修改
             $id = $data['id'];
             unset($data['id']);
-            if (!AddressCommon::edit($id, $data)) {
+            if (!AddressCommon::upd($id, $data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 

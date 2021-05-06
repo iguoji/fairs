@@ -46,6 +46,12 @@ CREATE TABLE `region` (
 	
 	INDEX codes(`country`, `province`, `city`, `county`, `town`, `village`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='地区表';
+CREATE INDEX `country_type` ON `region`(`country`, `type`);
+CREATE INDEX `province_type` ON `region`(`province`, `type`);
+CREATE INDEX `city_type` ON `region`(`city`, `type`);
+CREATE INDEX `county_type` ON `region`(`county`, `type`);
+CREATE INDEX `town_type` ON `region`(`town`, `type`);
+CREATE INDEX `village_type` ON `region`(`village`, `type`);
 
 # 银行表
 DROP TABLE IF EXISTS `bank`;
@@ -82,7 +88,7 @@ CREATE TABLE `account` (
 	`safeword` VARCHAR(64) COMMENT '安全密码',
 	
 	`phone` VARCHAR(30) COMMENT '手机号码',
-	`email` VARCHAR(64) COMMENT '邮箱',
+	`email` VARCHAR(64) UNIQUE COMMENT '邮箱',
 	
 	`nickname` VARCHAR(50) COMMENT '昵称',
 	`avatar` VARCHAR(150) COMMENT '头像',
@@ -101,7 +107,8 @@ CREATE TABLE `account` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间',
 	
-	INDEX region(`country`, `province`, `city`, `county`, `town`)
+	INDEX region(`country`, `province`, `city`, `county`, `town`),
+	UNIQUE INDEX `country_phone`(`country`, `phone`)
 	
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='账户表';
 
