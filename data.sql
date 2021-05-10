@@ -305,13 +305,12 @@ CREATE TABLE `rbac_role` (
 DROP TABLE IF EXISTS `rbac_node`;
 CREATE TABLE `rbac_node` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
-	`type` TINYINT NOT NULL DEFAULT 3 COMMENT '类型，1主节点，2次节点，3操作',
-	`status` TINYINT DEFAULT 1 COMMENT '状态',
 	`parent` INT DEFAULT 0 COMMENT '上级节点',
 	`sort` INT DEFAULT 0 COMMENT '排列顺序',
 	`name` VARCHAR(50) COMMENT '名称',
+	`visible` TINYINT DEFAULT 1 COMMENT '可见的，1可见，0不可见',
 	`path` VARCHAR(150) COMMENT '路径',
-	`icon` VARCHAR(30) COMMENT '图标',
+	`icon` TEXT COMMENT '图标',
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'

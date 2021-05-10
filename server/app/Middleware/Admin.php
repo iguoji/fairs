@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use Closure;
-use Swoole\Http\Request;
+use Minimal\Foundation\Request;
 use Minimal\Contracts\Middleware;
 use Minimal\Foundation\Exception;
 use App\Common\Token as TokenCommon;

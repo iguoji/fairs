@@ -12,11 +12,30 @@ use Minimal\Foundation\Exception;
 class Admin
 {
     /**
+     * 管理员类型
+     */
+    public const TYPE_DEFAULT = 1;  // 普通管理员
+    public const TYPE_SUPER = -1;  // 系统管理员
+
+
+    /**
      * 查询管理员
      */
     public static function get(string $username) : array
     {
         return Db::table('admin')->where('username', $username)->where('deleted_at', null)->first();
+    }
+
+    /**
+     * 是否为超级管理员
+     */
+    public static function isSuper(string $username) : bool
+    {
+        $admin = static::get($username);
+        if (!empty($admin) && $admin['type'] == static::TYPE_SUPER) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -38,7 +57,7 @@ class Admin
         }
         // 补充时间
         if (!isset($data['created_at'])) {
-            $date['created_at'] = date('Y-m-d H:i:s');
+            $data['created_at'] = date('Y-m-d H:i:s');
         }
 
         // 添加数据
@@ -56,7 +75,7 @@ class Admin
         }
         // 补充时间
         if (!isset($data['updated_at'])) {
-            $date['updated_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
         }
 
         // 修改数据

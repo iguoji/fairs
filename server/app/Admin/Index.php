@@ -9,10 +9,10 @@ use Minimal\Facades\View;
 class Index
 {
     /**
-     * 后台登录
+     * 后台首页
      */
-    public function signin($req, $res)
+    public function index($req, $res)
     {
-        return View::fetch('Admin/Brand/save.php');
+        return View::fetch('admin/index/index');
     }
 }

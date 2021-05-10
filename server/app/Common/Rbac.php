@@ -12,6 +12,120 @@ use Minimal\Foundation\Exception;
 class Rbac
 {
     /**
+     * 渲染
+     */
+    public static function fetch() : string
+    {
+        // 获取节点
+        $nodes = [];
+        if (Admin::isSuper('admin')) {
+            $nodes = static::getNodes();
+        } else {
+            $nodes = static::getRolePower(0);
+        }
+
+        // 关联节点
+        $map = [];
+        foreach ($nodes as $key => $node) {
+            if (0 == $node['parent']) {
+                $map[] = static::nodeChild($node, $nodes);
+            }
+        }
+
+
+        // 循环处理
+        $html = static::fetchNodes($map);
+
+        // 返回结果
+        return $html;
+    }
+
+    /**
+     * 节点下级
+     */
+    protected static function nodeChild(array $node, array $nodes) : array
+    {
+        foreach ($nodes as $id => $item) {
+            if ($item['parent'] == $node['id']) {
+                $node['child'][] = static::nodeChild($item, $nodes);
+            }
+        }
+        return $node;
+    }
+
+    /**
+     * 渲染节点
+     */
+    public static function fetchNodes(array $nodes, int $depth = 1) : string
+    {
+        // 节点容器
+        $html = '';
+        if ($depth == 1) {
+            $html .= '<div class="navbar-collapse" id="navbar-menu">';
+            $html .= '<ul class="navbar-nav pt-lg-3">';
+        } else {
+            $html .= '<div class="dropdown-menu">';
+            if ($depth == 2) {
+                $html .= '<div class="dropdown-menu-columns">';
+                $html .= '<div class="dropdown-menu-column">';
+            }
+        }
+        // 循环处理
+        foreach ($nodes as $key => $node) {
+            // 是否为父节点
+            $isParent = !empty($node['child']);
+            // 按深度处理代码
+            if ($depth == 1) {
+                // 一级菜单
+                $html .= '<li class="nav-item' . ($isParent ? ' dropdown' : '') . '">';
+                // 添加子节点
+                if ($isParent) {
+                    $html .= '<a class="nav-link dropdown-toggle" href="#dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">';
+                        $html .= '<span class="nav-link-icon d-md-none d-lg-inline-block">';
+                        $html .= $node['icon'];
+                        $html .= '</span>';
+                        $html .= '<span class="nav-link-title">' . $node['name'] . '</span>';
+                    $html .= '</a>';
+                    $html .= static::fetchNodes($node['child'], $depth + 1);
+                } else {
+                    $html .= '<a class="nav-link" href="' . ($node['path'] ?: 'javascript:;') . '">';
+                        $html .= '<span class="nav-link-icon d-md-none d-lg-inline-block">';
+                        $html .= $node['icon'];
+                        $html .= '</span>';
+                        $html .= '<span class="nav-link-title">' . $node['name'] . '</span>';
+                    $html .= '</a>';
+                }
+                $html .= '</li>';
+            } else {
+                // 二级菜单
+                if ($isParent) {
+                    $html .= '<div class="dropend">';
+                        $html .= '<a class="dropdown-item dropdown-toggle" href="#dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">';
+                        $html .= $node['name'];
+                        $html .= '</a>';
+                        $html .= static::fetchNodes($node['child'], $depth + 1);
+                    $html .= '</div>';
+                } else {
+                    $html .= '<a class="dropdown-item" href="' . ($node['path'] ?: 'javascript:;') . '">' . $node['name'] . '</a>';
+                }
+            }
+        }
+        // 节点容器 - 结束
+        if ($depth == 1) {
+            $html .= '</ul>';
+            $html .= '</div>';
+        } else {
+            if ($depth == 2) {
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+            $html .= '</div>';
+        }
+
+        return $html;
+    }
+
+    /**
      * 获取指定角色的所有权限
      */
     public static function getRolePower(int $role) : array
@@ -22,6 +136,7 @@ class Rbac
             ->where('rr.deleted_at', null)
             ->where('rn.deleted_at', null)
             ->orderByDesc('rn.sort')
+            ->orderBy('rn.id')
             ->all(
                 'rr.id',
                 'rn.type', 'rn.status', 'rn.parent', 'rn.sort', 'rn.name', 'rn.path', 'rn.icon'
@@ -35,7 +150,7 @@ class Rbac
     {
         // 补充时间
         if (!isset($data['created_at'])) {
-            $date['created_at'] = date('Y-m-d H:i:s');
+            $data['created_at'] = date('Y-m-d H:i:s');
         }
 
         // 添加数据
@@ -89,7 +204,7 @@ class Rbac
     {
         // 补充时间
         if (!isset($data['created_at'])) {
-            $date['created_at'] = date('Y-m-d H:i:s');
+            $data['created_at'] = date('Y-m-d H:i:s');
         }
 
         // 添加数据
@@ -103,7 +218,7 @@ class Rbac
     {
         // 补充时间
         if (!isset($data['updated_at'])) {
-            $date['updated_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
         }
 
         // 修改数据
@@ -135,9 +250,16 @@ class Rbac
     /**
      * 获取所有节点
      */
-    public static function getNodes(int $parent = 0) : array
+    public static function getNodes(int $parent = null) : array
     {
-        return Db::table('rbac_node')->where('parent', $parent)->where('deleted_at')->orderByDesc('sort')->all();
+        $query = Db::table('rbac_node');
+        if (!is_null($parent)) {
+            $query->where('parent', $parent);
+        }
+        return $query->where('deleted_at')
+            ->orderByDesc('sort')
+            ->orderBy('id')
+            ->all();
     }
 
     /**
@@ -147,7 +269,7 @@ class Rbac
     {
         // 补充时间
         if (!isset($data['created_at'])) {
-            $date['created_at'] = date('Y-m-d H:i:s');
+            $data['created_at'] = date('Y-m-d H:i:s');
         }
 
         // 添加数据
@@ -161,7 +283,7 @@ class Rbac
     {
         // 补充时间
         if (!isset($data['updated_at'])) {
-            $date['updated_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
         }
 
         // 修改数据
