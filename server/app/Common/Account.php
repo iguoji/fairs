@@ -46,6 +46,24 @@ class Account
     }
 
     /**
+     * 授权验证
+     */
+    public static function verify($req) : mixed
+    {
+        if (empty($req->header('authorization')) || !str_starts_with($req->header('authorization'), 'Token ')) {
+            throw new Exception('很抱歉、请登录后再操作！', 403);
+        }
+
+        $token = substr($req->header('authorization'), 6);
+        if (!Token::has($token)) {
+            throw new Exception('很抱歉、登录超时请重新登录！', 403, $req->header());
+        }
+
+        // 返回结果
+        return Token::get($token);
+    }
+
+    /**
      * 登录账户
      */
     public static function signin(array $account, string $token = null) : array

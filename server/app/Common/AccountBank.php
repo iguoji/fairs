@@ -18,6 +18,7 @@ class AccountBank
         return Db::table('account_bank', 'ab')
             ->join('bank', 'b', 'b.id', 'ab.bank')
             ->where('ab.deleted_at')
+            ->where('ab.uid', $uid)
             ->orderByDesc('ab.is_default')
             ->orderByDesc('ab.updated_at')
             ->all(
@@ -35,7 +36,7 @@ class AccountBank
         if (!is_null($uid)) {
             $query->where('uid', $uid);
         }
-        return $query->count('id');
+        return $query->where('deleted_at')->count('id');
     }
 
     /**
@@ -47,7 +48,7 @@ class AccountBank
         if (!is_null($uid)) {
             $query->where('uid', $uid);
         }
-        return $query->count('id');
+        return $query->where('deleted_at')->count('id');
     }
 
     /**

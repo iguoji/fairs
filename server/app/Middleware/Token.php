@@ -6,6 +6,7 @@ namespace App\Middleware;
 use Closure;
 use Minimal\Contracts\Middleware;
 use Minimal\Foundation\Request;
+use Minimal\Foundation\Response;
 use Minimal\Foundation\Exception;
 use App\Common\Token as TokenCommon;
 
@@ -17,7 +18,7 @@ class Token implements Middleware
     /**
      * 处理程序
      */
-    public function handle(Request $req, Closure $next) : mixed
+    public function handle(Request $req, Response $res, Closure $next) : mixed
     {
         if (empty($req->header('authorization')) || !str_starts_with($req->header('authorization'), 'Token ')) {
             throw new Exception('很抱歉、请登录后再操作！', 403);

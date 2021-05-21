@@ -1,37 +1,41 @@
 <?php
 
 return [
+    // 后台管理
+    'admin.fairs.com'   =>  [
+        // 首页
+        '/'                                 =>  \App\Http\Admin\Index::class,
+        '/index'                      =>  \App\Http\Admin\Index::class,
+
+        // 权限
+        '/signin'                     =>  \App\Http\Rbac\Signin::class,
+    ],
+    // 用户接口
     '*'     =>  [
-        '/'                             =>      [['GET'],               [\App\Open\Index::class,    'index'],                                       ],
+        // 账户
+        '/account/signup'                   =>  \App\Http\Account\Signup::class,
+        '/account/signin'                   =>  \App\Http\Account\Signin::class,
+        '/account/profile'                  =>  \App\Http\Account\Profile::class,
+        '/account/edit'                     =>  \App\Http\Account\Edit::class,
+        '/account/authentication'           =>  \App\Http\Account\Authentication::class,
+        '/account/safeword'                 =>  \App\Http\Account\Safeword::class,
+        '/account/bindPhone'                =>  \App\Http\Account\BindPhone::class,
+        '/account/bindEmail'                =>  \App\Http\Account\BindEmail::class,
+        '/account/forgot'                   =>  \App\Http\Account\Forgot::class,
+        '/account/resetPwd'                 =>  \App\Http\Account\ResetPwd::class,
 
-        '/admin/index'                  =>      [['GET'],               [\App\Admin\Index::class,   'index'],                                       ],
-        '/admin/signin'                 =>      [['GET', 'POST'],       [\App\Admin\Rbac::class,   'signin'],                                       ],
+        // 收货地址
+        '/account/address'                  =>  \App\Http\Address\My::class,
+        '/account/address/save'             =>  \App\Http\Address\Save::class,
+        '/account/address/edit'             =>  \App\Http\Address\Edit::class,
+        '/account/address/remove'           =>  \App\Http\Address\Remove::class,
+        '/account/address/default'          =>  \App\Http\Address\UseDefault::class,
 
-
-
-        '/account/signin'               =>      [['POST'],              [\App\Open\Account::class, 'signin']],
-        '/account/signup'               =>      [['POST'],              [\App\Open\Account::class, 'signup']],
-        '/account/forgot'               =>      [['POST'],              [\App\Open\Account::class, 'forgot']],
-
-        '/account/resetPwd'             =>      [['POST'],              [\App\Open\Account::class, 'resetPwd'],         \App\Middleware\Token::class],
-        '/account/safeword'             =>      [['POST'],              [\App\Open\Account::class, 'safeword'],         \App\Middleware\Token::class],
-        '/account/profile'              =>      [['POST'],              [\App\Open\Account::class, 'profile'],          \App\Middleware\Token::class],
-        '/account/edit'                 =>      [['POST'],              [\App\Open\Account::class, 'edit'],             \App\Middleware\Token::class],
-        '/account/bindPhone'            =>      [['POST'],              [\App\Open\Account::class, 'bindPhone'],        \App\Middleware\Token::class],
-        '/account/bindEmail'            =>      [['POST'],              [\App\Open\Account::class, 'bindEmail'],        \App\Middleware\Token::class],
-
-        '/account/authentic'            =>      [['POST'],              [\App\Open\Account::class, 'authentic'],        \App\Middleware\Token::class],
-
-        '/account/address'              =>      [['POST'],              [\App\Open\Address::class, 'my'],               \App\Middleware\Token::class],
-        '/account/address/save'         =>      [['POST'],              [\App\Open\Address::class, 'save'],             \App\Middleware\Token::class],
-        '/account/address/edit'         =>      [['POST'],              [\App\Open\Address::class, 'edit'],             \App\Middleware\Token::class],
-        '/account/address/remove'       =>      [['POST'],              [\App\Open\Address::class, 'remove'],           \App\Middleware\Token::class],
-        '/account/address/default'      =>      [['POST'],              [\App\Open\Address::class, 'default'],          \App\Middleware\Token::class],
-
-        '/account/bank'                 =>      [['POST'],              [\App\Open\AccountBank::class, 'my'],           \App\Middleware\Token::class],
-        '/account/bank/save'            =>      [['POST'],              [\App\Open\AccountBank::class, 'save'],         \App\Middleware\Token::class],
-        '/account/bank/edit'            =>      [['POST'],              [\App\Open\AccountBank::class, 'edit'],         \App\Middleware\Token::class],
-        '/account/bank/remove'          =>      [['POST'],              [\App\Open\AccountBank::class, 'remove'],       \App\Middleware\Token::class],
-        '/account/bank/default'         =>      [['POST'],              [\App\Open\AccountBank::class, 'default'],      \App\Middleware\Token::class],
+        // 我的银行卡
+        '/account/bank'                     =>  \App\Http\AccountBank\My::class,
+        '/account/bank/save'                =>  \App\Http\AccountBank\Save::class,
+        '/account/bank/edit'                =>  \App\Http\AccountBank\Edit::class,
+        '/account/bank/remove'              =>  \App\Http\AccountBank\Remove::class,
+        '/account/bank/default'             =>  \App\Http\AccountBank\UseDefault::class,
     ],
 ];
