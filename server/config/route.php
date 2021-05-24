@@ -5,10 +5,10 @@ return [
     'admin.fairs.com'   =>  [
         // 首页
         '/'                                 =>  \App\Http\Admin\Index::class,
-        '/index'                      =>  \App\Http\Admin\Index::class,
+        '/index'                            =>  \App\Http\Admin\Index::class,
 
         // 权限
-        '/signin'                     =>  \App\Http\Rbac\Signin::class,
+        '/signin'                           =>  \App\Http\Rbac\Signin::class,
     ],
     // 用户接口
     '*'     =>  [

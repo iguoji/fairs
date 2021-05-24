@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Common;
 
 use Minimal\Facades\Db;
+use Minimal\Facades\App;
+use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
 
 /**
@@ -17,6 +19,68 @@ class Admin
     public const TYPE_DEFAULT = 1;  // 普通管理员
     public const TYPE_SUPER = -1;  // 系统管理员
 
+    /**
+     * 初始化
+     */
+    public static function init() : bool
+    {
+        return \Swoole\Coroutine\run(function(){
+            // 获取数据库
+            $config = Config::get('db', []);
+            $config['pool'] = 1;
+            App::set('database', new \Minimal\Database\Manager($config, 1));
+
+            // 账号密码
+            $username = 'admin';
+            $password = '123123';
+
+            // 是否存在
+            if (self::get($username)) {
+                // 修改密码
+                if (!self::upd($username, [
+                    'password'  =>  $password,
+                ])) {
+                    throw new Exception('很抱歉、系统管理员密码重置失败！');
+                }
+            } else {
+                // 增加账号
+                if (!self::add([
+                    'type'      =>  self::TYPE_SUPER,
+                    'username'  =>  $username,
+                    'password'  =>  $password,
+                    'nickname'  =>  $username,
+                ])) {
+                    throw new Exception('很抱歉、系统管理员添加失败！');
+                }
+            }
+        }) > 0;
+    }
+
+    /**
+     * 授权验证
+     */
+    public static function verify($req, $res) : mixed
+    {
+        // 从会话中获取
+        $adminId = $req->session()->get('admin');
+
+        // 从Header中获取
+        if (empty($adminId)) {
+            if (empty($req->header('authorization')) || !str_starts_with($req->header('authorization'), 'Admin ')) {
+                throw new Exception('很抱歉、请登录后再操作！', 302, ['/signin.html']);
+            }
+
+            $token = substr($req->header('authorization'), 6);
+            if (!Token::has($token)) {
+                throw new Exception('很抱歉、登录超时请重新登录！', 302, ['/signin.html']);
+            }
+
+            $adminId = Token::get($token);
+        }
+
+        // 返回结果
+        return $adminId;
+    }
 
     /**
      * 查询管理员
@@ -24,6 +88,14 @@ class Admin
     public static function get(string $username) : array
     {
         return Db::table('admin')->where('username', $username)->where('deleted_at', null)->first();
+    }
+
+    /**
+     * 是否存在管理员
+     */
+    public static function has(string $username) : bool
+    {
+        return !empty(static::get($username));
     }
 
     /**
