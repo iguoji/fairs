@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Common;
 
+use Minimal\Support\Str;
 use Minimal\Facades\Cache;
 
 /**
@@ -11,34 +12,44 @@ use Minimal\Facades\Cache;
 class Token
 {
     /**
-     * 保存令牌
+     * 拼合Key
      */
-    public static function set(string $uid, string $token, int $expire = null, string $module = 'account') : void
+    public static function key(string|int ...$keys) : string
     {
-        // UID -> Token
-        Cache::set('middleware:token:' . $module . ':' . $uid, $token, $expire);
+        array_unshift($keys, 'session');
 
-        // Token -> UID
-        Cache::set('middleware:token:' . $token, $uid, $expire);
+        return implode(':', $keys);
     }
 
     /**
-     * 获取令牌
+     * 生成令牌
+     */
+    public static function new(string|int $primaryKey, string $module = 'account', int $expire = null) : string
+    {
+        // 生成Token
+        do {
+            $token = Str::random(64);
+        } while(Cache::has($token));
+
+        // 删除老的令牌
+        static::clear($primaryKey, $module);
+
+        // primaryKey -> Token
+        Cache::set(static::key($module, $primaryKey), $token, $expire);
+
+        // Token -> primaryKey
+        Cache::set(static::key($token), $primaryKey, $expire);
+
+        // 返回Token
+        return $token;
+    }
+
+    /**
+     * 获取主键
      */
     public static function get(string $token) : string
     {
-        return Cache::get('middleware:token:' . $token);
-    }
-
-    /**
-     * 获取令牌、根据用户编号
-     */
-    public static function getByUid(string $uid, string $module = 'account') : string
-    {
-        if (Cache::has('middleware:token:' . $module . ':' . $uid)) {
-            return self::get(Cache::get('middleware:token:' . $module . ':' . $uid));
-        }
-        return '';
+        return Cache::get(static::key($token));
     }
 
     /**
@@ -46,25 +57,18 @@ class Token
      */
     public static function has(string $token) : bool
     {
-        return Cache::has('middleware:token:' . $token);
+        return Cache::has(static::key($token));
     }
 
     /**
-     * 删除令牌
+     * 移除令牌
      */
-    public static function remove(string $token) : void
+    public static function clear(string|int $primaryKey, string $module = 'account') : void
     {
-        Cache::delete('middleware:token:' . $token);
-    }
-
-    /**
-     * 删除令牌 - 根据用户编号
-     */
-    public static function removeByUid(string $uid, string $module = 'account') : void
-    {
-        $token = self::getByUid($uid, $module);
+        $token = Cache::get(static::key($module, $primaryKey));
         if (!empty($token)) {
-            self::remove($token);
+            Cache::delete(static::key($module, $primaryKey));
+            Cache::delete(static::key($token));
         }
     }
 }

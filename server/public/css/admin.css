@@ -42,9 +42,9 @@
     .navbar-menus {
         margin-left: calc(-1 * var(--tblr-gutter-x,1.5rem));
         margin-right: calc(-1 * var(--tblr-gutter-x,1.5rem));
-        /* flex-direction: column;
-        flex-grow: 1;
-        min-height: auto; */
+    }
+    .navbar-menus.collapse {
+        display: block!important;
     }
     .navbar-menu {
         flex-direction: column;
@@ -57,5 +57,12 @@
     .navbar-menu > .nav-link {
         padding: .5rem 1.5rem;
         justify-content: flex-start;
+    }
+}
+@media (max-width: 991.98px) {
+    .navbar-menus {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
     }
 }

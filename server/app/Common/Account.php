@@ -50,42 +50,32 @@ class Account
      */
     public static function verify($req) : mixed
     {
-        if (empty($req->header('authorization')) || !str_starts_with($req->header('authorization'), 'Token ')) {
+        // 获取信息
+        $account = $req->session->get('account');
+        if (empty($account)) {
             throw new Exception('很抱歉、请登录后再操作！', 403);
         }
 
-        $token = substr($req->header('authorization'), 6);
-        if (!Token::has($token)) {
-            throw new Exception('很抱歉、登录超时请重新登录！', 403, $req->header());
-        }
-
         // 返回结果
-        return Token::get($token);
+        return $account['uid'];
     }
 
     /**
      * 登录账户
      */
-    public static function signin(array $account, string $token = null) : array
+    public static function signin($req, $account, $expire = null) : array
     {
-        // 获取配置
-        $config = Config::get('app.account.signin', []);
-
-        // 删除老令牌
-        Token::removeByUid($account['uid']);
-
-        // 产生令牌
-        $token = $token ?? self::encrypt($account['uid'], (string) time());
-
+        // 过期时间
+        $expire = $expire ?? $req->session->getConfig('expire');
+        // 保存数据
+        $req->session->set('account', $account, $expire);
         // 个人资料
-        $data = self::profile($account);
-
+        $account = self::profile($account);
         // 保存令牌
-        $data['token'] = $token;
-        Token::set($account['uid'], $token, $config['expire'] ?? null);
+        $account['token'] = $req->session->id();
 
         // 返回结果
-        return $data;
+        return $account;
     }
 
     /**

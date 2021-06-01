@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Common;
 
 use Minimal\Facades\Db;
-use Minimal\Facades\App;
 use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
 
@@ -28,7 +27,7 @@ class Admin
             // 获取数据库
             $config = Config::get('db', []);
             $config['pool'] = 1;
-            App::set('database', new \Minimal\Database\Manager($config, 1));
+            \Minimal\Facades\App::set('database', new \Minimal\Database\Manager($config, 1));
 
             // 账号密码
             $username = 'admin';
@@ -59,27 +58,43 @@ class Admin
     /**
      * 授权验证
      */
-    public static function verify($req, $res) : mixed
+    public static function verify($req) : mixed
     {
-        // 从会话中获取
-        $adminId = $req->session()->get('admin');
-
-        // 从Header中获取
-        if (empty($adminId)) {
-            if (empty($req->header('authorization')) || !str_starts_with($req->header('authorization'), 'Admin ')) {
-                throw new Exception('很抱歉、请登录后再操作！', 302, ['/signin.html']);
-            }
-
-            $token = substr($req->header('authorization'), 6);
-            if (!Token::has($token)) {
-                throw new Exception('很抱歉、登录超时请重新登录！', 302, ['/signin.html']);
-            }
-
-            $adminId = Token::get($token);
+        // 获取信息
+        $admin = $req->session->get('admin');
+        if (empty($admin)) {
+            throw new Exception('很抱歉、请登录后再操作！', 302, ['/signin.html']);
         }
 
         // 返回结果
-        return $adminId;
+        return $admin;
+    }
+
+    /**
+     * 登录授权
+     */
+    public static function signin($req, $res, $admin, $expire = null) : string
+    {
+        // 过期时间
+        $expire = $expire ?? $req->session->getConfig('expire');
+        // 保存数据
+        $req->session->set('admin', $admin, $expire);
+        // 输出令牌
+        $res->cookie($req->session->name(), $req->session->id(), time() + $expire);
+
+        // 返回结果
+        return $req->session->id();
+    }
+
+    /**
+     * 退出登录
+     */
+    public static function signout($req, $res) : void
+    {
+        // 清除会话
+        $req->session->clear();
+        // 清除令牌
+        $res->cookie($req->session->name(), 'deleted', time() - 3600);
     }
 
     /**

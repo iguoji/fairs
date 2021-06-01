@@ -9,6 +9,7 @@ return [
 
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
+        '/signout'                          =>  \App\Http\Rbac\Signout::class,
     ],
     // 用户接口
     '*'     =>  [

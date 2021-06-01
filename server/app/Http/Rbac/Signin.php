@@ -28,6 +28,7 @@ class Signin
                 return Admin::has($value);
             });
         $validate->string('password', '密码')->require()->length(6, 32);
+        $validate->bool('remember', '记住设备')->default(false);
         $validate->string('from', '来路页面')->default('/index.html');
 
         // 返回结果
@@ -53,24 +54,17 @@ class Signin
                     throw new Exception('很抱歉、密码不正确！');
                 }
                 // 保存会话
-                $req->session()->set('admin', $admin['id']);
+                Admin::signin($req, $res, $admin, $data['remember'] ? 60 * 60 * 24 * 7 : null);
                 // 前往来路页面
                 return $res->redirect($data['from']);
             }
-        } catch (\Error $th) {
-            // 保存异常
-            var_dump($th);
-            $exception = [$th->getCode(), $th->getMessage(), '$th->getData()'];
         } catch (\Throwable $th) {
             // 保存异常
-            var_dump($th);
-            $exception = [$th->getCode(), $th->getMessage(), $th->getData()];
+            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
         }
 
         // 返回结果
         return $res->html('admin/rbac/signin', [
-            'name'      =>  'iguoji',
-            'other'     =>  'iJing',
             'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
         ]);
     }

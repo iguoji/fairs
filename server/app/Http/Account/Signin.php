@@ -122,7 +122,7 @@ class Signin
             }
 
             // 执行登录
-            $account = Account::signin($account);
+            $account = Account::signin($req, $account, Config::get('app.account.signin.expire'));
 
             // 提交事务
             Db::commit();

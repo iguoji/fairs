@@ -16,7 +16,7 @@ class Index
     public function handle($req, $res) : mixed
     {
         // 权限验证
-        $aid = Admin::verify($req, $res);
+        $admin = Admin::verify($req);
 
         // 渲染页面
         return $res->html();
