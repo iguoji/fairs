@@ -13,6 +13,10 @@
 .navbar-menu > .nav-link {
     color: rgba(255,255,255,.7);
 }
+.navbar-menu.active > .nav-link {
+    text-decoration: none;
+    background-color: rgba(32,107,196,.06);
+}
 .navbar-menus > .navbar-menu.active > .nav-link {
     background-color: rgba(0,0,0,.1);
 }

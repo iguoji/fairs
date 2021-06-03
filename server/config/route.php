@@ -10,6 +10,11 @@ return [
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
         '/signout'                          =>  \App\Http\Rbac\Signout::class,
+        '/rbac/role'                        =>  \App\Http\Rbac\Role\Index::class,
+        '/rbac/role/read'                   =>  \App\Http\Rbac\Role\Read::class,
+        '/rbac/role/save'                   =>  \App\Http\Rbac\Role\Save::class,
+        '/rbac/role/edit'                   =>  \App\Http\Rbac\Role\Edit::class,
+        '/rbac/role/remove'                 =>  \App\Http\Rbac\Role\Remove::class,
     ],
     // 用户接口
     '*'     =>  [

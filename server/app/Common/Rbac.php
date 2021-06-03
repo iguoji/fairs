@@ -44,7 +44,7 @@ class Rbac
                 ]],
 
                 ['权限管理', '', $icon_goods, [
-                    ['角色', '/rbac/role/index.html', '', [
+                    ['角色', '/rbac/role.html', '', [
                         ['添加角色', '/rbac/role/save.html', '', [], 0],
                         ['编辑角色', '/rbac/role/edit.html', '', [], 0],
                         ['删除角色', '/rbac/role/remove.html', '', [], 0],
@@ -82,7 +82,7 @@ class Rbac
     /**
      * 初始化 - 批量添加权限节点
      */
-    public static function initRbacNodes(array $menus, int $parent, int $count) : int
+    public static function initRbacNodes(array $menus, string|int $parent, int $count) : int
     {
         $date = date('Y-m-d H:i:s');
         foreach ($menus as $menu) {
@@ -135,7 +135,7 @@ class Rbac
         // 选中节点列表
         $choose = [];
         // 找到当前页面对应节点的所有上级节点
-        $findParents = function($pid) use($nodes, &$choose){
+        $findParents = function($pid) use($nodes, &$choose, &$findParents){
             foreach ($nodes as $key => $node) {
                 if ($node['id'] == $pid) {
                     $choose[] = $node['id'];
@@ -199,7 +199,7 @@ class Rbac
     /**
      * 获取指定角色的所有权限
      */
-    public static function getRolePower(int $role) : array
+    public static function getRolePower(string|int $role) : array
     {
         return Db::table('rbac_relation', 'rr')
             ->join('rbac_node', 'rn', 'rn.id', 'rr.node')
@@ -231,7 +231,7 @@ class Rbac
     /**
      * 删除权限
      */
-    public static function delPower(int $id) : bool
+    public static function delPower(string|int $id) : bool
     {
         return Db::table('rbac_relation')->where('id', $id)->update([
             'deleted_at'    =>  date('Y-m-d H:i:s')
@@ -241,7 +241,7 @@ class Rbac
     /**
      * 删除指定角色的所有权限
      */
-    public static function delRolePower(int $role) : bool
+    public static function delRolePower(string|int $role) : bool
     {
         return Db::table('rbac_relation')->where('role', $role)->update([
             'deleted_at'    =>  date('Y-m-d H:i:s')
@@ -255,7 +255,7 @@ class Rbac
     /**
      * 获取指定角色
      */
-    public static function getRole(int $id) : array
+    public static function getRole(string|int $id) : array
     {
         return Db::table('rbac_role')->where('id', $id)->where('deleted_at')->first();
     }
@@ -263,9 +263,32 @@ class Rbac
     /**
      * 获取所有角色
      */
-    public static function getRoles(int $parent = 0) : array
+    public static function getRoles(string|int $parent = 0, bool $isTree = true, int $index = 0) : array
     {
-        return Db::table('rbac_role')->where('parent', $parent)->where('deleted_at')->all();
+        $result = [];
+
+        $roles = Db::table('rbac_role')->where('parent', $parent)->where('deleted_at')->orderByDesc('sort')->orderBy('id')->all();
+        foreach ($roles as $key => $role) {
+            $role['index'] = $index;
+            $childs = static::getRoles($role['id'], $isTree, $index + 1);
+            if ($isTree) {
+                $role['childs'] = $childs;
+                $result[] = $role;
+            } else {
+                $result[] = $role;
+                array_push($result, ...$childs);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 角色是否存在
+     */
+    public static function hasRole(string|int $id) : bool
+    {
+        return !empty(static::getRole($id));
     }
 
     /**
@@ -285,7 +308,7 @@ class Rbac
     /**
      * 修改角色
      */
-    public static function updRole(int $id, array $data) : bool
+    public static function updRole(string|int $id, array $data) : bool
     {
         // 补充时间
         if (!isset($data['updated_at'])) {
@@ -299,7 +322,7 @@ class Rbac
     /**
      * 删除角色
      */
-    public static function delRole(int $id) : bool
+    public static function delRole(string|int $id) : bool
     {
         return static::updRole($id, [
             'deleted_at'    =>  date('Y-m-d H:i:s')
@@ -313,7 +336,7 @@ class Rbac
     /**
      * 获取指定节点
      */
-    public static function getNode(int $id) : array
+    public static function getNode(string|int $id) : array
     {
         return Db::table('rbac_node')->where('id', $id)->where('deleted_at')->first();
     }
@@ -321,7 +344,7 @@ class Rbac
     /**
      * 获取所有节点
      */
-    public static function getNodes(int $parent = null) : array
+    public static function getNodes(string|int $parent = null) : array
     {
         $query = Db::table('rbac_node');
         if (!is_null($parent)) {
@@ -350,7 +373,7 @@ class Rbac
     /**
      * 修改节点
      */
-    public static function updNode(int $id, array $data) : bool
+    public static function updNode(string|int $id, array $data) : bool
     {
         // 补充时间
         if (!isset($data['updated_at'])) {
@@ -364,7 +387,7 @@ class Rbac
     /**
      * 删除节点
      */
-    public static function delNode(int $id) : bool
+    public static function delNode(string|int $id) : bool
     {
         return static::updNode($id, [
             'deleted_at'    =>  date('Y-m-d H:i:s')

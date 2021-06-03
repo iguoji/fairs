@@ -293,6 +293,7 @@ CREATE TABLE `admin` (
 DROP TABLE IF EXISTS `rbac_role`;
 CREATE TABLE `rbac_role` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+	`sort` INT DEFAULT 0 COMMENT '排列顺序',
 	`status` TINYINT DEFAULT 1 COMMENT '状态',
 	`parent` INT DEFAULT 0 COMMENT '上级角色',
 	`name` VARCHAR(50) COMMENT '名称',
