@@ -126,9 +126,9 @@ class Rbac
         // 获取节点
         $nodes = [];
         if (Admin::isSuper('admin')) {
-            $nodes = static::getNodes();
+            $nodes = static::getNodes(0, false);
         } else {
-            $nodes = static::getRolePower(0);
+            $nodes = static::getRolePowers(0);
         }
         // 当前页面
         $path = Request::path();
@@ -196,23 +196,9 @@ class Rbac
         return $html;
     }
 
-    /**
-     * 获取指定角色的所有权限
-     */
-    public static function getRolePower(string|int $role) : array
-    {
-        return Db::table('rbac_relation', 'rr')
-            ->join('rbac_node', 'rn', 'rn.id', 'rr.node')
-            ->where('rr.role', $role)
-            ->where('rr.deleted_at', null)
-            ->where('rn.deleted_at', null)
-            ->orderByDesc('rn.sort')
-            ->orderBy('rn.id')
-            ->all(
-                'rr.id',
-                'rn.type', 'rn.status', 'rn.parent', 'rn.sort', 'rn.name', 'rn.path', 'rn.icon'
-            );
-    }
+
+
+
 
     /**
      * 添加权限
@@ -229,21 +215,28 @@ class Rbac
     }
 
     /**
+     * 批量添加权限
+     */
+    public static function addPowers(array $data) : bool
+    {
+        // 补充时间
+        $data = array_map(function($item){
+            if (!isset($item['created_at'])) {
+                $item['created_at'] = date('Y-m-d H:i:s');
+            }
+            return $item;
+        }, $data);
+
+        // 添加数据
+        return Db::table('rbac_relation')->insert($data) > 0;
+    }
+
+    /**
      * 删除权限
      */
     public static function delPower(string|int $id) : bool
     {
         return Db::table('rbac_relation')->where('id', $id)->update([
-            'deleted_at'    =>  date('Y-m-d H:i:s')
-        ]) > 0;
-    }
-
-    /**
-     * 删除指定角色的所有权限
-     */
-    public static function delRolePower(string|int $role) : bool
-    {
-        return Db::table('rbac_relation')->where('role', $role)->update([
             'deleted_at'    =>  date('Y-m-d H:i:s')
         ]) > 0;
     }
@@ -265,9 +258,22 @@ class Rbac
      */
     public static function getRoles(string|int $parent = 0, bool $isTree = true, int $index = 0) : array
     {
+        // 最终结果
         $result = [];
 
-        $roles = Db::table('rbac_role')->where('parent', $parent)->where('deleted_at')->orderByDesc('sort')->orderBy('id')->all();
+        // 查询角色
+        $roles = Db::table('rbac_role', 'rr')
+            ->leftJoin('rbac_relation', 're', 're.role', 'rr.id')
+            ->where('rr.parent', $parent)
+            ->where('rr.deleted_at')
+            ->where('re.deleted_at')
+            ->groupBy('rr.id')
+            ->orderByDesc('rr.sort')
+            ->orderBy('rr.id')
+            ->all(
+                'rr.id', 'rr.sort', 'rr.status', 'rr.parent', 'rr.name',
+                Db::raw('COUNT(re.id) AS node_count')
+            );
         foreach ($roles as $key => $role) {
             $role['index'] = $index;
             $childs = static::getRoles($role['id'], $isTree, $index + 1);
@@ -280,6 +286,7 @@ class Rbac
             }
         }
 
+        // 返回结果
         return $result;
     }
 
@@ -329,6 +336,52 @@ class Rbac
         ]);
     }
 
+    /**
+     * 获取指定角色的所有权限
+     */
+    public static function getRolePowers(string|int $role) : array
+    {
+        return Db::table('rbac_relation', 'rr')
+            ->join('rbac_node', 'rn', 'rn.id', 'rr.node')
+            ->where('rr.role', $role)
+            ->where('rr.deleted_at', null)
+            ->where('rn.deleted_at', null)
+            ->orderByDesc('rn.sort')
+            ->orderBy('rn.id')
+            ->all(
+                'rr.id', 'rr.node',
+                'rn.parent', 'rn.sort', 'rn.name', 'rn.visible', 'rn.path', 'rn.icon'
+            );
+    }
+
+    /**
+     * 批量角色添加权限
+     */
+    public static function addRolePowers(string|int $role, array $nodes) : bool
+    {
+        // 补充角色
+        $data = [];
+        foreach ($nodes as $k => $v) {
+            $data[] = [
+                'role'  =>  $role,
+                'node'  =>  $v,
+            ];
+        }
+
+        // 添加数据
+        return static::addPowers($data);
+    }
+
+    /**
+     * 删除指定角色的所有权限
+     */
+    public static function delRolePower(string|int $role) : bool
+    {
+        return Db::table('rbac_relation')->where('role', $role)->update([
+            'deleted_at'    =>  date('Y-m-d H:i:s')
+        ]) > 0;
+    }
+
 
 
 
@@ -344,16 +397,37 @@ class Rbac
     /**
      * 获取所有节点
      */
-    public static function getNodes(string|int $parent = null) : array
+    public static function getNodes(string|int $parent = 0, bool $isTree = true, int $index = 0) : array
     {
-        $query = Db::table('rbac_node');
-        if (!is_null($parent)) {
-            $query->where('parent', $parent);
-        }
-        return $query->where('deleted_at')
+        $result = [];
+
+        $nodes = Db::table('rbac_node')
+            ->where('parent', $parent)
+            ->where('deleted_at')
             ->orderByDesc('sort')
             ->orderBy('id')
             ->all();
+        foreach ($nodes as $key => $node) {
+            $node['index'] = $index;
+            $childs = static::getNodes($node['id'], $isTree, $index + 1);
+            if ($isTree) {
+                $node['childs'] = $childs;
+                $result[] = $node;
+            } else {
+                $result[] = $node;
+                array_push($result, ...$childs);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 节点是否存在
+     */
+    public static function hasNode(string|int $id) : bool
+    {
+        return !empty(static::getNode($id));
     }
 
     /**

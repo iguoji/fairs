@@ -56,7 +56,7 @@
                                 {/if}
                             </td>
                             <td>0</td>
-                            <td>0</td>
+                            <td><a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn-goPower">{$role['node_count']}</a></td>
                             <td class="text-end">
                                 {if $role['status'] == 1}
                                     <a href="/rbac/role/edit.html?id={$role['id']}&status=0" class="btn btn-sm">冻结</a>
@@ -64,6 +64,7 @@
                                     <a href="/rbac/role/edit.html?id={$role['id']}&status=1" class="btn btn-sm btn-azure">解冻</a>
                                 {/if}
                                 <a href="#" data-id="{$role['id']}" class="btn btn-sm btn-goEdit">编辑</a>
+                                <a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn btn-sm btn-goPower">权限</a>
                                 <a href="/rbac/role/remove.html?id={$role['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
                             </td>
                         </tr>
@@ -71,7 +72,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="card-footer d-flex align-items-center">
+            <div class="card-footer">
                 {:pagination(100, 5)}
             </div>
         </div>
@@ -219,10 +220,45 @@
         </div>
     </div>
 </div>
+
+<div class="modal modal-blur fade" id="modal-power" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑角色<span class="name text-red"></span>权限</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table card-table table-vcenter text-nowrap datatable">
+                        <thead>
+                            <tr>
+                                <th class="w-1">
+                                    <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
+                                </th>
+                                <th>名称</th>
+                                <th>路径</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">取消</a>
+                <button type="submit" class="btn btn-primary ms-auto btn-power">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    更新权限
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {/block}
 {block name="script"}
 <script>
 var modalEdit = new bootstrap.Modal(document.getElementById('modal-edit'));
+var modalPower = new bootstrap.Modal(document.getElementById('modal-power'));
 $(function(){
     // 前往编辑
     $('.btn-goEdit').on('click', function(){
@@ -244,6 +280,72 @@ $(function(){
                 $('#modal-edit input[name=status-item][value=' + res.data.status + ']').prop('checked', true);
                 $('#modal-edit select[name=parent]').val(res.data.parent);
                 modalEdit.show();
+            }
+        });
+    });
+    // 前往权限
+    $('.btn-goPower').on('click', function(){
+        // 按钮禁用
+        $btn = $(this);
+        $btn.addClass('btn-loading').addClass('btn-vk').prop('disabled', true);
+        // 获取编号
+        window.eidt_power_role_id = $btn.data('id');
+        // 获取名称
+        window.eidt_power_role_name = $btn.data('name');
+        // 查询数据
+        ajax.post('/rbac/role/powers', {id: window.eidt_power_role_id}, function(res){
+            $btn.removeClass('btn-loading').removeClass('btn-vk').prop('disabled', false);
+            if (res.code != 200) {
+                toastr.error(res.message);
+            } else {
+                if (res && res.data && res.data.length) {
+                    let html = '';
+                    for (let i = 0; i < res.data.length; i++) {
+                        const ele = res.data[i];
+                        html += '<tr>';
+                            html += '<td>';
+                                html += '<label class="form-check mb-0">';
+                                    html += '<input class="form-check-input align-middle checkBoxItem" type="checkbox" aria-label="Select invoice" value="' + ele.id + '" data-parent="' + ele.parent + '"' + (ele.checked ? ' checked="true"' : '') + ' />';
+                                    html += '<span class="form-check-label text-muted">' + ele.id + '</span>';
+                                html += '</label>';
+                            html += '</td>';
+                            html += '<td>'
+                                html += '<span class="opacity-75 me-1" style="margin-left: ' + (ele.index * 1.5) + 'rem;">' + ele.icon + '</span>';
+                                html += '<span>' + ele.name + '</span>';
+                            html += '</td>';
+                            html += '<td>' + ele.path + '</td>';
+                        html += '</tr>';
+                    }
+                    $('#modal-power tbody').html(html);
+                }
+                $('#modal-power .name').text(window.eidt_power_role_name);
+                modalPower.show();
+            }
+        });
+    });
+    // 编辑权限
+    $('.btn-power').on('click', function(){
+        // 获取角色
+        var role = window.eidt_power_role_id;
+        if (!role) {
+            toastr.error('很抱歉、角色编号丢失了！');
+            return false;
+        }
+        // 获取节点
+        var nodes = [];
+        $('#modal-power table .checkBoxItem:checked').each(function(idx, ele){
+            nodes.push($(ele).val());
+        });
+        // 按钮禁用
+        $btn = $(this);
+        $btn.addClass('btn-loading').prop('disabled', true);
+        // 更新数据
+        ajax.post('/rbac/relation/edit', {role: role, nodes: nodes}, function(res){
+            $btn.removeClass('btn-loading').prop('disabled', false);
+            if (res.code != 200) {
+                toastr.error(res.message);
+            } else {
+                window.location.reload();
             }
         });
     });

@@ -15,6 +15,8 @@ return [
         '/rbac/role/save'                   =>  \App\Http\Rbac\Role\Save::class,
         '/rbac/role/edit'                   =>  \App\Http\Rbac\Role\Edit::class,
         '/rbac/role/remove'                 =>  \App\Http\Rbac\Role\Remove::class,
+        '/rbac/role/powers'                 =>  \App\Http\Rbac\Role\Powers::class,
+        '/rbac/relation/edit'               =>  \App\Http\Rbac\Relation\Edit::class,
     ],
     // 用户接口
     '*'     =>  [

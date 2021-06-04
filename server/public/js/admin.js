@@ -30,9 +30,21 @@ $(function(){
         $(this).parents('.navbar-menu').toggleClass('active');
     });
     // 全选反选
-    $('.checkBoxChoose').on('click', function(){
+    $('table').on('click', '.checkBoxChoose', function(){
         var checked = $(this).prop('checked');
         $(this).parents('table').find('.checkBoxItem').prop('checked', checked);
+    });
+    $('table').on('click', '.checkBoxItem', function(){
+        var id = $(this).val();
+        var checked = $(this).prop('checked');
+        var $table = $(this) .parents('table');
+        var fn = function(id){
+            $table.find('.checkBoxItem[data-parent=' + id + ']').each(function(idx, ele){
+                $(ele).prop('checked', checked);
+                fn($(ele).val());
+            });
+        }
+        fn(id);
     });
     // 单选框
     $('.radio-item').on('change', function(){

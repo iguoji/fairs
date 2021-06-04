@@ -30,6 +30,8 @@ class Index
      */
     public function handle($req, $res) : mixed
     {
+        // 最终结果
+        $result = [];
         // 异常错误
         $exception = [];
         // 角色列表
@@ -38,7 +40,9 @@ class Index
             // 权限验证
             $admin = Admin::verify($req);
             // 角色列表
-            $roles = Rbac::getRoles(0, false);
+            $result = Rbac::getRoles(0, false);
+
+            var_dump(\Minimal\Facades\Db::lastSql());
         } catch (\Throwable $th) {
             // 保存异常
             $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
@@ -46,7 +50,7 @@ class Index
 
         // 返回结果
         return $res->html('admin/rbac/role/index', [
-            'roles'     =>  $roles,
+            'roles'     =>  $result,
             'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
         ]);
     }
