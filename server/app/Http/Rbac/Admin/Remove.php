@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Rbac\Role;
+namespace App\Http\Rbac\Admin;
 
 use App\Common\Rbac;
 use App\Common\Admin;
@@ -9,9 +9,9 @@ use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 角色列表
+ * 删除管理员
  */
-class Index
+class Remove
 {
     /**
      * 参数验证
@@ -20,6 +20,11 @@ class Index
     {
         // 验证对象
         $validate = new Validate($params);
+
+        // 管理员编号
+        $validate->int('id', '管理员编号')->require()->call(function($value){
+            return Admin::hasById($value);
+        });
 
         // 返回结果
         return $validate->check();
@@ -30,26 +35,21 @@ class Index
      */
     public function handle($req, $res) : mixed
     {
-        // 最终结果
-        $result = [];
         // 异常错误
         $exception = [];
-        // 角色列表
-        $rules = [];
         try {
             // 权限验证
             $admin = Admin::verify($req);
-            // 角色列表
-            $result = Rbac::getRoles(0, false);
+            // 参数验证
+            $data = self::verify($req->all());
+            // 执行操作
+            Admin::del($data['id']);
         } catch (\Throwable $th) {
             // 保存异常
             $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
         }
 
         // 返回结果
-        return $res->html('admin/rbac/role/index', [
-            'roles'     =>  $result,
-            'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
-        ]);
+        return $res->redirect('/rbac/admin.html');
     }
 }

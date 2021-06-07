@@ -1,0 +1,77 @@
+{extend name="layout/admin" }
+{block name="title"}管理员日志{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Logs</div>
+            <h2 class="page-title">日志管理</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">日志列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>账号</th>
+                            <th>路径</th>
+                            <th>请求</th>
+                            <th>IP</th>
+                            <th>时间</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $logs as $key => $log}
+                        <tr>
+                            <td>{$log['username']}</td>
+                            <td>{$log['path']}</td>
+                            <td>{$log['method']}</td>
+                            <td>{$log['ip']}</td>
+                            <td>{$log['created_at']}</td>
+                            <th>
+                                <a href="#" data-ua="{$log['ua']}" data-param="{$log['param']}" class="btn btn-sm btn-detail">详情</a>
+                            </th>
+                        </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                {:pagination($total, $size)}
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+$(function(){
+    // 详情预览
+    $('.btn-detail').on('click', function(){
+        console.log($(this).data('ua'));
+        var param = $(this).data('param');
+        if (param && param.length > 5) {
+            param = JSON.parse(param);
+        }
+        console.log(param);
+    });
+    // 前往密码
+    $('.btn-goPassword').on('click', function(){
+        $('#modal-password input[name=id]').val($(this).data('id'));
+        modalPassword.show();
+    });
+});
+</script>
+{/block}

@@ -21,8 +21,12 @@ var modal = {
 $(function(){
     // 错误提示
     if (exception.length > 5) {
-        exception = JSON.parse(exception);
-        toastr.error(exception[1]);
+        errorinfo = JSON.parse(exception);
+        if (errorinfo[2].length) {
+            toastr.error('[' + errorinfo[2][2] + ']: ' + errorinfo[2][1], errorinfo[1]);
+        } else {
+            toastr.error(errorinfo[1]);
+        }
     }
     // 菜单折叠
     $('.navbar-menu').on('click', '.dropdown', function(){

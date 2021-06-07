@@ -49,12 +49,12 @@ class Rbac
                         ['编辑角色', '/rbac/role/edit.html', '', [], 0],
                         ['删除角色', '/rbac/role/remove.html', '', [], 0],
                     ]],
-                    ['管理员', '/rbac/admin/index.html', '', [
+                    ['管理员', '/rbac/admin.html', '', [
                         ['添加管理员', '/rbac/admin/save.html', '', [], 0],
                         ['编辑管理员', '/rbac/admin/edit.html', '', [], 0],
                         ['删除管理员', '/rbac/admin/remove.html', '', [], 0],
                     ]],
-                    ['操作日志', '/rbac/log.html'],
+                    ['操作日志', '/rbac/admin/logs.html'],
                 ]],
                 ['系统管理', '', $icon_goods, [
                 ]],

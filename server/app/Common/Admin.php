@@ -66,8 +66,46 @@ class Admin
             throw new Exception('很抱歉、请登录后再操作！', 302, ['/signin.html']);
         }
 
+        // 日志记录
+        static::log($req, $admin['id']);
+
         // 返回结果
         return $admin;
+    }
+
+    /**
+     * 记录日志
+     */
+    public static function log($req, $adminId) : bool
+    {
+        return Db::table('admin_log')->insert([
+            'admin'     =>  $adminId,
+            'path'      =>  $req->path(),
+            'method'    =>  $req->method(),
+            'param'     =>  json_encode($req->all()),
+            'ip'        =>  $req->header('x-real-ip'),
+            'ua'        =>  $req->header('user-agent'),
+            'created_at'=>  date('Y-m-d H:i:s'),
+        ]) > 0;
+    }
+
+    /**
+     * 日志列表
+     */
+    public static function logs(int $pageNo, int $size = 20) : array
+    {
+        // 数据总数
+        $total = Db::table('admin_log', 'al')->count('id');
+        // 查询数据
+        $data = Db::table('admin_log', 'al')
+            ->join('admin', 'a', 'a.id', 'al.admin')
+            ->page($pageNo, $size)
+            ->orderByDesc('al.id')
+            ->all(
+                'al.*', 'a.username', 'a.nickname'
+            );
+        // 返回结果
+        return [$data, $total];
     }
 
     /**
@@ -106,11 +144,27 @@ class Admin
     }
 
     /**
+     * 查询管理员 - 根据编号
+     */
+    public static function getById(string|int $id) : array
+    {
+        return Db::table('admin')->where('id', $id)->where('deleted_at', null)->first();
+    }
+
+    /**
      * 是否存在管理员
      */
     public static function has(string $username) : bool
     {
         return !empty(static::get($username));
+    }
+
+    /**
+     * 是否存在管理员 - 根据编号
+     */
+    public static function hasById(string|int $id) : bool
+    {
+        return !empty(static::getById($id));
     }
 
     /**
@@ -130,7 +184,14 @@ class Admin
      */
     public static function all() : array
     {
-        return Db::table('admin')->where('deleted_at', null)->all();
+        return Db::table('admin', 'a')
+            ->leftJoin('rbac_role', 'rr', 'rr.id', 'a.role')
+            ->where('a.deleted_at', null)
+            ->where('rr.deleted_at', null)
+            ->all(
+                'a.id', 'a.type', 'a.status', 'a.role', 'a.username', 'a.nickname',
+                ['rr.name' => 'roleName'],
+            );
     }
 
     /**
@@ -154,7 +215,7 @@ class Admin
     /**
      * 修改管理员
      */
-    public static function upd(string $username, array $data) : bool
+    public static function upd(string|int $id, array $data) : bool
     {
         // 登录密码
         if (isset($data['password'])) {
@@ -166,15 +227,15 @@ class Admin
         }
 
         // 修改数据
-        return Db::table('admin')->where('username', $username)->update($data) > 0;
+        return Db::table('admin')->where('id', $id)->update($data) > 0;
     }
 
     /**
      * 删除管理员
      */
-    public static function del(string $username) : bool
+    public static function del(string|int $id) : bool
     {
-        return Db::table('admin')->where('username', $username)->update([
+        return Db::table('admin')->where('id', $id)->update([
             'deleted_at'    =>  date('Y-m-d H:i:s')
         ]) > 0;
     }

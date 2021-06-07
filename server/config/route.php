@@ -17,6 +17,12 @@ return [
         '/rbac/role/remove'                 =>  \App\Http\Rbac\Role\Remove::class,
         '/rbac/role/powers'                 =>  \App\Http\Rbac\Role\Powers::class,
         '/rbac/relation/edit'               =>  \App\Http\Rbac\Relation\Edit::class,
+        '/rbac/admin'                       =>  \App\Http\Rbac\Admin\Index::class,
+        '/rbac/admin/read'                  =>  \App\Http\Rbac\Admin\Read::class,
+        '/rbac/admin/save'                  =>  \App\Http\Rbac\Admin\Save::class,
+        '/rbac/admin/edit'                  =>  \App\Http\Rbac\Admin\Edit::class,
+        '/rbac/admin/remove'                =>  \App\Http\Rbac\Admin\Remove::class,
+        '/rbac/admin/logs'                  =>  \App\Http\Rbac\Admin\Logs::class,
     ],
     // 用户接口
     '*'     =>  [

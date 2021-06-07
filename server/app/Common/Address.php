@@ -46,7 +46,6 @@ class Address
                 'aa.address',
             );
 
-        var_dump(Db::lastSql());
         return $result;
     }
 
