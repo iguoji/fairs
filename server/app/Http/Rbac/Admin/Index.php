@@ -37,9 +37,11 @@ class Index
         $exception = [];
         // 角色列表
         $rules = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
         try {
-            // 权限验证
-            $admin = Admin::verify($req);
             // 管理员列表
             $admins = Admin::all();
             // 角色列表

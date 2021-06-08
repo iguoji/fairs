@@ -36,9 +36,11 @@ class Index
         $exception = [];
         // 角色列表
         $rules = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
         try {
-            // 权限验证
-            $admin = Admin::verify($req);
             // 角色列表
             $result = Rbac::getRoles(0, false);
         } catch (\Throwable $th) {

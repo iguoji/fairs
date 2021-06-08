@@ -23,7 +23,7 @@ class Save
 
         // 细节参数
         $validate->string('username', '登录账号')->require()->length(5, 32)->call(function($value){
-            return !Admin::has($value);
+            return !Admin::has($value, 'username');
         }, message: '很抱歉、该账号已存在！');
         $validate->string('password', '登录密码')->require()->length(6, 32);
         $validate->int('role', '所属角色')->require()->call(function($value){
@@ -43,9 +43,11 @@ class Save
     {
         // 异常错误
         $exception = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
         try {
-            // 权限验证
-            $admin = Admin::verify($req);
             // 参数验证
             $data = self::verify($req->all());
             // 添加账号

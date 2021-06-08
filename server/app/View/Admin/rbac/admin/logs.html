@@ -35,7 +35,7 @@
                     <tbody>
                         {foreach $logs as $key => $log}
                         <tr>
-                            <td>{$log['username']}</td>
+                            <td>{$log['username']}{notempty name="$log['nickname']"}<span class="small text-red">({$log['nickname']})</span>{/notempty}</td>
                             <td>{$log['path']}</td>
                             <td>{$log['method']}</td>
                             <td>{$log['ip']}</td>

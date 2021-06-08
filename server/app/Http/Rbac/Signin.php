@@ -25,7 +25,7 @@ class Signin
             ->require()->length(5, 64)
             ->alphaDash()
             ->call(function($value){
-                return Admin::has($value);
+                return Admin::has($value, 'username');
             });
         $validate->string('password', '密码')->require()->length(6, 32);
         $validate->bool('remember', '记住设备')->default(false);
@@ -48,13 +48,23 @@ class Signin
                 // 参数验证
                 $data = self::verify($req->all());
                 // 获取账号
-                $admin = Admin::get($data['username']);
+                $admin = Admin::get($data['username'], 'username');
                 // 对比密码
                 if ($admin['password'] != Account::encrypt($data['password'])) {
                     throw new Exception('很抱歉、密码不正确！');
                 }
+                // 已被冻结
+                if (empty($admin['status'])) {
+                    throw new Exception('很抱歉、该账号已被冻结！');
+                }
                 // 保存会话
                 Admin::signin($req, $res, $admin, $data['remember'] ? 60 * 60 * 24 * 7 : null);
+                // 最后登录
+                Admin::upd($admin['id'], [
+                    'logined_at'    =>  date('Y-m-d H:i:s')
+                ]);
+                // 记录日志
+                Admin::log($req, $admin['id']);
                 // 前往来路页面
                 return $res->redirect($data['from']);
             }

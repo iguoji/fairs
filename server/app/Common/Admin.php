@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace App\Common;
 
 use Minimal\Facades\Db;
+use Minimal\Facades\Log;
+use Minimal\Facades\Cache;
 use Minimal\Facades\Config;
+use Minimal\Facades\Request;
 use Minimal\Foundation\Exception;
 
 /**
@@ -34,17 +37,18 @@ class Admin
             $password = '123123';
 
             // 是否存在
-            if (self::get($username)) {
+            $admin = static::get($username, 'username');
+            if (!empty($admin)) {
                 // 修改密码
-                if (!self::upd($username, [
+                if (!static::upd($admin['id'], [
                     'password'  =>  $password,
                 ])) {
                     throw new Exception('很抱歉、系统管理员密码重置失败！');
                 }
             } else {
                 // 增加账号
-                if (!self::add([
-                    'type'      =>  self::TYPE_SUPER,
+                if (!static::add([
+                    'type'      =>  static::TYPE_SUPER,
                     'username'  =>  $username,
                     'password'  =>  $password,
                     'nickname'  =>  $username,
@@ -66,11 +70,51 @@ class Admin
             throw new Exception('很抱歉、请登录后再操作！', 302, ['/signin.html']);
         }
 
+        // 当前页面
+        $path = $req->path();
+        // 判断权限
+        if (!static::check($path)) {
+            throw new Exception('很抱歉、您没有权限执行该操作！', 302, ['/signout.html']);
+        }
+
         // 日志记录
         static::log($req, $admin['id']);
 
         // 返回结果
         return $admin;
+    }
+
+    /**
+     * 检查角色是否拥有该路径的权限
+     */
+    public static function check(string ...$paths) : bool
+    {
+        // 获取会话
+        $admin = Request::session('admin');
+        if (empty($admin)) {
+            return false;
+        }
+        // 超级管理员
+        if (Admin::isSuper($admin['id'])) {
+            return true;
+        }
+        // 获取角色
+        $role = $admin['role'];
+        if (is_null($role)) {
+            return false;
+        }
+        // 检查路径
+        $nodes = Rbac::getRolePowers($role);
+        $nodePaths = array_column($nodes, 'path');
+        foreach ($paths as $key => $path) {
+            $path = str_ends_with($path, '.html') ? $path : $path . '.html';
+            if (!in_array($path, $nodePaths)) {
+                return false;
+            }
+        }
+
+        // 返回结果
+        return true;
     }
 
     /**
@@ -117,11 +161,17 @@ class Admin
         $expire = $expire ?? $req->session->getConfig('expire');
         // 保存数据
         $req->session->set('admin', $admin, $expire);
+        // SessionId
+        $sessionId = $req->session->id();
         // 输出令牌
-        $res->cookie($req->session->name(), $req->session->id(), time() + $expire);
+        $res->cookie($req->session->name(), $sessionId, time() + $expire);
+        // 清理老的SessionId
+        static::getout($req, $admin['id'], $sessionId);
+        // 记录SessionId
+        Cache::hSet('session:admin', (string) $admin['id'], $sessionId);
 
         // 返回结果
-        return $req->session->id();
+        return $sessionId;
     }
 
     /**
@@ -136,43 +186,48 @@ class Admin
     }
 
     /**
-     * 查询管理员
+     * 针对某个账号执行退出
      */
-    public static function get(string $username) : array
+    public static function getout($req, $adminId, $sessionId = null) : void
     {
-        return Db::table('admin')->where('username', $username)->where('deleted_at', null)->first();
+        $oldSessionId = Cache::hGet('session:admin', (string) $adminId);
+        if (!empty($oldSessionId)) {
+            if (empty($sessionId) || $oldSessionId != $sessionId) {
+                $req->session->clear($oldSessionId);
+            }
+        }
     }
 
     /**
-     * 查询管理员 - 根据编号
+     * 查询管理员
      */
-    public static function getById(string|int $id) : array
+    public static function get(string|int $id, string $field = 'id') : array
     {
-        return Db::table('admin')->where('id', $id)->where('deleted_at', null)->first();
+        return Db::table('admin', 'a')
+            ->leftJoin('rbac_role', 'rr', 'rr.id', 'a.role')
+            ->where('a.' . $field, $id)
+            ->where('a.deleted_at', null)
+            ->where('rr.deleted_at', null)
+            ->first(
+                'a.*',
+                ['rr.name' => 'roleName']
+            );
     }
 
     /**
      * 是否存在管理员
      */
-    public static function has(string $username) : bool
+    public static function has(string|int $id, string $field = 'id') : bool
     {
-        return !empty(static::get($username));
-    }
-
-    /**
-     * 是否存在管理员 - 根据编号
-     */
-    public static function hasById(string|int $id) : bool
-    {
-        return !empty(static::getById($id));
+        return !empty(static::get($id, $field));
     }
 
     /**
      * 是否为超级管理员
      */
-    public static function isSuper(string $username) : bool
+    public static function isSuper(string|int $id, string $field = 'id') : bool
     {
-        $admin = static::get($username);
+        $admin = static::get($id, $field);
         if (!empty($admin) && $admin['type'] == static::TYPE_SUPER) {
             return true;
         }
@@ -189,7 +244,7 @@ class Admin
             ->where('a.deleted_at', null)
             ->where('rr.deleted_at', null)
             ->all(
-                'a.id', 'a.type', 'a.status', 'a.role', 'a.username', 'a.nickname',
+                'a.*',
                 ['rr.name' => 'roleName'],
             );
     }

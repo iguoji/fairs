@@ -123,12 +123,17 @@ class Rbac
      */
     public static function fetch() : string
     {
+        // 获取管理员
+        $admin = Request::session('admin');
+        if (empty($admin)) {
+            return '';
+        }
         // 获取节点
         $nodes = [];
-        if (Admin::isSuper('admin')) {
+        if (Admin::isSuper($admin['id'])) {
             $nodes = static::getNodes(0, false);
         } else {
-            $nodes = static::getRolePowers(0);
+            $nodes = static::getRolePowers($admin['role']);
         }
         // 当前页面
         $path = Request::path();
@@ -153,8 +158,8 @@ class Rbac
 
         // 循环处理
         $html = '';
-        foreach ($nodes as $key => $node) {
-            if (0 == $node['parent'] && 1 == $node['visible']) {
+        foreach ($nodes as $key => &$node) {
+            if (1 == $node['visible']) {
                 $html .= static::fetchNodes($node, $nodes, $choose);
             }
         }
@@ -165,8 +170,13 @@ class Rbac
     /**
      * 渲染节点
      */
-    public static function fetchNodes(array $node, array $nodes, array $choose) : string
+    public static function fetchNodes(array &$node, array &$nodes, array $choose) : string
     {
+        // 当前节点已经添加
+        if (isset($node['added'])) {
+            return '';
+        }
+
         // 最终结果
         $html = '';
 
@@ -174,7 +184,7 @@ class Rbac
         $html .= '<div class="navbar-menu' . (in_array($node['id'], $choose) ? ' active' : '') . '">';
             // 子节点
             $subHtml = '';
-            foreach ($nodes as $key => $subNode) {
+            foreach ($nodes as $key => &$subNode) {
                 if ($subNode['parent'] == $node['id'] && 1 == $subNode['visible']) {
                     $subHtml .= static::fetchNodes($subNode, $nodes, $choose);
                 }
@@ -186,6 +196,8 @@ class Rbac
                 $html .= '</span>';
                 $html .= '<span class="nav-link-title">' . $node['name'] . '</span>';
             $html .= '</a>';
+            // 标记已添加
+            $node['added'] = true;
             // 添加子节点
             if (!empty($subHtml)) {
                 $html .= $subHtml;
@@ -261,7 +273,7 @@ class Rbac
         // 最终结果
         $result = [];
 
-        // 查询角色
+        // 列表角色
         $roles = Db::table('rbac_role', 'rr')
             ->leftJoin('rbac_relation', 're', 're.role', 'rr.id')
             ->where('rr.parent', $parent)
@@ -272,17 +284,29 @@ class Rbac
             ->orderBy('rr.id')
             ->all(
                 'rr.id', 'rr.sort', 'rr.status', 'rr.parent', 'rr.name',
-                Db::raw('COUNT(re.id) AS node_count')
+                Db::raw('COUNT(re.role) AS nodeCount'),
             );
-        foreach ($roles as $key => $role) {
-            $role['index'] = $index;
-            $childs = static::getRoles($role['id'], $isTree, $index + 1);
-            if ($isTree) {
-                $role['childs'] = $childs;
-                $result[] = $role;
-            } else {
-                $result[] = $role;
-                array_push($result, ...$childs);
+        if (!empty($roles)) {
+            // 角色编号
+            $roleIds = array_column($roles, 'id');
+            // 角色的管理员数量
+            $roleAdmins = Db::table('admin')
+                ->where('role', 'in', $roleIds)
+                ->groupBy('role')
+                ->all('role', Db::raw('COUNT(id) AS count'));
+            $roleMap = array_column($roleAdmins, 'count', 'role');
+            // 循环角色
+            foreach ($roles as $key => $role) {
+                $role['index'] = $index;
+                $role['adminCount'] = $roleMap[$role['id']] ?? 0;
+                $childs = static::getRoles($role['id'], $isTree, $index + 1);
+                if ($isTree) {
+                    $role['childs'] = $childs;
+                    $result[] = $role;
+                } else {
+                    $result[] = $role;
+                    array_push($result, ...$childs);
+                }
             }
         }
 
@@ -344,14 +368,11 @@ class Rbac
         return Db::table('rbac_relation', 'rr')
             ->join('rbac_node', 'rn', 'rn.id', 'rr.node')
             ->where('rr.role', $role)
-            ->where('rr.deleted_at', null)
-            ->where('rn.deleted_at', null)
+            ->where('rr.deleted_at')
+            ->where('rn.deleted_at')
             ->orderByDesc('rn.sort')
             ->orderBy('rn.id')
-            ->all(
-                'rr.id', 'rr.node',
-                'rn.parent', 'rn.sort', 'rn.name', 'rn.visible', 'rn.path', 'rn.icon'
-            );
+            ->all('rn.*');
     }
 
     /**

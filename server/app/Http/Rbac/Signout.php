@@ -24,9 +24,11 @@ class Signout
     {
         // 异常错误
         $exception = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
         try {
-            // 权限验证
-            $admin = Admin::verify($req);
             // 退出登录
             Admin::signout($req, $res);
         } catch (\Throwable $th) {

@@ -23,7 +23,7 @@ class Read
 
         // 管理员编号
         $validate->int('id', '管理员编号')->require()->call(function($value){
-            return Admin::hasById($value);
+            return Admin::has($value);
         });
 
         // 返回结果
@@ -43,7 +43,7 @@ class Read
         // 参数验证
         $data = self::verify($req->all());
         // 查询数据
-        $result = Admin::getById($data['id']);
+        $result = Admin::get($data['id']);
 
         // 返回结果
         return $result;

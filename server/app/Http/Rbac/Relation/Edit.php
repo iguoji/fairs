@@ -44,9 +44,9 @@ class Edit
      */
     public function handle($req, $res) : mixed
     {
-
         // 权限验证
         $admin = Admin::verify($req);
+
         // 参数验证
         $data = self::verify($req->all());
         try {

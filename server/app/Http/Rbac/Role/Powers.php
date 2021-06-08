@@ -45,7 +45,7 @@ class Powers
 
         // 先查询角色拥有的权限
         $roleNodes = Rbac::getRolePowers($data['id']);
-        $roleNodeIds = array_column($roleNodes, 'node');
+        $roleNodeIds = array_column($roleNodes, 'id');
         // 再查询所有节点
         $nodes = Rbac::getNodes(0, false);
         foreach ($nodes as $key => $value) {

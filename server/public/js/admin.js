@@ -5,17 +5,19 @@ var ajax = {
     }
 }
 // 确认框
-var modalConfirm = new bootstrap.Modal(document.getElementById('modal-confirm'));
-var modal = {
-    confirmCallback: function(){
-        modalConfirm.hide();
-    },
-    confirm: function(callback) {
-        modal.confirmCallback = function(){
-            callback();
+if (window.bootstrap) {
+    var modalConfirm = new bootstrap.Modal(document.getElementById('modal-confirm'));
+    var modal = {
+        confirmCallback: function(){
             modalConfirm.hide();
-        };
-        modalConfirm.show();
+        },
+        confirm: function(callback) {
+            modal.confirmCallback = function(){
+                callback();
+                modalConfirm.hide();
+            };
+            modalConfirm.show();
+        }
     }
 }
 $(function(){

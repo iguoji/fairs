@@ -9,10 +9,12 @@
         </div>
         <div class="col-auto ms-auto">
             <div class="btn-list">
+                {if true === :\App\Common\Admin::check('/rbac/admin/save.html') }
                 <a href="#" class="btn btn-primary d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-save">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                     创建新的管理员
                 </a>
+                {/if}
             </div>
         </div>
     </div>
@@ -28,9 +30,6 @@
                 <table class="table card-table table-vcenter text-nowrap datatable">
                     <thead>
                         <tr>
-                            <th class="w-1">
-                                <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
-                            </th>
                             <th>账号</th>
                             <th>状态</th>
                             <th>角色</th>
@@ -42,12 +41,12 @@
                         {foreach $admins as $key => $admin}
                         <tr>
                             <td>
-                                <label class="form-check mb-0">
-                                    <input class="form-check-input align-middle checkBoxItem" type="checkbox" aria-label="Select invoice">
-                                    <span class="form-check-label text-muted">{$admin['id']}</span>
-                                </label>
+                                {if true === :\App\Common\Admin::check('/rbac/admin/read.html', '/rbac/admin/edit.html') }
+                                    <a href="#" class="text-reset btn-goEdit" data-id="{$admin['id']}">{$admin['username']}{notempty name="$admin['nickname']"}<span class="small text-red">({$admin['nickname']})</span>{/notempty}</a>
+                                {else /}
+                                    <a href="#" class="text-reset" data-id="{$admin['id']}">{$admin['username']}{notempty name="$admin['nickname']"}<span class="small text-red">({$admin['nickname']})</span>{/notempty}</a>
+                                {/if}
                             </td>
-                            <td><a href="#" class="text-reset btn-goEdit" data-id="{$admin['id']}">{$admin['username']}{notempty name="$admin['nickname']"}<span class="small text-red">({$admin['nickname']})</span>{/notempty}</a></td>
                             <td>
                                 {if $admin['status'] == 1}
                                     <span class="badge bg-success me-1"></span> 正常
@@ -56,16 +55,22 @@
                                 {/if}
                             </td>
                             <td>{$admin['roleName']|default="-"}</td>
-                            <td>-</td>
+                            <td>{$admin['logined_at']|default="-"}</td>
                             <td class="text-end">
-                                {if $admin['status'] == 1}
-                                    <a href="/rbac/admin/edit.html?id={$admin['id']}&status=0" class="btn btn-sm">冻结</a>
-                                {else /}
-                                    <a href="/rbac/admin/edit.html?id={$admin['id']}&status=1" class="btn btn-sm btn-azure">解冻</a>
+                                {if true === :\App\Common\Admin::check('/rbac/admin/edit.html') }
+                                    {if $admin['status'] == 1}
+                                        <a href="/rbac/admin/edit.html?id={$admin['id']}&status=0" class="btn btn-sm">冻结</a>
+                                    {else /}
+                                        <a href="/rbac/admin/edit.html?id={$admin['id']}&status=1" class="btn btn-sm btn-azure">解冻</a>
+                                    {/if}
+                                    <a href="#" data-id="{$admin['id']}" class="btn btn-sm btn-goPassword">密码</a>
+                                    {if true === :\App\Common\Admin::check('/rbac/admin/read.html') }
+                                        <a href="#" data-id="{$admin['id']}" class="btn btn-sm btn-goEdit">编辑</a>
+                                    {/if}
                                 {/if}
-                                <a href="#" data-id="{$admin['id']}" class="btn btn-sm btn-goPassword">密码</a>
-                                <a href="#" data-id="{$admin['id']}" class="btn btn-sm btn-goEdit">编辑</a>
-                                <a href="/rbac/admin/remove.html?id={$admin['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
+                                {if true === :\App\Common\Admin::check('/rbac/admin/remove.html') }
+                                    <a href="/rbac/admin/remove.html?id={$admin['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
+                                {/if}
                             </td>
                         </tr>
                         {/foreach}
@@ -128,7 +133,7 @@
                                     <span class="me-3"><span class="form-selectgroup-check"></span></span>
                                     <span class="form-selectgroup-label-content">
                                         <span class="form-selectgroup-title strong mb-1">冻结</span>
-                                        <span class="d-block text-muted">该账号的所有功能将被暂时冻结</span>
+                                        <span class="d-block text-muted">该账号的所有功能将暂时无法使用</span>
                                     </span>
                                 </span>
                             </label>
@@ -197,7 +202,7 @@
                                     <span class="me-3"><span class="form-selectgroup-check"></span></span>
                                     <span class="form-selectgroup-label-content">
                                         <span class="form-selectgroup-title strong mb-1">冻结</span>
-                                        <span class="d-block text-muted">该角色所有关联节点将被暂时冻结</span>
+                                        <span class="d-block text-muted">该账号的所有功能将暂时无法使用</span>
                                     </span>
                                 </span>
                             </label>

@@ -9,10 +9,12 @@
         </div>
         <div class="col-auto ms-auto">
             <div class="btn-list">
+                {if true === :\App\Common\Admin::check('/rbac/role/save.html') }
                 <a href="#" class="btn btn-primary d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-save">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                     创建新的角色
                 </a>
+                {/if}
             </div>
         </div>
     </div>
@@ -47,7 +49,13 @@
                                     <span class="form-check-label text-muted">{$role['id']}</span>
                                 </label>
                             </td>
-                            <td><a href="#" class="text-reset btn-goEdit" style="margin-left: {$role['index']*1.5}rem;" data-id="{$role['id']}">{$role['name']}</a></td>
+                            <td>
+                                {if true === :\App\Common\Admin::check('/rbac/role/read.html', '/rbac/role/edit.html') }
+                                    <a href="#" class="text-reset btn-goEdit" style="margin-left: {$role['index']*1.5}rem;" data-id="{$role['id']}">{$role['name']}</a>
+                                {else /}
+                                    <a href="#" class="text-reset" style="margin-left: {$role['index']*1.5}rem;" data-id="{$role['id']}">{$role['name']}</a>
+                                {/if}
+                            </td>
                             <td>
                                 {if $role['status'] == 1}
                                     <span class="badge bg-success me-1"></span> 正常
@@ -55,25 +63,36 @@
                                     <span class="badge bg-warning me-1"></span> 冻结
                                 {/if}
                             </td>
-                            <td>0</td>
-                            <td><a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn-goPower">{$role['node_count']}</a></td>
-                            <td class="text-end">
-                                {if $role['status'] == 1}
-                                    <a href="/rbac/role/edit.html?id={$role['id']}&status=0" class="btn btn-sm">冻结</a>
+                            <td>{$role['adminCount']}</td>
+                            <td>
+                                {if true === :\App\Common\Admin::check('/rbac/role/powers.html', '/rbac/relation/edit.html') }
+                                    <a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn-goPower">{$role['nodeCount']}</a>
                                 {else /}
-                                    <a href="/rbac/role/edit.html?id={$role['id']}&status=1" class="btn btn-sm btn-azure">解冻</a>
+                                    <a href="#" data-id="{$role['id']}" data-name="{$role['name']}">{$role['nodeCount']}</a>
                                 {/if}
-                                <a href="#" data-id="{$role['id']}" class="btn btn-sm btn-goEdit">编辑</a>
-                                <a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn btn-sm btn-goPower">权限</a>
-                                <a href="/rbac/role/remove.html?id={$role['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
+                            </td>
+                            <td class="text-end">
+                                {if true === :\App\Common\Admin::check('/rbac/role/edit.html') }
+                                    {if $role['status'] == 1}
+                                        <a href="/rbac/role/edit.html?id={$role['id']}&status=0" class="btn btn-sm">冻结</a>
+                                    {else /}
+                                        <a href="/rbac/role/edit.html?id={$role['id']}&status=1" class="btn btn-sm btn-azure">解冻</a>
+                                    {/if}
+                                    {if true === :\App\Common\Admin::check('/rbac/role/read.html') }
+                                        <a href="#" data-id="{$role['id']}" class="btn btn-sm btn-goEdit">编辑</a>
+                                    {/if}
+                                {/if}
+                                {if true === :\App\Common\Admin::check('/rbac/role/powers.html', '/rbac/relation/edit.html') }
+                                    <a href="#" data-id="{$role['id']}" data-name="{$role['name']}" class="btn btn-sm btn-goPower">权限</a>
+                                {/if}
+                                {if true === :\App\Common\Admin::check('/rbac/role/remove.html') }
+                                    <a href="/rbac/role/remove.html?id={$role['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
+                                {/if}
                             </td>
                         </tr>
                         {/foreach}
                     </tbody>
                 </table>
-            </div>
-            <div class="card-footer">
-                {:pagination(100, 5)}
             </div>
         </div>
     </div>

@@ -282,6 +282,7 @@ CREATE TABLE `admin` (
 	`county` VARCHAR(30) COMMENT '区县',
 	`town` VARCHAR(30) COMMENT '乡镇',
 
+	`logined_at` TIMESTAMP NULL DEFAULT NULL COMMENT '最后登录时间',
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间',

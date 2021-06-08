@@ -37,9 +37,11 @@ class Remove
     {
         // 异常错误
         $exception = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
         try {
-            // 权限验证
-            $admin = Admin::verify($req);
             // 参数验证
             $data = self::verify($req->all());
             // 执行操作
