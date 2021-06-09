@@ -1,11 +1,11 @@
 {extend name="layout/admin" }
-{block name="title"}管理员日志{/block}
+{block name="title"}操作日志{/block}
 {block name="content"}
 <div class="page-header d-print-none">
     <div class="row align-items-center">
         <div class="col">
             <div class="page-pretitle">Logs</div>
-            <h2 class="page-title">日志管理</h2>
+            <h2 class="page-title">日志</h2>
         </div>
         <div class="col-auto ms-auto">
             <div class="btn-list">
@@ -15,6 +15,88 @@
 </div>
 
 <div class="row row-deck row-cards">
+    <div class="col-12">
+        <form method="GET" class="card">
+            <div class="card-header">
+                <h3 class="card-title">数据筛选</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">管理员</label>
+                        <select class="form-select" name="admin">
+                            <option value="-1">全部</option>
+                            {foreach $admins as $key => $admin}
+                                {if isset($params['admin']) && $params['admin'] == $admin['id']}
+                                    <option value="{$admin['id']}" selected>{$admin['username']}{notempty name="$admin['nickname']"} - ({$admin['nickname']}){/notempty}</option>
+                                {else /}
+                                    <option value="{$admin['id']}">{$admin['username']}{notempty name="$admin['nickname']"} - ({$admin['nickname']}){/notempty}</option>
+                                {/if}
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">路径</label>
+                        <input type="text" class="form-control" name="path" placeholder="/path/to/index.html" value="{$params['path']|default=''}" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">请求</label>
+                        <select class="form-select" name="method">
+                            {if isset($params['method']) && $params['method'] == 'POST'}
+                                <option value="GET">GET</option>
+                                <option value="POST" selected>POST</option>
+                            {else /}
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                            {/if}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">IP</label>
+                        <input type="text" class="form-control" name="ip" placeholder="127.0.0.1" value="{$params['ip']|default=''}" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">起始时间</label>
+                        <input type="text" class="form-control flatpickr" name="created_start_at" placeholder="2021-08-08 12:30:00" value="{$params['created_start_at']|default=''}" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">截止时间</label>
+                        <input type="text" class="form-control flatpickr" name="created_end_at" placeholder="2021-08-08 12:30:00" value="{$params['created_end_at']|default=''}" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">时间区间</label>
+                        <div class="form-selectgroup">
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="today" />
+                                <span class="form-selectgroup-label">今天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="yesterday" />
+                                <span class="form-selectgroup-label">昨天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="lastSevenDays" />
+                                <span class="form-selectgroup-label">近7天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="nearly30Days" />
+                                <span class="form-selectgroup-label">近30天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-clear" data-target="created_start_at,created_end_at" type="radio" name="date_choose" />
+                                <span class="form-selectgroup-label">清除时间</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary">查询数据</button>
+            </div>
+        </form>
+    </div>
     <div class="col-12">
         <div class="card">
             <div class="card-header">

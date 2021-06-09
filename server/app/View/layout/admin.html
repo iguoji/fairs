@@ -7,6 +7,8 @@
     <title>{block name="title"}后台管理{/block}</title>
     <link href="/css/tabler.min.css" rel="stylesheet" />
     <link href="https://cdn.bootcdn.net/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+    <link href="/libs/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <link href="/css/tabler-vendors.min.css" rel="stylesheet"/>
     <link href="/css/admin.css" rel="stylesheet" />
     {block name="style"}{/block}
 </head>
@@ -152,6 +154,8 @@
 var exception = '{$exception|default=""|raw|addslashes}';
 </script>
 <script src="https://cdn.bootcdn.net/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script src="/libs/flatpickr/dist/flatpickr.min.js"></script>
+<script src="/libs/flatpickr/dist/plugins/rangePlugin.js"></script>
 <script src="/js/admin.js"></script>
 {block name="script"}{/block}
 </body>

@@ -9,7 +9,7 @@ use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 角色权限
+ * 查询角色拥有的权限
  */
 class Powers
 {

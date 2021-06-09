@@ -1,0 +1,52 @@
+{extend name="layout/admin" }
+{block name="title"}节点{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Nodes</div>
+            <h2 class="page-title">节点</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">节点列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>路径</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $nodes as $key => $node}
+                        <tr>
+                            <td>
+                                <span class="opacity-75 me-1" style="margin-left: {$node['index'] * 1.5}rem;">{$node['icon']|raw}</span>
+                                <span>{$node['name']}</span>
+                            </td>
+                            <td>{$node['path']}</td>
+                        </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+</script>
+{/block}

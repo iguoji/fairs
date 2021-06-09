@@ -44,12 +44,17 @@ class Rbac
                 ]],
 
                 ['权限管理', '', $icon_goods, [
+                    ['节点', '/rbac/node.html'],
                     ['角色', '/rbac/role.html', '', [
+                        ['查看角色详情', '/rbac/role/read.html', '', [], 0],
                         ['添加角色', '/rbac/role/save.html', '', [], 0],
                         ['编辑角色', '/rbac/role/edit.html', '', [], 0],
                         ['删除角色', '/rbac/role/remove.html', '', [], 0],
+                        ['查看角色的权限', '/rbac/role/powers.html', '', [], 0],
+                        ['编辑角色的权限', '/rbac/relation/edit.html', '', [], 0],
                     ]],
                     ['管理员', '/rbac/admin.html', '', [
+                        ['查看管理员详情', '/rbac/admin/read.html', '', [], 0],
                         ['添加管理员', '/rbac/admin/save.html', '', [], 0],
                         ['编辑管理员', '/rbac/admin/edit.html', '', [], 0],
                         ['删除管理员', '/rbac/admin/remove.html', '', [], 0],

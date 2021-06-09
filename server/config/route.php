@@ -10,6 +10,9 @@ return [
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
         '/signout'                          =>  \App\Http\Rbac\Signout::class,
+
+        '/rbac/node'                        =>  \App\Http\Rbac\Node\Index::class,
+
         '/rbac/role'                        =>  \App\Http\Rbac\Role\Index::class,
         '/rbac/role/read'                   =>  \App\Http\Rbac\Role\Read::class,
         '/rbac/role/save'                   =>  \App\Http\Rbac\Role\Save::class,
@@ -17,6 +20,7 @@ return [
         '/rbac/role/remove'                 =>  \App\Http\Rbac\Role\Remove::class,
         '/rbac/role/powers'                 =>  \App\Http\Rbac\Role\Powers::class,
         '/rbac/relation/edit'               =>  \App\Http\Rbac\Relation\Edit::class,
+
         '/rbac/admin'                       =>  \App\Http\Rbac\Admin\Index::class,
         '/rbac/admin/read'                  =>  \App\Http\Rbac\Admin\Read::class,
         '/rbac/admin/save'                  =>  \App\Http\Rbac\Admin\Save::class,

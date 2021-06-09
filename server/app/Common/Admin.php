@@ -136,14 +136,42 @@ class Admin
     /**
      * 日志列表
      */
-    public static function logs(int $pageNo, int $size = 20) : array
+    public static function logs(array $params = []) : array
     {
+        // 查询对象
+        $query = Db::table('admin_log', 'al');
+
+        // 条件：按管理员查询
+        if (isset($params['admin']) && $params['admin'] != -1) {
+            $query->where('al.admin', $params['admin']);
+        }
+        // 条件：按路径查询
+        if (isset($params['path'])) {
+            $query->where('al.path', $params['path']);
+        }
+        // 条件：按请求方式查询
+        if (isset($params['method'])) {
+            $query->where('al.method', $params['method']);
+        }
+        // 条件：按IP查询
+        if (isset($params['ip'])) {
+            $query->where('al.ip', $params['ip']);
+        }
+        // 条件：按起始时间查询
+        if (isset($params['created_start_at'])) {
+            $query->where('al.created_at', '>=', $params['created_start_at']);
+        }
+        // 条件：按截止时间查询
+        if (isset($params['created_end_at'])) {
+            $query->where('al.created_at', '<=', $params['created_end_at']);
+        }
+
         // 数据总数
-        $total = Db::table('admin_log', 'al')->count('id');
+        $total = (clone $query)->count('id');
         // 查询数据
-        $data = Db::table('admin_log', 'al')
+        $data = (clone $query)
             ->join('admin', 'a', 'a.id', 'al.admin')
-            ->page($pageNo, $size)
+            ->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
             ->orderByDesc('al.id')
             ->all(
                 'al.*', 'a.username', 'a.nickname'
