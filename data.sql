@@ -46,12 +46,19 @@ CREATE TABLE `region` (
 
 	INDEX codes(`country`, `province`, `city`, `county`, `town`, `village`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='地区表';
-CREATE INDEX `country_type` ON `region`(`country`, `type`);
-CREATE INDEX `province_type` ON `region`(`province`, `type`);
-CREATE INDEX `city_type` ON `region`(`city`, `type`);
-CREATE INDEX `county_type` ON `region`(`county`, `type`);
-CREATE INDEX `town_type` ON `region`(`town`, `type`);
-CREATE INDEX `village_type` ON `region`(`village`, `type`);
+CREATE INDEX `type` ON `region`(`type`);
+CREATE INDEX `country` ON `region`(`country`);
+CREATE INDEX `province` ON `region`(`province`);
+CREATE INDEX `city` ON `region`(`city`);
+CREATE INDEX `county` ON `region`(`county`);
+CREATE INDEX `town` ON `region`(`town`);
+CREATE INDEX `village` ON `region`(`village`);
+CREATE INDEX `type_country` ON `region`(`type`, `country`);
+CREATE INDEX `type_province` ON `region`(`type`, `province`);
+CREATE INDEX `type_city` ON `region`(`type`, `city`);
+CREATE INDEX `type_county` ON `region`(`type`, `county`);
+CREATE INDEX `type_town` ON `region`(`type`, `town`);
+CREATE INDEX `type_village` ON `region`(`type`, `village`);
 
 # 银行表
 DROP TABLE IF EXISTS `bank`;

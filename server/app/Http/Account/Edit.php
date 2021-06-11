@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Http\Account;
 
 use Throwable;
+use App\Common\Admin;
 use App\Common\Region;
 use App\Common\Account;
 use Minimal\Facades\Db;
@@ -16,9 +17,84 @@ use Minimal\Foundation\Exception;
 class Edit
 {
     /**
-     * 参数验证
+     * 参数验证 - 管理员
      */
-    public function validate(array $params) : array
+    public function adminValidate(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 编号
+        $validate->string('uid', '账号编号')->alphaNum();
+
+        // 手机号码
+        $validate->int('country', '国家区号')->length(1, 24)->digit();
+        $validate->int('phone', '手机号码')
+            ->length(5, 30)->digit()
+            ->call(function($value, $values){
+                $account = Account::getByPhone($values['country'] ?? '', $value);
+                return empty($account) || $account['uid'] == $values['uid'];
+            }, message: '很抱歉、该手机号码已被注册！');
+        // 邮箱
+        $validate->string('email', '邮箱地址')
+            ->length(6, 64)->email()
+            ->call(function($value, $values){
+                $account = Account::getByEmail($value);
+                return empty($account) || $account['uid'] == $values['uid'];
+            }, message: '很抱歉、邮箱地址已被注册！');
+        // 账号
+        $validate->string('username', '账号')
+            ->length(6, 32)->alphaNum()
+            ->call(function($value){
+                return 1 === preg_match('/^[A-Za-z]{1}$/', $value[0]);
+            }, message: '很抱歉、账号的第一位必须是字母！')
+            ->call(function($value, $values){
+                $account = Account::getByUsername($value);
+                return empty($account) || $account['uid'] == $values['uid'];
+            }, message: '很抱歉、该账号已被注册！');
+        // 上级邀请码
+        $validate->string('inviter', '邀请码')
+            ->alphaNum()->length(3, 32)
+            ->call(function($value, $values){
+                return $value != $values['uid'] && !empty(Account::get($value));
+            }, message: '很抱歉、指定的邀请码不存在！');
+        // 账户状态
+        $validate->int('status', '账户状态');
+
+        // 密码
+        $validate->string('password', '登录密码')->length(6, 32);
+        $validate->string('safeword', '安全密码')->length(6, 32);
+
+        // 社交属性
+        $validate->string('nickname', '昵称')->length(2, 20)->chsDash();
+        $validate->string('avatar', '头像')->length(2, 150);
+        $validate->int('gender', '性别')->in(1, 2)->digit();
+        $validate->string('birthday', '出生年月')->date('Y-m-d');
+
+        $validate->string('country', '国家')->length(1, 24)->digit()->call(function($value){
+            return Region::has(country: $value);
+        })->unset();
+        $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
+            return Region::has(country: $values['country'] ?? '', province: $value);
+        })->requireWith('country');
+        $validate->string('city', '市')->length(1, 30)->digit()->call(function($value, $values){
+            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
+        })->requireWith('country', 'province');
+        $validate->string('county', '区县')->length(1, 30)->digit()->call(function($value, $values){
+            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
+        })->requireWith('country', 'province', 'city');
+        $validate->string('town', '乡镇')->length(1, 30)->digit()->call(function($value, $values){
+            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
+        })->requireWith('country', 'province', 'city', 'county');
+
+        // 返回结果
+        return $validate->check();
+    }
+
+    /**
+     * 参数验证 - 用户
+     */
+    public function accountValidate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -53,11 +129,67 @@ class Edit
      */
     public function handle($req, $res) : mixed
     {
+        // 获取身份
+        $identity = $req->session->identity();
+        // 判断身份
+        if ($identity == 'admin') {
+            // 管理员操作
+            return $this->admin($req, $res);
+        } else {
+            // 用户操作
+            return $this->account($req, $res);
+        }
+    }
+
+    /**
+     * 管理员操作
+     */
+    public function admin($req, $res) : mixed
+    {
+        // 异常错误
+        $exception = [];
+
+        // 授权验证
+        $admin = Admin::verify($req);
+
+        try {
+            // 参数检查
+            $params = $this->adminValidate($req->all());
+
+            // 开启事务
+            Db::beginTransaction();
+
+            // 修改资料
+            $bool = Account::upd($params['uid'], $params);
+            if (!$bool) {
+                throw new Exception('很抱歉、修改失败请重试！');
+            }
+
+            // 提交事务
+            Db::commit();
+        } catch (\Throwable $th) {
+            // 事务回滚
+            Db::rollback();
+            // 保存异常
+            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+        }
+
+        // 返回结果
+        return $res->redirect('/account.html', [
+            'exception' =>  $exception,
+        ]);
+    }
+
+    /**
+     * 用户操作
+     */
+    public function account($req, $res) : mixed
+    {
         // 授权验证
         $uid = Account::verify($req);
 
         // 参数检查
-        $data = $this->validate($req->all());
+        $data = $this->accountValidate($req->all());
 
         try {
             // 开启事务

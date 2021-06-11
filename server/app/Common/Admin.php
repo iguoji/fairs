@@ -183,15 +183,12 @@ class Admin
     /**
      * 登录授权
      */
-    public static function signin($req, $res, $admin, $expire = null) : string
+    public static function signin($req, $res, $admin, $expire = 60 * 60 * 24) : string
     {
-        // 过期时间
-        $expire = $expire ?? $req->session->getConfig('expire');
         // 保存数据
-        $req->session->set('admin', $admin, $expire);
-        // SessionId
-        $sessionId = $req->session->id();
+        $sessionId = $req->session->identity('admin', $admin, $expire);
         // 输出令牌
+        $expire = $expire ?? $req->session->getConfig('expire');
         $res->cookie($req->session->name(), $sessionId, time() + $expire);
         // 清理老的SessionId
         static::getout($req, $admin['id'], $sessionId);

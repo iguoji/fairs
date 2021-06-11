@@ -20,6 +20,9 @@ if (window.bootstrap) {
         }
     }
 }
+// 省市区级联
+var region = {}
+
 $(function(){
     // 错误提示
     if (exception.length > 5) {
@@ -83,9 +86,11 @@ $(function(){
     }
     $('.flatpickr').each(function(idx, ele){
         var name = $(ele).attr('name');
+        var format = $(ele).data('format');
+        var enableTime = $(ele).data('enable-time');
         window.flatpickrs[name] = $(ele).flatpickr({
-            dateFormat: 'Y-m-d H:i:S',
-            enableTime: true,
+            dateFormat: format && format.length ? format : 'Y-m-d H:i:S',
+            enableTime: enableTime == 'false' ? false : true,
             time_24hr: true,
         });
     });
@@ -131,6 +136,13 @@ $(function(){
         for (let i = 0; i < targets.length; i++) {
             window.flatpickrs[targets[i]].clear();
         }
+    });
+
+
+
+    // 省市区级联
+    $('select[data-fs-region]').each(function(idx, ele){
+        var name = $(ele).data('fs-region');
     });
 
 

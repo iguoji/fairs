@@ -6,10 +6,12 @@ namespace App\Http\Account;
 use Throwable;
 use App\Common\Sms;
 use App\Common\Mail;
+use App\Common\Admin;
 use App\Common\Wallet;
 use App\Common\Account;
 use Minimal\Facades\Db;
 use Minimal\Http\Validate;
+use Minimal\Facades\Log;
 use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
 
@@ -19,9 +21,52 @@ use Minimal\Foundation\Exception;
 class Signup
 {
     /**
-     * 参数验证
+     * 添加验证
      */
-    public static function validate(array $params) : array
+    public static function saveValidate(array $params) : array
+    {
+        // 验证对象
+        $validate = new Validate($params);
+
+        // 手机号码
+        $validate->int('country', '国家区号')->length(1, 24)->digit();
+        $validate->int('phone', '手机号码')
+            ->length(5, 30)->digit()
+            ->call(function($value, $values){
+                return empty(Account::getByPhone($values['country'] ?? '', $value));
+            }, message: '很抱歉、该手机号码已被注册！');
+        // 邮箱
+        $validate->string('email', '邮箱地址')
+            ->length(6, 64)->email()
+            ->call(function($value){
+                return empty(Account::getByEmail($value));
+            }, message: '很抱歉、邮箱地址已被注册！');
+        // 账号
+        $validate->string('username', '账号')
+            ->require()->length(6, 32)->alphaNum()
+            ->call(function($value){
+                return 1 === preg_match('/^[A-Za-z]{1}$/', $value[0]);
+            }, message: '很抱歉、账号的第一位必须是字母！')
+            ->call(function($value){
+                return empty(Account::getByUsername($value));
+            }, message: '很抱歉、该账号已被注册！');
+
+        // 通用验证
+        $validate->string('password', '密码')->default('123456')->length(6, 32);
+        $validate->string('inviter', '邀请码')
+            ->alphaNum()->length(3, 32)
+            ->call(function($value){
+                return !empty(Account::get($value));
+            }, message: '很抱歉、指定的邀请码不存在！');
+
+        // 返回结果
+        return $validate->check();
+    }
+
+    /**
+     * 注册验证
+     */
+    public static function signupValidate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -97,8 +142,67 @@ class Signup
      */
     public function handle($req, $res) : mixed
     {
+        // 获取身份
+        $identity = $req->session->identity();
+        // 判断身份
+        if ($identity == 'admin') {
+            // 管理员添加
+            return $this->save($req, $res);
+        } else {
+            // 用户自行注册
+            return $this->signup($req, $res);
+        }
+    }
+
+    /**
+     * 添加账号
+     */
+    public function save($req, $res) : mixed
+    {
+        // 异常错误
+        $exception = [];
+
+        // 权限验证
+        $admin = Admin::verify($req);
+
+        try {
+            // 参数检查
+            $data = self::saveValidate($req->all());
+
+            // 开启事务
+            Db::beginTransaction();
+
+            // 注册账号
+            Log::debug('注册账号', $data);
+            $uid = Account::add($data);
+            // 注册钱包
+            $bool = Wallet::new($uid);
+            if (!$bool) {
+                throw new Exception('很抱歉、钱包创建失败请重试！');
+            }
+
+            // 提交事务
+            Db::commit();
+        } catch (Throwable $th) {
+            // 事务回滚
+            Db::rollback();
+            // 保存异常
+            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+        }
+
+        // 返回结果
+        return $res->redirect('/account.html', [
+            'exception' =>  $exception,
+        ]);
+    }
+
+    /**
+     * 账号注册
+     */
+    public function signup($req, $res) : mixed
+    {
         // 参数检查
-        $data = self::validate($req->all());
+        $data = self::signupValidate($req->all());
 
         try {
             // 开启事务

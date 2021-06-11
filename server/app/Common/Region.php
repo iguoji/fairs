@@ -42,4 +42,12 @@ class Region
 
         return !empty($query->first());
     }
+
+    /**
+     * 所有国家信息
+     */
+    public static function countrys() : array
+    {
+        return Db::table('region')->where('type', 1)->orderBy('id')->all();
+    }
 }

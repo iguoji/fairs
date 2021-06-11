@@ -47,7 +47,6 @@ class Save
         try {
             // 参数验证
             $data = self::verify($req->all());
-            var_dump($data);
             // 添加角色
             Rbac::addRole($data);
         } catch (\Throwable $th) {

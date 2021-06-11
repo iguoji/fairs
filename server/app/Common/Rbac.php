@@ -34,6 +34,15 @@ class Rbac
             $menus = [
                 ['后台首页', '/index.html', $icon_index],
 
+                ['账户管理', '', $icon_goods, [
+                    ['账户', '/account.html', '', [
+                        ['查看账户详情', '/account/read.html', '', [], 0],
+                        ['添加账户', '/account/save.html', '', [], 0],
+                        ['编辑账户', '/account/edit.html', '', [], 0],
+                        ['删除账户', '/account/remove.html', '', [], 0],
+                    ]],
+                ]],
+
                 ['商品管理', '', $icon_goods, [
                     ['类目', '/catalog/index.html', '', [
                         ['添加类目', '/catalog/save.html', '', [], 0],

@@ -7,6 +7,13 @@ return [
         '/'                                 =>  \App\Http\Admin\Index::class,
         '/index'                            =>  \App\Http\Admin\Index::class,
 
+        // 账户
+        '/account'                          =>  \App\Http\Account\Index::class,
+        '/account/read'                     =>  \App\Http\Account\Profile::class,
+        '/account/save'                     =>  \App\Http\Account\Signup::class,
+        '/account/edit'                     =>  \App\Http\Account\Edit::class,
+        '/account/remove'                   =>  \App\Http\Account\Remove::class,
+
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
         '/signout'                          =>  \App\Http\Rbac\Signout::class,
