@@ -28,7 +28,9 @@ class Edit
         $validate->string('uid', '账号编号')->alphaNum();
 
         // 手机号码
-        $validate->int('country', '国家区号')->length(1, 24)->digit();
+        $validate->int('country', '国家区号')->length(1, 24)->digit()->call(function($value){
+            return Region::has(country: $value);
+        });
         $validate->int('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){
@@ -39,7 +41,7 @@ class Edit
         $validate->string('email', '邮箱地址')
             ->length(6, 64)->email()
             ->call(function($value, $values){
-                $account = Account::getByEmail($value);
+                $account = Account::get($value, 'email');
                 return empty($account) || $account['uid'] == $values['uid'];
             }, message: '很抱歉、邮箱地址已被注册！');
         // 账号
@@ -49,7 +51,7 @@ class Edit
                 return 1 === preg_match('/^[A-Za-z]{1}$/', $value[0]);
             }, message: '很抱歉、账号的第一位必须是字母！')
             ->call(function($value, $values){
-                $account = Account::getByUsername($value);
+                $account = Account::get($value, 'username');
                 return empty($account) || $account['uid'] == $values['uid'];
             }, message: '很抱歉、该账号已被注册！');
         // 上级邀请码
@@ -68,12 +70,9 @@ class Edit
         // 社交属性
         $validate->string('nickname', '昵称')->length(2, 20)->chsDash();
         $validate->string('avatar', '头像')->length(2, 150);
-        $validate->int('gender', '性别')->in(1, 2)->digit();
+        $validate->int('gender', '性别')->in(0, 1, 2)->digit();
         $validate->string('birthday', '出生年月')->date('Y-m-d');
 
-        $validate->string('country', '国家')->length(1, 24)->digit()->call(function($value){
-            return Region::has(country: $value);
-        })->unset();
         $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
             return Region::has(country: $values['country'] ?? '', province: $value);
         })->requireWith('country');

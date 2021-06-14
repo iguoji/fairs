@@ -27,8 +27,9 @@ class Index
         $validate->int('country', '国家');
         $validate->int('phone', '手机号码');
         $validate->string('email', '邮箱');
-        $validate->string('inviter', '上级邀请码');
+        $validate->string('nickname', '昵称');
         $validate->int('status', '状态');
+        $validate->string('inviter', '上级邀请码');
         $validate->string('created_start_at', '注册起始时间')->date();
         $validate->string('created_end_at', '注册截止时间')->date();
 

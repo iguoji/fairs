@@ -50,4 +50,50 @@ class Region
     {
         return Db::table('region')->where('type', 1)->orderBy('id')->all();
     }
+
+    /**
+     * 获取数据
+     */
+    public static function data(int $type = 1, string|int $parent = null) : array
+    {
+        $fields = ['*'];
+        $parentField = null;
+        switch ($type) {
+            case 1:
+                $fields = [['country' => 'id'], ['country_name' => 'name']];
+                break;
+            case 2:
+                $parentField = 'country';
+                $fields = [['province' => 'id'], ['province_name' => 'name']];
+                break;
+            case 3:
+                $parentField = 'province';
+                $fields = [['city' => 'id'], ['city_name' => 'name']];
+                break;
+            case 4:
+                $parentField = 'city';
+                $fields = [['county' => 'id'], ['county_name' => 'name']];
+                break;
+            case 5:
+                $parentField = 'county';
+                $fields = [['town' => 'id'], ['town_name' => 'name']];
+                break;
+            case 6:
+                $parentField = 'town';
+                $fields = [['village' => 'id'], ['village_name' => 'name']];
+                break;
+            default:
+                break;
+        }
+
+        // 查询对象
+        $query = Db::table('region')->where('type', $type);
+        // 按上级查询
+        if (!is_null($parentField)) {
+            $query->where($parentField, $parent);
+        }
+
+        // 返回结果
+        return $query->orderBy('id')->all(...$fields);
+    }
 }

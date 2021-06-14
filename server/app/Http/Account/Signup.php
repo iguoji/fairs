@@ -29,7 +29,7 @@ class Signup
         $validate = new Validate($params);
 
         // 手机号码
-        $validate->int('country', '国家区号')->length(1, 24)->digit();
+        $validate->int('country', '国家区号')->default(86)->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){
@@ -39,7 +39,7 @@ class Signup
         $validate->string('email', '邮箱地址')
             ->length(6, 64)->email()
             ->call(function($value){
-                return empty(Account::getByEmail($value));
+                return empty(Account::get($value, 'email'));
             }, message: '很抱歉、邮箱地址已被注册！');
         // 账号
         $validate->string('username', '账号')
@@ -48,7 +48,7 @@ class Signup
                 return 1 === preg_match('/^[A-Za-z]{1}$/', $value[0]);
             }, message: '很抱歉、账号的第一位必须是字母！')
             ->call(function($value){
-                return empty(Account::getByUsername($value));
+                return empty(Account::get($value, 'username'));
             }, message: '很抱歉、该账号已被注册！');
 
         // 通用验证
@@ -76,11 +76,13 @@ class Signup
             ->in('username', 'mobile', 'email')
             ->unset()->value();
 
+        // 国家区号
+        $validate->int('country', '国家区号')->default(86)->length(1, 24)->digit();
+
         // 按情况验证参数字段
         switch ($action) {
             // 手机 + 短信验证码
             case 'mobile':
-                $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
                 $validate->int('phone', '手机号码')
                     ->require()->length(5, 30)->digit()
                     ->call(function($value, $values){
@@ -100,7 +102,7 @@ class Signup
                 $validate->string('email', '邮箱地址')
                     ->require()->length(6, 64)->email()
                     ->call(function($value){
-                        return empty(Account::getByEmail($value));
+                        return empty(Account::get($value, 'email'));
                     }, message: '很抱歉、邮箱地址已被注册！');
 
                 $length = Config::get('mail.length', 4);
@@ -119,7 +121,7 @@ class Signup
                         return 1 === preg_match('/^[A-Za-z]{1}$/', $value[0]);
                     }, message: '很抱歉、账号的第一位必须是字母！')
                     ->call(function($value){
-                        return empty(Account::getByUsername($value));
+                        return empty(Account::get($value, 'username'));
                     }, message: '很抱歉、该账号已被注册！');
                 break;
         }

@@ -143,9 +143,17 @@ class Account
         if (isset($params['email'])) {
             $query->where('a.email', $params['email']);
         }
+        // 条件：按昵称查询
+        if (isset($params['nickname'])) {
+            $query->where('a.nickname', $params['nickname']);
+        }
         // 条件：按状态查询
         if (isset($params['status'])) {
             $query->where('a.status', $params['status']);
+        }
+        // 条件：按上级邀请码查询
+        if (isset($params['inviter'])) {
+            $query->where('a.inviter', $params['inviter']);
         }
         // 条件：按起始时间查询
         if (isset($params['created_start_at'])) {
@@ -297,27 +305,11 @@ class Account
     }
 
     /**
-     * 查询 - 根据用户名
-     */
-    public static function getByUsername(string $username) : array
-    {
-        return $this->get($username, 'username');
-    }
-
-    /**
      * 查询 - 根据手机号码
      */
     public static function getByPhone(int|string $country, int|string $phone) : array
     {
         return Db::table('account')->where('country', (string) $country)->where('phone', (string) $phone)->where('deleted_at')->first();
-    }
-
-    /**
-     * 查询 - 根据邮箱地址
-     */
-    public static function getByEmail(string $email) : array
-    {
-        return static::get($email, 'email');
     }
 
     /**

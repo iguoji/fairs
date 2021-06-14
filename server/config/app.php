@@ -23,5 +23,18 @@ return [
     'captcha'       =>  [
         // 长度
         'length'    =>  4,
-    ]
+    ],
+
+    // 上传设置
+    'upload'        =>  [
+        // 图片类型
+        'image'     =>  [
+            // 路径
+            'path'  =>  '../public/upload/',
+            // 10MB
+            'size'  =>  1024 * 1024 * 10,
+            // 后缀
+            'ext'   =>  ['png', 'jpg', 'gif', 'bmp'],
+        ],
+    ],
 ];

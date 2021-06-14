@@ -58,7 +58,7 @@ class Signin
                 $validate->string('email', '邮箱地址')
                     ->require()->length(6, 64)->email()
                     ->call(function($value){
-                        return !empty(Account::getByEmail($value));
+                        return !empty(Account::get($value, 'email'));
                     }, message: '很抱歉、邮箱地址不存在！');
 
                 $validate->string('password', '密码')->length(6, 32)->requireWithout('verify_code');
@@ -104,13 +104,13 @@ class Signin
                 }
             } else if (isset($data['email'])) {
                 // 邮箱
-                $account = Account::getByEmail($data['email']);
+                $account = Account::get($data['email'], 'email');
                 if (empty($account)) {
                     throw new Exception('很抱歉、该邮箱地址不存在！');
                 }
             } else {
                 // 账号
-                $account = Account::getByUsername($data['username']);
+                $account = Account::get($data['username'], 'username');
                 if (empty($account)) {
                     throw new Exception('很抱歉、该账号不存在！');
                 }

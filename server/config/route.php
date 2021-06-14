@@ -7,6 +7,11 @@ return [
         '/'                                 =>  \App\Http\Admin\Index::class,
         '/index'                            =>  \App\Http\Admin\Index::class,
 
+        // 地区
+        '/region/data'                      =>  \App\Http\Region\Data::class,
+        // 上传
+        '/file/upload'                      =>  \App\Http\File\Upload::class,
+
         // 账户
         '/account'                          =>  \App\Http\Account\Index::class,
         '/account/read'                     =>  \App\Http\Account\Profile::class,
@@ -37,6 +42,9 @@ return [
     ],
     // 用户接口
     '*'     =>  [
+        // 地区
+        '/region/data'                      =>  \App\Http\Region\Data::class,
+
         // 账户
         '/account/signup'                   =>  \App\Http\Account\Signup::class,
         '/account/signin'                   =>  \App\Http\Account\Signin::class,

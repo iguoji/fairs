@@ -44,7 +44,7 @@
                                     {/if}
                                 {/foreach}
                             </select>
-                            <input type="text" class="form-control w-50" name="phone" placeholder="18721889831" />
+                            <input type="text" class="form-control w-50" name="phone" placeholder="18721889831" value="{$params['phone']|default=''}" />
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -52,8 +52,8 @@
                         <input type="text" class="form-control" name="email" placeholder="asgeg@qq.com" value="{$params['email']|default=''}" />
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">上级邀请码</label>
-                        <input type="text" class="form-control" name="inviter" placeholder="ABCD" value="{$params['inviter']|default=''}" />
+                        <label class="form-label">个性昵称</label>
+                        <input type="text" class="form-control" name="nickname" placeholder="例如：张三" value="{$params['nickname']|default=''}" />
                     </div>
                 </div>
                 <div class="row">
@@ -74,6 +74,10 @@
                                 <option value="0">冻结</option>
                             {/if}
                         </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">上级邀请码</label>
+                        <input type="text" class="form-control" name="inviter" placeholder="ABCD" value="{$params['inviter']|default=''}" />
                     </div>
                 </div>
                 <div class="row">
@@ -135,6 +139,9 @@
                             <th>邮箱</th>
                             <th>状态</th>
                             <th>上级</th>
+                            <th>余额</th>
+                            <th>积分</th>
+                            <th>数额</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -147,13 +154,13 @@
                                         <span class="form-check-label text-muted">{$account['uid']}</span>
                                     </label>
                                 </td>
-                                <td><a class="avatar btn-goProfile" href="#" style="background-image: url({$account['avatar']});" data-uid="{$account['uid']}"></a></td>
+                                <td><a class="avatar btn-goProfile" href="javascript:;" style="background-image: url({$account['avatar']});" data-uid="{$account['uid']}"></a></td>
                                 <td>
                                     <span class="d-block small text-muted">{$account['nickname']}</span>
                                     {if true === :\App\Common\Admin::check('/account/edit.html') }
-                                        <a href="#" class="text-reset btn-goEdit" data-uid="{$account['uid']}">{$account['username']}</a>
+                                        <a href="javascript:;" class="text-reset btn-goEdit" data-uid="{$account['uid']}">{$account['username']}</a>
                                     {else /}
-                                        <a href="#" class="text-reset" data-uid="{$account['uid']}">{$account['username']}</a>
+                                        <a href="javascript:;" class="text-reset" data-uid="{$account['uid']}">{$account['username']}</a>
                                     {/if}
                                 </td>
                                 <td>{notempty name="$account['phone']"}({$account['country']}) {$account['phone']}{/notempty}</td>
@@ -168,9 +175,12 @@
                                 <td>
                                     {notempty name="$account['inviter']"}
                                         <span class="d-block small text-muted">{$account['parent']['nickname']}</span>
-                                        <a href="#" class="text-reset" data-uid="{$account['parent']['uid']}">{$account['parent']['username']}</a>
+                                        <a href="javascript:;" class="text-reset btn-goEdit" data-uid="{$account['parent']['uid']}">{$account['parent']['username']}</a>
                                     {/notempty}
                                 </td>
+                                <td>{:mt_rand(0, 999999)}</td>
+                                <td>{:mt_rand(0, 999999)}</td>
+                                <td>{:mt_rand(0, 999999)}</td>
                                 <td class="text-end">
                                     <span class="dropdown">
                                         <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">操作</button>
@@ -180,9 +190,9 @@
                                             {else /}
                                                 <a href="/account/edit.html?uid={$account['uid']}&status=1" class="dropdown-item">解冻</a>
                                             {/if}
-                                            <a href="#" class="dropdown-item btn-goPassword" data-uid="{$account['uid']}">密码</a>
-                                            <a href="#" class="dropdown-item btn-goProfile" data-uid="{$account['uid']}">档案</a>
-                                            <a href="#" class="dropdown-item btn-goEdit" data-uid="{$account['uid']}">编辑</a>
+                                            <a href="javascript:;" class="dropdown-item btn-goPassword" data-uid="{$account['uid']}">密码</a>
+                                            <a href="javascript:;" class="dropdown-item btn-goProfile" data-uid="{$account['uid']}">档案</a>
+                                            <a href="javascript:;" class="dropdown-item btn-goEdit" data-uid="{$account['uid']}">编辑</a>
                                             <a href="/account/remove.html?uid={$account['uid']}" class="dropdown-item btn-danger btn-modal-confirm">删除</a>
                                         </div>
                                     </span>
@@ -203,6 +213,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <form action="/account/edit.html" method="POST">
+                <input type="hidden" name="uid" />
                 <div class="modal-header">
                     <h5 class="modal-title">用户档案</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -210,10 +221,15 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-auto mb-3">
-                            <a href="#" class="avatar avatar-upload rounded">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                <span class="avatar-upload-text">更换</span>
-                            </a>
+                            <div class="avatar-container">
+                                <input class="avatar-input" type="hidden" name="avatar" />
+                                <a href="#2" class="avatar-upload-clear">清除</a>
+                                <a class="avatar avatar-upload rounded">
+                                    <input type="file" accept="image/*" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span class="avatar-upload-text">更换</span>
+                                </a>
+                            </div>
                         </div>
                         <div class="col-lg-10 mb-3">
                             <label class="form-label">个性昵称</label>
@@ -221,13 +237,14 @@
                         </div>
                         <div class="col-lg-4 mb-3">
                             <label class="form-label">性别</label>
+                            <input type="hidden" name="gender" value="0" />
                             <div>
                                 <label class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="genders" value="1" />
                                     <span class="form-check-label">男</span>
                                 </label>
                                 <label class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="genders" value="0" />
+                                    <input class="form-check-input" type="radio" name="genders" value="2" />
                                     <span class="form-check-label">女</span>
                                 </label>
                             </div>
@@ -237,34 +254,34 @@
                             <input type="text" class="form-control flatpickr" data-format="Y-m-d" data-enable-time="false" name="birthday" placeholder="选填，例如：2020-08-08" />
                         </div>
                         <div class="col-lg-12">
-                            <div class="row row-cols-3">
+                            <div class="row row-cols-3 region">
                                 <div class="col mb-3">
                                     <label class="form-label">国家</label>
-                                    <select name="country" class="form-select" data-fs-region="country" data-fs-target="province">
+                                    <select name="country" class="form-select">
                                         <option value="">请选择国家</option>
                                     </select>
                                 </div>
                                 <div class="col mb-3">
                                     <label class="form-label">省份</label>
-                                    <select name="province" class="form-select" data-fs-region="province" data-fs-target="city">
+                                    <select name="province" class="form-select">
                                         <option value="">请选择省份</option>
                                     </select>
                                 </div>
                                 <div class="col mb-3">
                                     <label class="form-label">城市</label>
-                                    <select name="city" class="form-select" data-fs-region="city" data-fs-target="county">
+                                    <select name="city" class="form-select">
                                         <option value="">请选择城市</option>
                                     </select>
                                 </div>
                                 <div class="col mb-3">
                                     <label class="form-label">区县</label>
-                                    <select name="county" class="form-select" data-fs-region="county" data-fs-target="town">
+                                    <select name="county" class="form-select">
                                         <option value="">请选择区县</option>
                                     </select>
                                 </div>
                                 <div class="col mb-3">
                                     <label class="form-label">乡镇</label>
-                                    <select name="town" class="form-select" data-fs-region="town">
+                                    <select name="town" class="form-select">
                                         <option value="">请选择乡镇</option>
                                     </select>
                                 </div>
@@ -478,15 +495,16 @@ $(function(){
                 toastr.error(res.message);
             } else {
                 $('#modal-profile input[name=uid]').val(res.data.uid);
-                $('#modal-profile input[name=username]').val(res.data.username);
-                if (res.data.country) {
-                    $('#modal-profile select[name=country]').val(res.data.country);
+                $('#modal-profile input[name=avatar]').val(res.data.avatar);
+                $('#modal-profile .avatar-upload').css('backgroundImage', 'url(' + res.data.avatar + ')');
+                $('#modal-profile input[name=nickname]').val(res.data.nickname);
+                region.selected(res.data, '#modal-profile .region');
+                $('#modal-profile input[name=gender]').val(res.data.gender);
+                $('#modal-profile input[name=genders][value=' + res.data.gender + ']').prop('checked', true);
+                window.flatpickrs['birthday'].clear();
+                if (res.data.birthday) {
+                    window.flatpickrs['birthday'].setDate(res.data.birthday);
                 }
-                $('#modal-profile input[name=phone]').val(res.data.phone);
-                $('#modal-profile input[name=email]').val(res.data.email);
-                $('#modal-profile input[name=inviter]').val(res.data.inviter);
-                $('#modal-profile input[name=status]').val(res.data.status);
-                $('#modal-profile input[name=status-item][value=' + res.data.status + ']').prop('checked', true);
                 modalProfile.show();
             }
         });
@@ -517,6 +535,10 @@ $(function(){
                 modalEdit.show();
             }
         });
+    });
+    // 性别选择
+    $('#modal-profile input[name=genders]').on('change', function(){
+        $('#modal-profile input[name=gender]').val($(this).val());
     });
     // 前往密码
     $('.btn-goPassword').on('click', function(){

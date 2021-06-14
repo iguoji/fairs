@@ -36,7 +36,7 @@ class BindEmail
         $validate->string('email', '邮箱地址')
             ->require()->length(6, 64)->email()
             ->call(function($value){
-                return empty(Account::getByEmail($value));
+                return empty(Account::get($value, 'email'));
             }, message: '很抱歉、该邮箱地址已被绑定！');
         $length = Config::get('mail.length', 4);
         $validate->string('verify_code', '邮箱验证码')

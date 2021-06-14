@@ -70,3 +70,50 @@
         width: 100%;
     }
 }
+
+/**
+ * 日历选择
+ */
+.flatpickr-months .numInputWrapper .arrowDown, .flatpickr-months .numInputWrapper .arrowUp {
+    display: inline-block;
+}
+
+/**
+ * 头像上传
+ */
+.avatar-container {
+    position: relative;
+}
+.avatar-upload {
+    background-size: cover;
+}
+.avatar-upload-clear {
+    position: absolute;
+    left: 0;top: 0;
+    width: 100%;
+    line-height: 2rem;
+    color: white;
+    background-color: #d63939;
+    border: 1px dashed #e6e8e9;
+    border-bottom: 0px;
+    text-align: center;
+    z-index: 1;
+    display: none;
+}
+.avatar-container:hover .avatar-upload-clear {
+    display: block;
+}
+.avatar-upload-clear:hover {
+    color: white;
+    text-decoration: none;
+}
+.avatar-upload input[type=file] {
+    position: absolute;
+    left: 0;top: 0;
+    width: 100%;height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.avatar-upload-text {
+    text-shadow: 1px 1px 0px white;
+}
