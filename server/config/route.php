@@ -14,10 +14,15 @@ return [
 
         // 账户
         '/account'                          =>  \App\Http\Account\Index::class,
-        '/account/read'                     =>  \App\Http\Account\Profile::class,
-        '/account/save'                     =>  \App\Http\Account\Signup::class,
+        '/account/read'                     =>  \App\Http\Account\Read::class,
+        '/account/save'                     =>  \App\Http\Account\Save::class,
         '/account/edit'                     =>  \App\Http\Account\Edit::class,
         '/account/remove'                   =>  \App\Http\Account\Remove::class,
+
+        // 账户 - 关系
+        '/account/authentication'           =>  \App\Http\Account\Authentication\Index::class,
+        '/account/authentication/read'      =>  \App\Http\Account\Authentication\Read::class,
+        '/account/authentication/edit'      =>  \App\Http\Account\Authentication\Edit::class,
 
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
@@ -46,9 +51,9 @@ return [
         '/region/data'                      =>  \App\Http\Region\Data::class,
 
         // 账户
-        '/account/signup'                   =>  \App\Http\Account\Signup::class,
+        '/account/signup'                   =>  \App\Http\Account\Save::class,
         '/account/signin'                   =>  \App\Http\Account\Signin::class,
-        '/account/profile'                  =>  \App\Http\Account\Profile::class,
+        '/account/profile'                  =>  \App\Http\Account\Read::class,
         '/account/edit'                     =>  \App\Http\Account\Edit::class,
         '/account/authentication'           =>  \App\Http\Account\Authentication::class,
         '/account/safeword'                 =>  \App\Http\Account\Safeword::class,

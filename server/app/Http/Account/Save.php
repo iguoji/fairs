@@ -16,9 +16,9 @@ use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
 
 /**
- * 账户注册
+ * 添加/注册账户
  */
-class Signup
+class Save
 {
     /**
      * 添加验证
@@ -77,7 +77,7 @@ class Signup
             ->unset()->value();
 
         // 国家区号
-        $validate->int('country', '国家区号')->default(86)->length(1, 24)->digit();
+        $validate->string('country', '国家区号')->default('86')->length(1, 24)->digit();
 
         // 按情况验证参数字段
         switch ($action) {
@@ -175,7 +175,6 @@ class Signup
             Db::beginTransaction();
 
             // 注册账号
-            Log::debug('注册账号', $data);
             $uid = Account::add($data);
             // 注册钱包
             $bool = Wallet::new($uid);
@@ -229,7 +228,7 @@ class Signup
             }
 
             // 立即登录
-            $account = Account::signin(Account::get($uid));
+            $account = Account::signin($req, Account::get($uid));
 
             // 提交事务
             Db::commit();

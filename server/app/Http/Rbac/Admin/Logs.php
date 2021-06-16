@@ -16,7 +16,7 @@ class Logs
     /**
      * 参数验证
      */
-    public static function verify(array $params) : array
+    public static function validate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -55,7 +55,7 @@ class Logs
 
         try {
             // 参数验证
-            $params = $this->verify($req->all());
+            $params = $this->validate($req->all());
             // 管理员列表
             $admins = Admin::all();
 

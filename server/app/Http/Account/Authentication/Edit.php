@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Account;
+namespace App\Http\Account\Authentication;
 
 use App\Common\Admin;
 use App\Common\Region;
@@ -10,9 +10,9 @@ use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 账户列表
+ * 编辑账户关系
  */
-class Index
+class Edit
 {
     /**
      * 参数验证
@@ -32,7 +32,6 @@ class Index
         $validate->string('inviter', '上级邀请码');
         $validate->string('created_start_at', '注册起始时间')->date();
         $validate->string('created_end_at', '注册截止时间')->date();
-        $validate->int('pageNo', '当前页码')->default(1);
 
         // 返回结果
         return $validate->check();

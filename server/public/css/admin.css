@@ -86,6 +86,12 @@
 }
 .avatar-upload {
     background-size: cover;
+    --tblr-avatar-size: 4rem;
+    width: var(--tblr-avatar-size);
+    height: var(--tblr-avatar-size);
+}
+.avatar-container .avatar-lg {
+    --tblr-avatar-size: 5rem !important;
 }
 .avatar-upload-clear {
     position: absolute;

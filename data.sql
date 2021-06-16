@@ -17,11 +17,8 @@ CREATE TABLE `region` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
 	`type` TINYINT DEFAULT 0 COMMENT '类型，1国家，2省，3市，4区县，5乡镇，6村庄',
 
-	`zone` VARCHAR(30) COMMENT '电话区号(不含国家)',
+	`zone` VARCHAR(30) COMMENT '电话区号',
 	`zip` VARCHAR(20) COMMENT '邮编号码',
-
-	`country` VARCHAR(30) COMMENT '国家代码',
-	`country_name` VARCHAR(50) COMMENT '国家名称',
 
 	`province` VARCHAR(30) COMMENT '省份代码',
 	`province_name` VARCHAR(50) COMMENT '省份名称',
@@ -32,33 +29,15 @@ CREATE TABLE `region` (
 	`county` VARCHAR(30) COMMENT '区县代码',
 	`county_name` VARCHAR(50) COMMENT '区县名称',
 
-	`town` VARCHAR(30) COMMENT '乡镇代码',
-	`town_name` VARCHAR(50) COMMENT '乡镇名称',
-
-	`village` VARCHAR(30) COMMENT '村庄代码',
-	`village_type` VARCHAR(20) COMMENT '村庄类型',
-	`village_name` VARCHAR(50) COMMENT '村庄名称',
-
 	`address` TEXT COMMENT '完整地址',
 
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
-	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
-
-	INDEX codes(`country`, `province`, `city`, `county`, `town`, `village`)
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间'
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='地区表';
-CREATE INDEX `type` ON `region`(`type`);
-CREATE INDEX `country` ON `region`(`country`);
-CREATE INDEX `province` ON `region`(`province`);
-CREATE INDEX `city` ON `region`(`city`);
-CREATE INDEX `county` ON `region`(`county`);
-CREATE INDEX `town` ON `region`(`town`);
-CREATE INDEX `village` ON `region`(`village`);
-CREATE INDEX `type_country` ON `region`(`type`, `country`);
-CREATE INDEX `type_province` ON `region`(`type`, `province`);
-CREATE INDEX `type_city` ON `region`(`type`, `city`);
-CREATE INDEX `type_county` ON `region`(`type`, `county`);
-CREATE INDEX `type_town` ON `region`(`type`, `town`);
-CREATE INDEX `type_village` ON `region`(`type`, `village`);
+-- ALTER TABLE `region` ADD UNIQUE `type_province`(`type`, `province`);
+-- ALTER TABLE `region` ADD UNIQUE `type_city`(`type`, `city`);
+-- ALTER TABLE `region` ADD UNIQUE `type_county`(`type`, `county`);
+
 
 # 银行表
 DROP TABLE IF EXISTS `bank`;
@@ -88,7 +67,7 @@ CREATE TABLE `account` (
 	`type` TINYINT DEFAULT 1 COMMENT '类型',
 	`status` TINYINT DEFAULT 1 COMMENT '状态',
 
-	`uid` VARCHAR(32) NOT NULL UNIQUE COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL UNIQUE COMMENT '用户编号',
 	`level` TINYINT DEFAULT 1 COMMENT '等级',
 	`username` VARCHAR(64) NOT NULL UNIQUE COMMENT '账号',
 	`password` VARCHAR(64) NOT NULL COMMENT '密码',
@@ -108,7 +87,7 @@ CREATE TABLE `account` (
 	`county` VARCHAR(30) COMMENT '区县',
 	`town` VARCHAR(30) COMMENT '乡镇',
 
-	`inviter` VARCHAR(32) COMMENT '邀请者',
+	`inviter` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin COMMENT '邀请者',
 
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
@@ -125,7 +104,7 @@ CREATE TABLE `account_link` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
 	`status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态，0失效，1正常',
 
-	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`platform` INT DEFAULT 0 COMMENT '平台',
 	`appid` VARCHAR(64) COMMENT 'appid',
 	`unionid` VARCHAR(64) COMMENT '联合编号',
@@ -152,7 +131,7 @@ CREATE TABLE `account_authenticate` (
 	`type` TINYINT NOT NULL DEFAULT 1 COMMENT '类型，1身份证',
 	`status` TINYINT NOT NULL DEFAULT 2 COMMENT '状态，0失败，1通过，2待审核',
 
-	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`name` VARCHAR(50) COMMENT '姓名',
 	`code` VARCHAR(50) COMMENT '号码',
 	`country` VARCHAR(30) COMMENT '国家',
@@ -179,7 +158,7 @@ CREATE TABLE `account_address` (
 
 	`is_default` TINYINT NOT NULL DEFAULT 0 COMMENT '默认，0不是，1是',
 
-	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`name` VARCHAR(50) COMMENT '姓名',
 	`phone` VARCHAR(50) COMMENT '号码',
 
@@ -202,7 +181,7 @@ CREATE TABLE `account_bank` (
 
 	`is_default` TINYINT NOT NULL DEFAULT 0 COMMENT '默认，0不是，1是',
 
-	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`bank` INT NOT NULL COMMENT '银行卡',
 	`name` VARCHAR(50) COMMENT '姓名',
 	`card` VARCHAR(50) COMMENT '卡号',
@@ -223,7 +202,7 @@ CREATE TABLE `wallet` (
 	`type` INT DEFAULT 1 COMMENT '类型',
 	`status` INT DEFAULT 1 COMMENT '状态',
 
-	`uid` VARCHAR(32) NOT NULL UNIQUE COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL UNIQUE COMMENT '用户编号',
 
 	`money` DECIMAL(20,2) DEFAULT 0 COMMENT '可用余额',
 	`money2` DECIMAL(20,2) DEFAULT 0 COMMENT '冻结余额',
@@ -250,7 +229,7 @@ CREATE TABLE `wallet_record` (
 	`type` INT NOT NULL DEFAULT 0 COMMENT '类型',
 
 	`oid` VARCHAR(32) NOT NULL COMMENT '订单编号',
-	`uid` VARCHAR(32) NOT NULL COMMENT '用户编号',
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`coin` VARCHAR(20) NOT NULL COMMENT '资金类型，引用wallet表字段名称',
 
 	`before` DECIMAL(20,2) DEFAULT 0 COMMENT '之前金额',

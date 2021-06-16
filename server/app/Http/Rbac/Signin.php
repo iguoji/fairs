@@ -16,7 +16,7 @@ class Signin
     /**
      * 参数验证
      */
-    public static function verify(array $params) : array
+    public static function validate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -46,7 +46,7 @@ class Signin
             // 进行登录
             if ($req->isPost()) {
                 // 参数验证
-                $data = self::verify($req->all());
+                $data = self::validate($req->all());
                 // 获取账号
                 $admin = Admin::get($data['username'], 'username');
                 // 对比密码

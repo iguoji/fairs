@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Common;
 
 use Minimal\Facades\Db;
+use Minimal\Facades\App;
+use Minimal\Facades\Log;
 use Minimal\Support\Str;
 use Minimal\Facades\Cache;
 use Minimal\Facades\Config;
@@ -19,16 +21,32 @@ class Account
      */
     public static function uid(int $length = null) : string
     {
+        // 编号长度
         $length = $length ?? Config::get('app.account.inviter.length', 5);
+        // 循环次数
         $count = 1;
+        // 所用字符
+        $chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        $charsLenth = strlen($chars);
+        // 循环生成
         while (true) {
-            $array = str_split(str_shuffle('ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'), $length);
-            $values = Cache::mGet(array_map(fn($s) => 'account:uid:' . $s, $array));
+            // 生成多个编号
+            $array = [];
+            for ($i = 0;$i < 10; $i++) {
+                $str = '';
+                for ($j = 0;$j < $length; $j++) {
+                    $str .= $chars[mt_rand(0, $charsLenth - 1)];
+                }
+                $array[] = $str;
+            }
+            // 判断是否存在
+            $values = Cache::hMGet('account:uids', $array);
             foreach ($values as $key => $value) {
                 if (false === $value) {
-                    return $array[$key];
+                    return (string) $key;
                 }
             }
+            // 超过五次还没找到，长度增加
             $count++;
             if (!($count % 5)) {
                 $length++;
@@ -43,6 +61,100 @@ class Account
     {
         $secret = $secret ?? Config::get('app.secret', 'QQ123567231');
         return md5(sha1($secret) . crc32($chars));
+    }
+
+    /**
+     * 模拟数据
+     */
+    public static function mock(string $inviter = '', string|int $count = 10000) : bool
+    {
+        return \Swoole\Coroutine\run(function() use($inviter, $count){
+            // 获取缓存
+            $config = Config::get('cache', []);
+            $config['pool'] = 1;
+            App::set('cache', new \Minimal\Cache\Manager($config, 1));
+
+            // 获取数据库
+            $config = Config::get('db', []);
+            $config['pool'] = 1;
+            App::set('database', new \Minimal\Database\Manager($config, 1));
+
+            // 起始编号
+            $index = Cache::inc('account:mock');
+            // 添加数量
+            $count = (int) $count;
+            // 统一密码
+            $password = '123456';
+            // 已添加的用户编号
+            $uids = [$inviter];
+
+            try {
+                // 开启事务
+                Db::beginTransaction();
+
+                // 当前时间
+                $now = date('YmdHis');
+                $date = date('Y-m-d H:i:s');
+                $time = time();
+
+                // 江浙沪地区数据
+                $regions = Db::table('region')->where('province', 'in', [11, 31, 44])->where('type', 5)->all(
+                    'country', 'province', 'city', 'county', 'town'
+                );
+                $regionCount = count($regions);
+
+                // 循环处理
+                for ($i = 0; $i < $count; $i++, $index++) {
+                    // 随机地区
+                    $region = $regions[mt_rand(0, $regionCount - 1)];
+                    // 注册账号
+                    $uid = Account::add([
+                        'type'          =>  1,                                  // 账户类型
+                        'status'        =>  mt_rand(0, 10) <= 1 ? 0 : 1,        // 账户状态
+                        'level'         =>  1,                                  // 账户等级
+                        'username'      =>  'test_' . $now . '_' . $index,
+                        'password'      =>  $password,
+                        'safeword'      =>  $password,
+                        'phone'         =>  16800000000 + $index,
+                        'email'         =>  $index . '_' . $now . '@test.dev',
+                        'nickname'      =>  Str::random(mt_rand(2, 6), 4),
+                        'gender'        =>  mt_rand(1, 2),
+                        'birthday'      =>  date('Y-m-d', mt_rand(0, $time)),
+                        'country'       =>  $region['country'],
+                        'province'      =>  $region['province'],
+                        'city'          =>  $region['city'],
+                        'county'        =>  $region['county'],
+                        'town'          =>  $region['town'],
+                        'inviter'       =>  $uids[0],
+                        'created_at'    =>  $date,
+                    ]);
+                    // 注册钱包
+                    $bool = Wallet::new($uid);
+                    if (!$bool) {
+                        throw new Exception('很抱歉、钱包创建失败请重试！');
+                    }
+                    // 保存编号
+                    $uids[] = $uid;
+                    // 更换上级
+                    if (($i > 0 && $i % 50 == 0) || empty($uids[0])) {
+                        array_shift($uids);
+                    }
+                }
+
+                // 提交事务
+                Db::commit();
+            } catch (\Throwable $th) {
+                // 事务回滚
+                Db::rollback();
+                // 保存异常
+                Log::debug($th->getMessage(), [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ]);
+            }
+
+            // 返回结果
+            Cache::set('account:mock', $index);
+            Log::debug('成功添加：' . count($uids));
+
+        }) > 0;
     }
 
     /**
@@ -171,44 +283,33 @@ class Account
         // 查询数据
         $data = (clone $query)
             ->leftJoin('account', 'parent', 'parent.uid', 'a.inviter')
-            ->leftJoin('region', 'r1', function($query){
-                $query->where('r1.country', 'a.country')->where('r1.type', 1)->where('r1.country', '!=', null)->where('a.country', '!=', null);
-            })
-            ->leftJoin('region', 'r2', function($query){
-                $query->where('r2.province', 'a.province')->where('r2.type', 2)->where('r2.province', '!=', null)->where('a.province', '!=', null);
-            })
-            ->leftJoin('region', 'r3', function($query){
-                $query->where('r3.city', 'a.city')->where('r3.type', 3)->where('r3.city', '!=', null)->where('a.city', '!=', null);
-            })
-            ->leftJoin('region', 'r4', function($query){
-                $query->where('r4.county', 'a.county')->where('r4.type', 4)->where('r4.county', '!=', null)->where('a.county', '!=', null);
-            })
-            ->leftJoin('region', 'r5', function($query){
-                $query->where('r5.town', 'a.town')->where('r5.type', 5)->where('r5.town', '!=', null)->where('a.town', '!=', null);
-            })
             ->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
             ->orderByDesc('a.id')
             ->all(
                 'a.*',
-
                 ['parent.username' => 'parent_username'],
                 ['parent.country' => 'parent_country'],
                 ['parent.phone' => 'parent_phone'],
                 ['parent.email' => 'parent_email'],
                 ['parent.username' => 'parent_username'],
                 ['parent.nickname' => 'parent_nickname'],
-
-                ['r1.address' => 'r1_address'],
-                ['r2.address' => 'r2_address'],
-                ['r3.address' => 'r3_address'],
-                ['r4.address' => 'r4_address'],
-                ['r5.address' => 'r5_address'],
             );
         // 循环数据
         foreach ($data as $key => $value) {
             // 地址
-            $value['address'] = $value['r5_address'] ?? $value['r4_address'] ?? $value['r3_address'] ?? $value['r2_address'] ?? $value['r1_address'];
-            unset($value['r5_address'], $value['r4_address'], $value['r3_address'], $value['r2_address'], $value['r1_address']);
+            $region = [];
+            if (!empty($value['town'])) {
+                $region = Region::get($value['town'], 5);
+            } else if (!empty($value['county'])) {
+                $region = Region::get($value['county'], 4);
+            } else if (!empty($value['city'])) {
+                $region = Region::get($value['city'], 3);
+            } else if (!empty($value['province'])) {
+                $region = Region::get($value['province'], 2);
+            } else if (!empty($value['country'])) {
+                $region = Region::get($value['country'], 1);
+            }
+            $value['address'] = $region['address'] ?? '';
             // 上级
             $value['parent'] = [
                 'uid'       =>  $value['inviter'],
@@ -260,7 +361,7 @@ class Account
 
         // 保存编号
         $id = Db::lastInsertId();
-        Cache::set('account:uid:' . $data['uid'], $id);
+        Cache::hSet('account:uids', $data['uid'], $id);
 
         // 返回结果
         return $data['uid'];

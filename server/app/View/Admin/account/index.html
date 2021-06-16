@@ -28,37 +28,31 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">账号</label>
-                        <input type="text" class="form-control" name="username" placeholder="username" value="{$params['username']|default=''}" />
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">账户编号</label>
+                        <input type="text" class="form-control" name="uid" placeholder="用户自己的邀请码" value="{$params['uid']|default=''}" />
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">手机号码</label>
-                        <div class="input-group">
-                            <select class="form-select" name="country">
-                                {foreach $countrys as $key => $country}
-                                    {if isset($params['country']) && $params['country'] == $country['country']}
-                                        <option value="{$country['country']}" selected>{$country['country_name']}</option>
-                                    {else /}
-                                        <option value="{$country['country']}">{$country['country_name']}</option>
-                                    {/if}
-                                {/foreach}
-                            </select>
-                            <input type="text" class="form-control w-50" name="phone" placeholder="18721889831" value="{$params['phone']|default=''}" />
-                        </div>
+                        <label class="form-label">登录账号</label>
+                        <input type="text" class="form-control" name="username" placeholder="用户名\手机\邮箱" value="{$params['username']|default=''}" />
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">邮箱</label>
-                        <input type="text" class="form-control" name="email" placeholder="asgeg@qq.com" value="{$params['email']|default=''}" />
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">个性昵称</label>
-                        <input type="text" class="form-control" name="nickname" placeholder="例如：张三" value="{$params['nickname']|default=''}" />
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">上级编号</label>
+                        <input type="text" class="form-control" name="inviter" placeholder="查询所有下级" value="{$params['inviter']|default=''}" />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">状态</label>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">会员级别</label>
+                        <select class="form-select" name="status">
+                            <option value="">全部</option>
+                            <option value="0">未知</option>
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">账户状态</label>
                         <select class="form-select" name="status">
                             {if isset($params['status']) && $params['status'] == 1}
                                 <option value="">全部</option>
@@ -75,9 +69,79 @@
                             {/if}
                         </select>
                     </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">实名认证</label>
+                        <select class="form-select" name="status">
+                            <option value="">全部</option>
+                            <option value="0">未知</option>
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">是否绑卡</label>
+                        <select class="form-select" name="status">
+                            <option value="">全部</option>
+                            <option value="0">未知</option>
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">上级邀请码</label>
-                        <input type="text" class="form-control" name="inviter" placeholder="ABCD" value="{$params['inviter']|default=''}" />
+                        <label class="form-label">个性昵称</label>
+                        <input type="text" class="form-control" name="nickname" placeholder="例如：张三" value="{$params['nickname']|default=''}" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">性别</label>
+                        <select class="form-select" name="status">
+                            <option value="">全部</option>
+                            <option value="0">未知</option>
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">出生年月</label>
+                        <input type="text" class="form-control flatpickr" name="birthday" data-format="Y-m-d" data-enable-time="false" placeholder="2021-08-08" value="{$params['birthday']|default=''}" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row region">
+                            <div class="col mb-3">
+                                <label class="form-label">国家</label>
+                                <select name="country" class="form-select">
+                                    <option value="">请选择国家</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">省份</label>
+                                <select name="province" class="form-select">
+                                    <option value="">请选择省份</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">城市</label>
+                                <select name="city" class="form-select">
+                                    <option value="">请选择城市</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">区县</label>
+                                <select name="county" class="form-select">
+                                    <option value="">请选择区县</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">乡镇</label>
+                                <select name="town" class="form-select">
+                                    <option value="">请选择乡镇</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -125,6 +189,19 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">账户列表</h3>
+                <div class="card-options">
+                    <span class="dropdown">
+                        <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">操作</button>
+                        <div class="dropdown-menu">
+                            <a href="/account/edit.html?uid=&status=0" class="dropdown-item">冻结</a>
+                            <a href="/account/edit.html?uid=&status=1" class="dropdown-item">解冻</a>
+                            <a href="javascript:;" class="dropdown-item btn-goPassword" data-uid="">密码</a>
+                            <a href="javascript:;" class="dropdown-item btn-goProfile" data-uid="">档案</a>
+                            <a href="javascript:;" class="dropdown-item btn-goEdit" data-uid="">编辑</a>
+                            <a href="/account/remove.html?uid=" class="dropdown-item btn-danger btn-modal-confirm">删除</a>
+                        </div>
+                    </span>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table card-table table-vcenter text-nowrap datatable">
@@ -134,69 +211,65 @@
                                 <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
                             </th>
                             <th>头像</th>
+                            <th>编号</th>
                             <th>账号</th>
-                            <th>手机</th>
-                            <th>邮箱</th>
                             <th>状态</th>
+                            <th>手机邮箱</th>
                             <th>上级</th>
-                            <th>余额</th>
-                            <th>积分</th>
-                            <th>数额</th>
-                            <th></th>
+                            <th>性别</th>
+                            <th>生日</th>
+                            <th>地址</th>
                         </tr>
                     </thead>
                     <tbody>
                         {foreach $accounts as $key => $account}
                             <tr>
                                 <td>
-                                    <label class="form-check mb-0">
-                                        <input class="form-check-input align-middle checkBoxItem" type="checkbox" aria-label="Select invoice">
-                                        <span class="form-check-label text-muted">{$account['uid']}</span>
-                                    </label>
+                                    <input class="form-check-input align-middle checkBoxItem" type="checkbox" aria-label="Select invoice">
                                 </td>
-                                <td><a class="avatar btn-goProfile" href="javascript:;" style="background-image: url({$account['avatar']});" data-uid="{$account['uid']}"></a></td>
                                 <td>
-                                    <span class="d-block small text-muted">{$account['nickname']}</span>
-                                    {if true === :\App\Common\Admin::check('/account/edit.html') }
-                                        <a href="javascript:;" class="text-reset btn-goEdit" data-uid="{$account['uid']}">{$account['username']}</a>
+                                    <a class="avatar" href="javascript:;" style="background-image: url({$account['avatar']});"></a>
+                                </td>
+                                <td>
+                                    <div class="small text-muted mb-1">{$account['uid']}</div>
+                                    <div><span class="badge bg-green-lt">普通会员</span></div>
+                                </td>
+                                <td>
+                                    <div class="small text-muted">{$account['nickname']}</div>
+                                    <a href="/account/read.html?uid={$account['uid']}" class="text-blue">{$account['username']}</a>
+                                </td>
+                                <td>
+                                    {if $account['status'] != 1}
+                                        <span class="badge bg-azure me-1">冻结</span>
+                                        <span class="badge me-1">认证</span>
+                                        <span class="badge me-1">绑卡</span>
                                     {else /}
-                                        <a href="javascript:;" class="text-reset" data-uid="{$account['uid']}">{$account['username']}</a>
+                                        <span class="badge bg-green me-1">正常</span>
+                                        <span class="badge bg-green me-1">认证</span>
+                                        <span class="badge bg-green me-1">绑卡</span>
                                     {/if}
                                 </td>
-                                <td>{notempty name="$account['phone']"}({$account['country']}) {$account['phone']}{/notempty}</td>
-                                <td>{$account['email']}</td>
                                 <td>
-                                    {if $account['status'] == 1}
-                                        <span class="badge bg-success me-1"></span> 正常
-                                    {else /}
-                                        <span class="badge bg-warning me-1"></span> 冻结
-                                    {/if}
+                                    <div class="text-muted">({$account['country']}) {$account['phone']}</div>
+                                    <div>{$account['email']}</div>
                                 </td>
                                 <td>
                                     {notempty name="$account['inviter']"}
-                                        <span class="d-block small text-muted">{$account['parent']['nickname']}</span>
+                                        <div class="small text-muted">{$account['parent']['nickname']}</div>
                                         <a href="javascript:;" class="text-reset btn-goEdit" data-uid="{$account['parent']['uid']}">{$account['parent']['username']}</a>
                                     {/notempty}
                                 </td>
-                                <td>{:mt_rand(0, 999999)}</td>
-                                <td>{:mt_rand(0, 999999)}</td>
-                                <td>{:mt_rand(0, 999999)}</td>
-                                <td class="text-end">
-                                    <span class="dropdown">
-                                        <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">操作</button>
-                                        <div class="dropdown-menu">
-                                            {if $account['status'] === 1}
-                                                <a href="/account/edit.html?uid={$account['uid']}&status=0" class="dropdown-item">冻结</a>
-                                            {else /}
-                                                <a href="/account/edit.html?uid={$account['uid']}&status=1" class="dropdown-item">解冻</a>
-                                            {/if}
-                                            <a href="javascript:;" class="dropdown-item btn-goPassword" data-uid="{$account['uid']}">密码</a>
-                                            <a href="javascript:;" class="dropdown-item btn-goProfile" data-uid="{$account['uid']}">档案</a>
-                                            <a href="javascript:;" class="dropdown-item btn-goEdit" data-uid="{$account['uid']}">编辑</a>
-                                            <a href="/account/remove.html?uid={$account['uid']}" class="dropdown-item btn-danger btn-modal-confirm">删除</a>
-                                        </div>
-                                    </span>
+                                <td>
+                                    {if $account['gender'] === 1}
+                                    男
+                                    {elseif $account['gender'] === 2}
+                                    女
+                                    {else /}
+                                    未知
+                                    {/if}
                                 </td>
+                                <td>{$account['birthday']}</td>
+                                <td>{$account['address']}</td>
                             </tr>
                         {/foreach}
                     </tbody>
@@ -324,7 +397,7 @@
                             <div class="input-group">
                                 <select class="form-select" name="country">
                                     {foreach $countrys as $key => $country}
-                                        <option value="{$country['country']}">{$country['country_name']}</option>
+                                        <option value="{$country['id']}">{$country['name']}</option>
                                     {/foreach}
                                 </select>
                                 <input type="text" class="form-control w-50" name="phone" placeholder="选填，例如：18721889831" />
@@ -385,7 +458,7 @@
                             <div class="input-group">
                                 <select class="form-select" name="country">
                                     {foreach $countrys as $key => $country}
-                                        <option value="{$country['country']}">{$country['country_name']}</option>
+                                        <option value="{$country['id']}">{$country['name']}</option>
                                     {/foreach}
                                 </select>
                                 <input type="text" class="form-control w-50" name="phone" placeholder="选填，例如：18721889831" />

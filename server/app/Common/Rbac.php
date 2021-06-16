@@ -41,6 +41,25 @@ class Rbac
                         ['编辑账户', '/account/edit.html', '', [], 0],
                         ['删除账户', '/account/remove.html', '', [], 0],
                     ]],
+                    ['实名认证', '/account/authentication.html', '', [
+                        ['查看账户实名认证详情', '/account/authentication/read.html', '', [], 0],
+                        ['编辑账户实名认证', '/account/authentication/edit.html', '', [], 0],
+                        ['删除账户实名认证', '/account/authentication/remove.html', '', [], 0],
+                    ]],
+                    ['关系', '/account/relation.html', '', [
+                        ['查看账户关系详情', '/account/relation/read.html', '', [], 0],
+                        ['编辑账户关系', '/account/relation/edit.html', '', [], 0],
+                    ]],
+                    ['银行卡', '/account/bank.html', '', [
+                        ['查看账户银行卡详情', '/account/bank/read.html', '', [], 0],
+                        ['编辑账户银行卡', '/account/bank/edit.html', '', [], 0],
+                        ['删除账户银行卡', '/account/bank/remove.html', '', [], 0],
+                    ]],
+                    ['收货地址', '/account/address.html', '', [
+                        ['查看账户收货地址详情', '/account/address/read.html', '', [], 0],
+                        ['编辑账户收货地址', '/account/address/edit.html', '', [], 0],
+                        ['删除账户收货地址', '/account/address/remove.html', '', [], 0],
+                    ]],
                 ]],
 
                 ['商品管理', '', $icon_goods, [

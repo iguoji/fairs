@@ -16,7 +16,7 @@ class Save
     /**
      * 参数验证
      */
-    public static function verify(array $params) : array
+    public static function validate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -46,7 +46,7 @@ class Save
 
         try {
             // 参数验证
-            $data = self::verify($req->all());
+            $data = self::validate($req->all());
             // 添加角色
             Rbac::addRole($data);
         } catch (\Throwable $th) {

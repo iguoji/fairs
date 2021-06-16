@@ -174,9 +174,13 @@ class Edit
         }
 
         // 返回结果
-        return $res->redirect('/account.html', [
-            'exception' =>  $exception,
-        ]);
+        if ($req->isAjax()) {
+            return $res->json('', $exception[0] ?? 200, $exception[1] ?? '');
+        } else {
+            return $res->redirect('/account.html', [
+                'exception' =>  $exception,
+            ]);
+        }
     }
 
     /**

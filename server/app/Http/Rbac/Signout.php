@@ -14,7 +14,7 @@ class Signout
     /**
      * 参数验证
      */
-    public static function verify(array $params) : array
+    public static function validate(array $params) : array
     {}
 
     /**

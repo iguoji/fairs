@@ -16,7 +16,7 @@ class Remove
     /**
      * 参数验证
      */
-    public static function verify(array $params) : array
+    public static function validate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
@@ -43,7 +43,7 @@ class Remove
 
         try {
             // 参数验证
-            $data = self::verify($req->all());
+            $data = self::validate($req->all());
             // 执行操作
             Account::del($data['uid']);
         } catch (\Throwable $th) {

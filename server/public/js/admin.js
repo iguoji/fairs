@@ -305,16 +305,33 @@ $(function(){
 
     // 图片上传
     $('.avatar-upload').on('change', 'input[type=file]', function(){
-        var file = $(this)[0].files[0];
-        $parent = $(this).parents('.avatar-upload');
-        ajax.upload('/file/upload', {file: file}, function(res){
-            if (res && res.code == 200) {
-                $parent.css('backgroundImage', 'url(' + res.data.url + ')');
-                $parent.parents('.avatar-container').find('.avatar-input').val(res.data.url);
-            } else {
-                toastr(res && res.message ? res.message : '很抱歉、服务器繁忙！');
-            }
-        });
+        var files = $(this)[0].files;
+        if (files.length) {
+            $that = $(this);
+            $parent = $(this).parents('.avatar-upload');
+            ajax.upload('/file/upload', {file: files[0]}, function(res){
+                $that.after($that.clone().val('').attr('index', Date.now())).remove();;
+                if (res && res.code == 200) {
+                    $parent.css('backgroundImage', 'url(' + res.data.url + ')');
+                    $input = $parent.parents('.avatar-container').find('.avatar-input')
+                    $input.val(res.data.url);
+                    $input.trigger('change');
+                } else {
+                    toastr(res && res.message ? res.message : '很抱歉、服务器繁忙！');
+                }
+            });
+        }
+    });
+    // 图片清除
+    $('.avatar-upload-clear').on('click', function(){
+        $container = $(this).parents('.avatar-container');
+        var oldValue = $container.find('.avatar-input').val();
+        if (oldValue.trim() == '') {
+            return;
+        }
+        $container.find('.avatar-input').val('  ');
+        $container.find('.avatar-input').trigger('change');
+        $container.find('.avatar').css('backgroundImage', 'none');
     });
 
 

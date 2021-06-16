@@ -1,0 +1,99 @@
+{extend name="layout/admin" }
+{block name="title"}账户关系{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Relations</div>
+            <h2 class="page-title">关系</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="输入用户编号\账号\手机\邮箱">
+                    <button class="btn" type="button">查看</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">账户列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th class="w-1">
+                                <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
+                            </th>
+                            <th>头像</th>
+                            <th>账号</th>
+                            <th>状态</th>
+                            <th>下级</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $accounts as $key => $account}
+                            <tr>
+                                <td>
+                                    <label class="form-check mb-0">
+                                        <input class="form-check-input align-middle checkBoxItem" type="checkbox" aria-label="Select invoice">
+                                        <span class="form-check-label text-muted">{$account['uid']}</span>
+                                    </label>
+                                </td>
+                                <td><a class="avatar btn-goProfile" href="javascript:;" style="background-image: url({$account['avatar']});" data-uid="{$account['uid']}"></a></td>
+                                <td>
+                                    <span class="d-block small text-muted">{$account['nickname']}</span>
+                                    <a href="javascript:;" class="text-reset" data-uid="{$account['uid']}">{$account['username']}</a>
+                                </td>
+                                <td>
+                                    {if $account['status'] == 1}
+                                        <span class="badge bg-success me-1"></span> 正常
+                                    {else /}
+                                        <span class="badge bg-warning me-1"></span> 冻结
+                                    {/if}
+                                </td>
+                                <td>{:mt_rand(0, 99999)}</td>
+                                <td class="text-end">
+                                    <span class="dropdown">
+                                        <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">操作</button>
+                                        <div class="dropdown-menu">
+                                            {if $account['status'] === 1}
+                                                <a href="/account/edit.html?uid={$account['uid']}&status=0" class="dropdown-item">冻结</a>
+                                            {else /}
+                                                <a href="/account/edit.html?uid={$account['uid']}&status=1" class="dropdown-item">解冻</a>
+                                            {/if}
+                                            <a href="javascript:;" class="dropdown-item btn-goPassword" data-uid="{$account['uid']}">密码</a>
+                                            <a href="javascript:;" class="dropdown-item btn-goProfile" data-uid="{$account['uid']}">档案</a>
+                                            <a href="javascript:;" class="dropdown-item btn-goEdit" data-uid="{$account['uid']}">编辑</a>
+                                            <a href="/account/remove.html?uid={$account['uid']}" class="dropdown-item btn-danger btn-modal-confirm">删除</a>
+                                        </div>
+                                    </span>
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                {:pagination($total, $size)}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{/block}
+{block name="script"}
+<script>
+$(function(){
+
+});
+</script>
+{/block}
