@@ -35,7 +35,7 @@ class Signin
         switch ($action) {
             // 手机 + 短信验证码/密码
             case 'mobile':
-                $validate->int('country', '国家区号')->require()->length(1, 24)->digit();
+                $validate->string('country', '国家区号')->require()->length(1, 24)->digit();
                 $validate->int('phone', '手机号码')
                     ->require()->length(5, 30)->digit()
                     ->call(function($value, $values){

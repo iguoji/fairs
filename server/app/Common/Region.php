@@ -66,6 +66,7 @@ class Region
                 Db::table('region')->truncate();
 
                 // 循环中国省级
+                $provinceCount = count($provinces);
                 foreach ($provinces as $key1 => $province) {
                     // 添加省级
                     $provinceAddress = $province['name'];
@@ -77,6 +78,7 @@ class Region
                     }
                     $bool = static::add([
                         'type'          =>  2,
+                        'sort'          =>  ($provinceCount - $key1) * 10,
                         'province'      =>  $province['code'],
                         'province_name' =>  $province['name'],
                         'address'       =>  $provinceAddress,
@@ -86,6 +88,7 @@ class Region
                         throw new Exception('很抱歉、省级[' . $province['name'] . ']添加失败！');
                     }
                     // 循环中国市级
+                    $cityCount = count($citys);
                     foreach ($citys as $key2 => $city) {
                         // 添加市级
                         if ($city['provinceCode'] == $province['code']) {
@@ -98,6 +101,7 @@ class Region
                             }
                             $bool = static::add([
                                 'type'          =>  3,
+                                'sort'          =>  ($cityCount - $key2) * 10,
                                 'province'      =>  $province['code'],
                                 'province_name' =>  $province['name'],
                                 'city'          =>  $city['code'],
@@ -109,11 +113,13 @@ class Region
                                 throw new Exception('很抱歉、市级[' . $province['name'] . $city['name'] . ']添加失败！');
                             }
                             // 循环中国区级
+                            $countyCount = count($countys);
                             foreach ($countys as $key3 => $county) {
                                 // 添加市级
                                 if ($county['cityCode'] == $city['code'] && $county['provinceCode'] == $province['code']) {
                                     $bool = static::add([
                                         'type'          =>  4,
+                                        'sort'          =>  ($countyCount - $key3) * 10,
                                         'province'      =>  $province['code'],
                                         'province_name' =>  $province['name'],
                                         'city'          =>  $city['code'],
@@ -140,74 +146,97 @@ class Region
     }
 
     /**
-     * 获取指定数据
+     * 根据地区类型获取字段
      */
-    public static function get(string $id, int $type = 1) : array
+    public static function getFieldByType(int $type) : array
     {
         $field = '';
+        $fields = [];
+        $parent = '';
         switch ($type) {
             case 1:
                 $field = 'country';
-                $fields = [['country' => 'id'], ['country_name' => 'name']];
+                $fields = [['country' => 'id'], ['country_name' => 'name'], 'address'];
                 break;
             case 2:
                 $field = 'province';
-                $fields = [['province' => 'id'], ['province_name' => 'name']];
+                $fields = [['province' => 'id'], ['province_name' => 'name'], 'address'];
+                $parent = 'country';
                 break;
             case 3:
                 $field = 'city';
-                $fields = [['city' => 'id'], ['city_name' => 'name']];
+                $fields = [['city' => 'id'], ['city_name' => 'name'], 'address'];
+                $parent = 'province';
                 break;
             case 4:
                 $field = 'county';
-                $fields = [['county' => 'id'], ['county_name' => 'name']];
+                $fields = [['county' => 'id'], ['county_name' => 'name'], 'address'];
+                $parent = 'city';
                 break;
             case 5:
                 $field = 'town';
-                $fields = [['town' => 'id'], ['town_name' => 'name']];
+                $fields = [['town' => 'id'], ['town_name' => 'name'], 'address'];
+                $parent = 'county';
                 break;
             case 6:
                 $field = 'village';
-                $fields = [['village' => 'id'], ['village_name' => 'name']];
+                $fields = [['village' => 'id'], ['village_name' => 'name'], 'address'];
+                $parent = 'town';
                 break;
             default:
                 break;
         }
 
-        return Db::table('region')->where('type', $type)->where($field, $id)->first();
+        // 返回结果
+        return [$field, $fields, $parent];
+    }
+
+    /**
+     * 获取全部地区数据
+     */
+    public static function all(array $params = []) : array
+    {
+        // 查询对象
+        $query = Db::table('region');
+
+        // 显示字段
+        $fields = [['province' => 'id'], ['province_name' => 'name'], 'address'];
+
+        // 条件：按类型查询
+        if (isset($params['type'])) {
+            $query->where('type', $params['type']);
+        }
+        // 条件：按省份查询
+        if (isset($params['province'])) {
+            $fields = [['city' => 'id'], ['city_name' => 'name'], 'address'];
+            $query->where('province', $params['province']);
+        }
+        // 条件：按城市查询
+        if (isset($params['city'])) {
+            $fields = [['county' => 'id'], ['county_name' => 'name'], 'address'];
+            $query->where('city', $params['city']);
+        }
+
+        // 返回结果
+        return $query->orderBy('type')->orderByDesc('sort')->all(...$fields);
+    }
+
+    /**
+     * 获取指定地区数据
+     */
+    public static function get(string $id, int $type = 1) : array
+    {
+        list($field, $fields) = static::getFieldByType($type);
+
+        return Db::table('region')->where('type', $type)->where($field, $id)->first(...$fields);
     }
 
     /**
      * 指定地区是否存在
      */
-    public static function has(string $country = null, string $province = null, string $city = null, string $county = null, string $town = null, string $village = null) : bool
+    public static function has(string $id, int $type = 1) : bool
     {
-        if (!func_num_args()) {
-            return false;
-        }
-
-        $query = Db::table('region');
-
-        if (!is_null($country)) {
-            $query->where('country', $country);
-        }
-        if (!is_null($province)) {
-            $query->where('province', $province);
-        }
-        if (!is_null($city)) {
-            $query->where('city', $city);
-        }
-        if (!is_null($county)) {
-            $query->where('county', $county);
-        }
-        if (!is_null($town)) {
-            $query->where('town', $town);
-        }
-        if (!is_null($village)) {
-            $query->where('village', $village);
-        }
-
-        return !empty($query->first());
+        return !empty(static::get($id, $type));
     }
 
     /**
@@ -222,56 +251,66 @@ class Region
     }
 
     /**
-     * 所有国家信息
+     * 获取所有国家信息
      */
     public static function countrys() : array
     {
-        return static::data();
+        return [
+            [
+                'id'    =>  86,
+                'name'  =>  '中国',
+            ],
+        ];
     }
 
     /**
-     * 获取数据
+     * 获取所有省份信息
      */
-    public static function data(int $type = 1, string $parent = null) : array
+    public static function provinces(string $country = '86') : array
     {
-        $fields = ['*'];
-        $parentField = null;
-        switch ($type) {
-            case 1:
-                $fields = [['country' => 'id'], ['country_name' => 'name']];
-                break;
-            case 2:
-                $parentField = 'country';
-                $fields = [['province' => 'id'], ['province_name' => 'name']];
-                break;
-            case 3:
-                $parentField = 'province';
-                $fields = [['city' => 'id'], ['city_name' => 'name']];
-                break;
-            case 4:
-                $parentField = 'city';
-                $fields = [['county' => 'id'], ['county_name' => 'name']];
-                break;
-            case 5:
-                $parentField = 'county';
-                $fields = [['town' => 'id'], ['town_name' => 'name']];
-                break;
-            case 6:
-                $parentField = 'town';
-                $fields = [['village' => 'id'], ['village_name' => 'name']];
-                break;
-            default:
-                break;
+        if ($country != '86') {
+            // 其他国家
+            return [];
+        } else {
+            // 中国
+            return static::all([
+                'type'  =>  2,
+            ]);
         }
+    }
 
-        // 查询对象
-        $query = Db::table('region')->where('type', $type);
-        // 按上级查询
-        if (!is_null($parentField)) {
-            $query->where($parentField, $parent);
+    /**
+     * 获取所有城市信息
+     */
+    public static function citys(string $province, string $country = '86') : array
+    {
+        if ($country != '86') {
+            // 其他国家
+            return [];
+        } else {
+            // 中国
+            return static::all([
+                'type'      =>  3,
+                'province'  =>  $province,
+            ]);
         }
+    }
 
-        // 返回结果
-        return $query->orderBy('id')->all(...$fields);
+    /**
+     * 获取所有区县信息
+     */
+    public static function countys(string $city, string $province, string $country = '86') : array
+    {
+        if ($country != '86') {
+            // 其他国家
+            return [];
+        } else {
+            // 中国
+            return static::all([
+                'type'      =>  4,
+                'province'  =>  $province,
+                'city'      =>  $city,
+            ]);
+        }
     }
 }

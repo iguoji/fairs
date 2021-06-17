@@ -23,16 +23,30 @@ class Index
         $validate = new Validate($params);
 
         // 参数细节
-        $validate->string('username', '账号');
-        $validate->int('country', '国家');
-        $validate->int('phone', '手机号码');
-        $validate->string('email', '邮箱');
-        $validate->string('nickname', '昵称');
+        $validate->int('type', '类型');
         $validate->int('status', '状态');
+        $validate->int('level', '等级');
+        $validate->string('uid', '编号');
+        $validate->string('keyword', '账号关键字');
+        $validate->string('username', '用户名');
+        $validate->string('phone', '手机号码');
+        $validate->string('email', '邮箱地址');
+
+        $validate->string('nickname', '昵称');
+        $validate->string('gender', '性别')->in('0', '1', '2');
+        $validate->string('birthday', '出生年月')->date('Y-m-d');
+
+        $validate->string('country', '国家')->digit();
+        $validate->string('province', '省份')->digit();
+        $validate->string('city', '城市')->digit();
+        $validate->string('county', '区县')->digit();
+
         $validate->string('inviter', '上级邀请码');
         $validate->string('created_start_at', '注册起始时间')->date();
         $validate->string('created_end_at', '注册截止时间')->date();
+
         $validate->int('pageNo', '当前页码')->default(1);
+        $validate->int('pageSize', '每页数量')->default(20);
 
         // 返回结果
         return $validate->check();
@@ -51,6 +65,35 @@ class Index
         $accounts = [];
         // 国家列表
         $countrys = [];
+        // 会员级别
+        $levels = [
+            ''      =>  '全部',
+        ];
+        // 账户状态
+        $statuses = [
+            ''      =>  '全部',
+            '1'     =>  '正常',
+            '0'     =>  '冻结',
+        ];
+        // 实名认证
+        $authentications = [
+            ''      =>  '全部',
+            '1'     =>  '是',
+            '0'     =>  '否',
+        ];
+        // 是否绑卡
+        $isBindCards = [
+            ''      =>  '全部',
+            '1'     =>  '是',
+            '0'     =>  '否',
+        ];
+        // 性别
+        $genders = [
+            ''      =>  '全部',
+            '0'     =>  '未知',
+            '1'     =>  '男',
+            '2'     =>  '女',
+        ];
         // 账户总数
         $total = 0;
         // 每页数量
@@ -59,27 +102,61 @@ class Index
         // 权限验证
         $admin = Admin::verify($req);
 
-        try {
+        // Ajax
+        if ($req->isAjax()) {
             // 验证参数
             $params = $this->validate($req->all());
-            // 国家信息
-            $countrys = Region::countrys();
             // 账户列表
             $params['pageSize'] = $size;
             list($accounts, $total) = Account::all($params);
-        } catch (\Throwable $th) {
-            // 保存异常
-            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
-        }
 
-        // 返回结果
-        return $res->html('admin/account/index', [
-            'params'    =>  $params,
-            'accounts'  =>  $accounts,
-            'countrys'  =>  $countrys,
-            'total'     =>  $total,
-            'size'      =>  $size,
-            'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
-        ]);
+            // 返回结果
+            return [
+                'list'  =>  $accounts,
+                'total' =>  $total,
+                'page'  =>  $params['pageNo'],
+                'size'  =>  $size,
+            ];
+        } else {
+            try {
+                // 验证参数
+                $params = $this->validate($req->all());
+                // 账号参数
+                $username = $params['username'] ?? '';
+                if (isset($params['username'])) {
+                    if (ctype_digit($params['username'])) {
+                        $params['phone'] = $params['username'];
+                        unset($params['username']);
+                    } else if (filter_var($params['username'], FILTER_VALIDATE_EMAIL)) {
+                        $params['email'] = $params['username'];
+                        unset($params['username']);
+                    }
+                }
+                // 账户列表
+                $params['pageSize'] = $size;
+                list($accounts, $total) = Account::all($params);
+                // 参数补齐
+                if (!isset($params['username'])) {
+                    $params['username'] = $username;
+                }
+            } catch (\Throwable $th) {
+                // 保存异常
+                $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+            }
+
+            // 返回结果
+            return $res->html('admin/account/index', [
+                'params'            =>  $params,
+                'accounts'          =>  $accounts,
+                'total'             =>  $total,
+                'size'              =>  $size,
+                'levels'            =>  $levels,
+                'statuses'          =>  $statuses,
+                'authentications'   =>  $authentications,
+                'isBindCards'       =>  $isBindCards,
+                'genders'           =>  $genders,
+                'exception'         =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
+            ]);
+        }
     }
 }

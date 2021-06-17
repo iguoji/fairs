@@ -65,6 +65,7 @@ class Account
 
     /**
      * 模拟数据
+     * php minimal \\App\\Common\\Account mock xE7c
      */
     public static function mock(string $inviter = '', string|int $count = 10000) : bool
     {
@@ -98,9 +99,7 @@ class Account
                 $time = time();
 
                 // 江浙沪地区数据
-                $regions = Db::table('region')->where('province', 'in', [11, 31, 44])->where('type', 5)->all(
-                    'country', 'province', 'city', 'county', 'town'
-                );
+                $regions = Db::table('region')->where('province', 'in', ['11', '31', '44'])->where('type', 4)->all('province', 'city', 'county');
                 $regionCount = count($regions);
 
                 // 循环处理
@@ -120,11 +119,9 @@ class Account
                         'nickname'      =>  Str::random(mt_rand(2, 6), 4),
                         'gender'        =>  mt_rand(1, 2),
                         'birthday'      =>  date('Y-m-d', mt_rand(0, $time)),
-                        'country'       =>  $region['country'],
                         'province'      =>  $region['province'],
                         'city'          =>  $region['city'],
                         'county'        =>  $region['county'],
-                        'town'          =>  $region['town'],
                         'inviter'       =>  $uids[0],
                         'created_at'    =>  $date,
                     ]);
@@ -239,39 +236,83 @@ class Account
         // 查询对象
         $query = Db::table('account', 'a');
 
-        // 条件：按账号查询
-        if (isset($params['username'])) {
-            $query->where('a.username', $params['username']);
-        }
-        // 条件：按国家查询
-        if (isset($params['country'])) {
-            $query->where('a.country', $params['country']);
-        }
-        // 条件：按手机查询
-        if (isset($params['phone'])) {
-            $query->where('a.phone', $params['phone']);
-        }
-        // 条件：按邮箱查询
-        if (isset($params['email'])) {
-            $query->where('a.email', $params['email']);
-        }
-        // 条件：按昵称查询
-        if (isset($params['nickname'])) {
-            $query->where('a.nickname', $params['nickname']);
+        // 条件：按类型查询
+        if (isset($params['type'])) {
+            $query->where('a.type', $params['type']);
         }
         // 条件：按状态查询
         if (isset($params['status'])) {
             $query->where('a.status', $params['status']);
         }
+        // 条件：按级别查询
+        if (isset($params['level'])) {
+            $query->where('a.level', $params['level']);
+        }
+
+        // 条件：按编号查询
+        if (isset($params['uid'])) {
+            $query->where('a.uid', $params['uid']);
+        }
+        // 条件：按账号关键字查询
+        if (isset($params['keyword'])) {
+            $query->orWhere(function($query1) use($params){
+                $query1->orWhere('a.username', 'like', '%' . $params['keyword'] . '%')
+                    ->orWhere('a.phone', 'like', '%' . $params['keyword'] . '%')
+                    ->orWhere('a.email', 'like', '%' . $params['keyword'] . '%');
+            });
+        }
+        // 条件：按账号查询
+        if (isset($params['username'])) {
+            $query->where('a.username', 'like', '%' . $params['username'] . '%');
+        }
+        // 条件：按手机查询
+        if (isset($params['phone'])) {
+            $query->where('a.phone', 'like', '%' . $params['phone'] . '%');
+        }
+        // 条件：按邮箱查询
+        if (isset($params['email'])) {
+            $query->where('a.email', 'like', '%' . $params['email'] . '%');
+        }
+
+        // 条件：按昵称查询
+        if (isset($params['nickname'])) {
+            $query->where('a.nickname', $params['nickname']);
+        }
+        // 条件：按性别查询
+        if (isset($params['gender'])) {
+            $query->where('a.gender', $params['gender']);
+        }
+        // 条件：按生日查询
+        if (isset($params['birthday'])) {
+            $query->where('a.birthday', $params['birthday']);
+        }
+
+        // 条件：按国家查询
+        if (isset($params['country'])) {
+            $query->where('a.country', $params['country']);
+        }
+        // 条件：按省查询
+        if (isset($params['province'])) {
+            $query->where('a.province', $params['province']);
+        }
+        // 条件：按市查询
+        if (isset($params['city'])) {
+            $query->where('a.city', $params['city']);
+        }
+        // 条件：按区查询
+        if (isset($params['county'])) {
+            $query->where('a.county', $params['county']);
+        }
+
         // 条件：按上级邀请码查询
         if (isset($params['inviter'])) {
             $query->where('a.inviter', $params['inviter']);
         }
-        // 条件：按起始时间查询
+        // 条件：按注册起始时间查询
         if (isset($params['created_start_at'])) {
             $query->where('a.created_at', '>=', $params['created_start_at']);
         }
-        // 条件：按截止时间查询
+        // 条件：按注册截止时间查询
         if (isset($params['created_end_at'])) {
             $query->where('a.created_at', '<=', $params['created_end_at']);
         }
@@ -287,27 +328,24 @@ class Account
             ->orderByDesc('a.id')
             ->all(
                 'a.*',
-                ['parent.username' => 'parent_username'],
-                ['parent.country' => 'parent_country'],
-                ['parent.phone' => 'parent_phone'],
-                ['parent.email' => 'parent_email'],
-                ['parent.username' => 'parent_username'],
-                ['parent.nickname' => 'parent_nickname'],
+                ['parent.username'  => 'parent_username'],
+                ['parent.country'   => 'parent_country'],
+                ['parent.phone'     => 'parent_phone'],
+                ['parent.email'     => 'parent_email'],
+                ['parent.username'  => 'parent_username'],
+                ['parent.nickname'  => 'parent_nickname'],
+                ['parent.avatar'    => 'parent_avatar'],
             );
         // 循环数据
         foreach ($data as $key => $value) {
             // 地址
             $region = [];
-            if (!empty($value['town'])) {
-                $region = Region::get($value['town'], 5);
-            } else if (!empty($value['county'])) {
+            if (!empty($value['county'])) {
                 $region = Region::get($value['county'], 4);
             } else if (!empty($value['city'])) {
                 $region = Region::get($value['city'], 3);
             } else if (!empty($value['province'])) {
                 $region = Region::get($value['province'], 2);
-            } else if (!empty($value['country'])) {
-                $region = Region::get($value['country'], 1);
             }
             $value['address'] = $region['address'] ?? '';
             // 上级
@@ -319,9 +357,10 @@ class Account
                 'email'     =>  $value['parent_email'],
                 'username'  =>  $value['parent_username'],
                 'nickname'  =>  $value['parent_nickname'],
+                'avatar'    =>  $value['parent_avatar'],
             ];
             unset($value['parent_username'], $value['parent_country'], $value['parent_phone'], $value['parent_email'], $value['parent_username'], $value['parent_nickname']);
-
+            // 保存
             $data[$key] = $value;
         }
         // 返回结果
@@ -394,7 +433,7 @@ class Account
      */
     public static function get(string $uid, string $field = 'uid') : array
     {
-        return Db::table('account')->where($field, $uid)->where('deleted_at')->first();
+        return Db::table('account', 'a')->where($field, $uid)->where('a.deleted_at')->first();
     }
 
     /**
@@ -408,9 +447,23 @@ class Account
     /**
      * 查询 - 根据手机号码
      */
-    public static function getByPhone(int|string $country, int|string $phone) : array
+    public static function getByPhone(string $phone, string $country = '86') : array
     {
-        return Db::table('account')->where('country', (string) $country)->where('phone', (string) $phone)->where('deleted_at')->first();
+        return Db::table('account')->where('country', $country)->where('phone', $phone)->where('deleted_at')->first();
+    }
+
+    /**
+     * 获取所有的上级列表
+     */
+    public static function getParents(string $uid) : array
+    {
+        $array = [];
+        $inviter = Db::table('account')->where('uid', $uid)->value('inviter');
+        if (!empty($inviter)) {
+            $array[] = $inviter;
+            array_push($array, ...static::getParents($inviter));
+        }
+        return $array;
     }
 
     /**

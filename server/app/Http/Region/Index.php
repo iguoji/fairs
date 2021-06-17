@@ -9,7 +9,7 @@ use Minimal\Http\Validate;
 /**
  * 地区数据
  */
-class Data
+class Index
 {
     /**
      * 参数验证
@@ -21,8 +21,11 @@ class Data
 
         // 地区类型
         $validate->int('type', '地区类型')->default(1);
-        // 上级编号
-        $validate->string('parent', '上级编号')->digit();
+        // 地区编号
+        $validate->string('country', '国家编号')->digit();
+        $validate->string('province', '省份编号')->digit();
+        $validate->string('city', '城市编号')->digit();
+        $validate->string('county', '区县编号')->digit();
 
         // 返回结果
         return $validate->check();
@@ -37,9 +40,9 @@ class Data
         $result = [];
 
         // 参数验证
-        $data = self::validate($req->all());
+        $params = self::validate($req->all());
         // 查询数据
-        $result = Region::data($data['type'], $data['parent'] ?? null);
+        $result = Region::all($params);
 
         // 返回结果
         return $result;

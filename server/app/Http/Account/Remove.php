@@ -6,6 +6,7 @@ namespace App\Http\Account;
 use App\Common\Admin;
 use App\Common\Account;
 use Minimal\Http\Validate;
+use Minimal\Facades\Db;
 use Minimal\Foundation\Exception;
 
 /**
@@ -23,7 +24,15 @@ class Remove
 
         // 账户编号
         $validate->string('uid', '账户编号')->require()->call(function($value){
-            return Account::has($value);
+            if (!is_array($value)) {
+                $value = [$value];
+            }
+            for ($i = 0;$i < count($value); $i++) {
+                if (!Account::has($value[$i])) {
+                    return false;
+                }
+            }
+            return true;
         });
 
         // 返回结果
@@ -43,17 +52,39 @@ class Remove
 
         try {
             // 参数验证
-            $data = self::validate($req->all());
-            // 执行操作
-            Account::del($data['uid']);
+            $params = self::validate($req->all());
+
+            // 开启事务
+            Db::beginTransaction();
+
+            // 编号处理
+            $uids = $params['uid'];
+            if (!is_array($uids)) {
+                $uids = [$uids];
+            }
+            unset($params['uid']);
+            for ($i = 0;$i < count($uids); $i++) {
+                // 执行操作
+                Account::del($uids[$i]);
+            }
+
+            // 提交事务
+            Db::commit();
         } catch (\Throwable $th) {
+            // 事务回滚
+            Db::rollback();
+            var_dump($th->getTrace());
             // 保存异常
             $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
         }
 
         // 返回结果
-        return $res->redirect('/account.html', [
-            'exception'     =>  $exception
-        ]);
+        if ($req->isAjax()) {
+            return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
+        } else {
+            return $res->redirect('/account.html', [
+                'exception'     =>  $exception
+            ]);
+        }
     }
 }

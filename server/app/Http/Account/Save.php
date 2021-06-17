@@ -29,7 +29,7 @@ class Save
         $validate = new Validate($params);
 
         // 手机号码
-        $validate->int('country', '国家区号')->default(86)->length(1, 24)->digit();
+        $validate->string('country', '国家区号')->default('86')->length(1, 24)->digit();
         $validate->int('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){

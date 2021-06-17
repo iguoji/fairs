@@ -15,10 +15,11 @@
 </div>
 
 <div class="row row-deck row-cards">
-    <div class="col-xl-4 flex-column">
+    <div class="col-xxl-3 flex-column">
+        <!-- 用户信息 -->
         <div class="card mb-3">
             <div class="card-body">
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-auto">
                         {if true === :\App\Common\Admin::check('/account/edit.html') }
                         <div class="avatar-container">
@@ -35,7 +36,175 @@
                         {/if}
                     </div>
                     <div class="col">
-                        <div class="card-title mb-2">{$account['username']}</div>
+                        <div class="card-title mb-2 username">{$account['username']}</div>
+                        <div class="mb-2"><span class="badge bg-green-lt">普通会员</span></div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                25%
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm">
+                                <div class="progress-bar" style="width: 25%" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                                    <span class="visually-hidden">25% Complete</span>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <label class="form-check form-switch">
+                    {if $account['status'] == 0}
+                        {if true === :\App\Common\Admin::check('/account/edit.html') }
+                            <input class="form-check-input" name="status" type="checkbox" value="1">
+                        {else /}
+                            <input class="form-check-input" name="status" type="checkbox" value="1" disabled>
+                        {/if}
+                        <span class="form-check-label">账号已冻结，类似拉入黑名单</span>
+                    {else /}
+                        {if true === :\App\Common\Admin::check('/account/edit.html') }
+                            <input class="form-check-input" name="status" type="checkbox" value="0" checked>
+                        {else /}
+                            <input class="form-check-input" name="status" type="checkbox" value="0" checked disabled>
+                        {/if}
+                        <span class="form-check-label">账号状态正常</span>
+                    {/if}
+                </label>
+                <div>
+                    {if $account['status'] != 1}
+                        <span class="badge me-1">认证</span>
+                        <span class="badge me-1">绑卡</span>
+                    {else /}
+                        <span class="badge bg-green me-1">认证</span>
+                        <span class="badge bg-green me-1">绑卡</span>
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <!-- 基本资料 -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">基本资料</h3>
+                <div class="card-actions">
+                    {if true === :\App\Common\Admin::check('/account/edit.html') }
+                    <button class="btn btn-sm btn-goProfile">
+                        编辑<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3"></path><path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3"></path><line x1="16" y1="5" x2="19" y2="8"></line></svg>
+                    </button>
+                    <button class="btn btn-sm btn-profileSave" hidden>
+                        保存<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><line x1="12" y1="11" x2="12" y2="17" /><polyline points="9 14 12 11 15 14" /></svg>
+                    </button>
+                    {/if}
+                </div>
+            </div>
+            <div class="card-body">
+                <dl class="row align-items-baseline profile">
+                    <dt class="col-3">账户编号:</dt>
+                    <dd class="col-9 profile-uid">
+                        <span>{$account['uid']|default='-'}</span>
+                        <div hidden>
+                            <input class="form-control" type="text" name="uid" value="{$account['uid']|default=''}" disabled />
+                        </div>
+                    </dd>
+                    <dt class="col-3">用户名:</dt>
+                    <dd class="col-9 profile-username">
+                        <span>{$account['username']|default='-'}</span>
+                        <div hidden>
+                            <input class="form-control" type="text" name="username" value="{$account['username']|default=''}" />
+                        </div>
+                    </dd>
+                    <dt class="col-3">手机号码:</dt>
+                    <dd class="col-9 profile-phone">
+                        <span>{$account['phone']|default='-'}</span>
+                        <div hidden>
+                            <input class="form-control" type="text" name="phone" value="{$account['phone']|default=''}" />
+                        </div>
+                    </dd>
+                    <dt class="col-3">邮箱地址:</dt>
+                    <dd class="col-9 profile-email">
+                        <span>{$account['email']|default='-'}</span>
+                        <div hidden>
+                            <input class="form-control" type="text" name="email" value="{$account['email']|default=''}" />
+                        </div>
+                    </dd>
+                    <dt class="col-3">个性昵称:</dt>
+                    <dd class="col-9 profile-nickname">
+                        <span>{$account['nickname']|default='-'}</span>
+                        <div hidden>
+                            <input class="form-control" type="text" name="nickname" value="{$account['nickname']|default=''}" />
+                        </div>
+                    </dd>
+                    <dt class="col-3">真实性别:</dt>
+                    <dd class="col-9 profile-gender">
+                        <span>{if $account['gender'] === 1}男{elseif $account['gender'] === 2}女{else /}未知{/if}</span>
+                        <div hidden>
+                            <input type="hidden" name="gender" value="{$account['gender']}" />
+                            <div>
+                                <label class="form-check form-check-inline mb-0">
+                                    <input class="form-check-input" type="radio" name="genders" value="1"{$account['gender'] === 1?' checked':''} />
+                                    <span class="form-check-label">男</span>
+                                </label>
+                                <label class="form-check form-check-inline mb-0">
+                                    <input class="form-check-input" type="radio" name="genders" value="2"{$account['gender'] === 2?' checked':''} />
+                                    <span class="form-check-label">女</span>
+                                </label>
+                            </div>
+                        </div>
+                    </dd>
+                    <dt class="col-3">出生年月:</dt>
+                    <dd class="col-9 profile-birthday">
+                        <span>{$account['birthday']|default='-'}</span>
+                        <div hidden>
+                            <input type="text" class="form-control flatpickr" data-format="Y-m-d" data-enable-time="false" data-default="{$account['birthday']|default=''}" name="birthday" placeholder="例如：2020-08-08" />
+                        </div>
+                    </dd>
+                    <dt class="col-3">联系地址:</dt>
+                    <dd class="col-9 profile-address">
+                        <span>{$account['address']|default='-'}</span>
+                        <div class="row row-cols-3 region" hidden>
+                            <div class="col mb-3">
+                                <label class="form-label">省份</label>
+                                <select name="province" class="form-select" data-default="{$account['province']|default=''}">
+                                    <option value="">请选择省份</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">城市</label>
+                                <select name="city" class="form-select" data-default="{$account['city']|default=''}">
+                                    <option value="">请选择城市</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <label class="form-label">区县</label>
+                                <select name="county" class="form-select" data-default="{$account['county']|default=''}">
+                                    <option value="">请选择区县</option>
+                                </select>
+                            </div>
+                        </div>
+                    </dd>
+                    <dt class="col-3">注册日期:</dt>
+                    <dd class="col-9">{$account['created_at']|default='-'}</dd>
+                </dl>
+            </div>
+        </div>
+        <!-- 上级信息 -->
+        <div class="card mb-3 parent">
+            <div class="card-header">
+                <div class="card-title">上级信息</div>
+                <div class="card-actions">
+                    {if true === :\App\Common\Admin::check('/account/edit.html') }
+                        <button class="btn btn-sm btn-goMember">
+                            设置<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="5" cy="18" r="2" /><circle cx="19" cy="6" r="2" /><path d="M19 8v5a5 5 0 0 1 -5 5h-3l3 -3m0 6l-3 -3" /><path d="M5 16v-5a5 5 0 0 1 5 -5h3l-3 -3m0 6l3 -3" /></svg>
+                        </button>
+                    {/if}
+                </div>
+            </div>
+            {notempty name="$account['parent']"}
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-auto">
+                        <span class="avatar avatar-lg" style="background-image: url({$account['parent']['avatar']});"></span>
+                    </div>
+                    <div class="col">
+                        <div class="card-title mb-2 username">{$account['parent']['username']}</div>
                         <div class="mb-2"><span class="badge bg-green-lt">普通会员</span></div>
                         <div class="row g-2 align-items-center">
                             <div class="col-auto">
@@ -52,117 +221,207 @@
                     </div>
                 </div>
             </div>
+            {/notempty}
         </div>
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">基本资料</h3>
-                <div class="card-actions">
-                    {if true === :\App\Common\Admin::check('/account/edit.html') }
-                    <button class="btn btn-sm btn-goProfile">
-                        编辑<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3"></path><path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3"></path><line x1="16" y1="5" x2="19" y2="8"></line></svg>
-                    </button>
-                    <button class="btn btn-sm btn-profileSave" hidden>
-                        保存<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><line x1="12" y1="11" x2="12" y2="17" /><polyline points="9 14 12 11 15 14" /></svg>
-                    </button>
-                    {/if}
+        <!-- 修改密码 -->
+        {if true === :\App\Common\Admin::check('/account/edit.html') }
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">修改密码</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-passwordSave">
+                            更新<svg xmlns="http://www.w3.org/2000/svg" class="icon m-0 ms-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><line x1="12" y1="11" x2="12" y2="17" /><polyline points="9 14 12 11 15 14" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-3">
+                            <label class="form-label">登录密码</label>
+                            <input type="text" class="form-control" name="password" placeholder="留空不填表示不改" maxlength="32" />
+                        </div>
+                        <div class="col-lg-12">
+                            <label class="form-label">安全密码</label>
+                            <input type="text" class="form-control" name="safeword" placeholder="留空不填表示不改" maxlength="32" />
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body">
-                <dl class="row align-items-center profile">
-                    <dt class="col-3">个性昵称:</dt>
-                    <dd class="col-9 profile-nickname">
-                        <span>{$account['nickname']|default='-'}</span>
-                        <div hidden>
-                            <input class="form-control" type="text" name="nickname" value="{$account['nickname']|default=''}" />
-                        </div>
-                    </dd>
-                    <dt class="col-3">真实性别:</dt>
-                    <dd class="col-9 profile-gender">
-                        <span>{if $account['gender'] === 1}男{elseif $account['gender'] === 2}女{else /}未知{/if}</span>
-                        <div hidden>
-                            <input type="hidden" name="gender" value="{$account['gender']}" />
-                            <div>
-                                <label class="form-check form-check-inline mb-0">
-                                    <input class="form-check-input" type="radio" name="genders" value="1" />
-                                    <span class="form-check-label">男</span>
-                                </label>
-                                <label class="form-check form-check-inline mb-0">
-                                    <input class="form-check-input" type="radio" name="genders" value="2" />
-                                    <span class="form-check-label">女</span>
-                                </label>
-                            </div>
-                        </div>
-                    </dd>
-                    <dt class="col-3">出生年月:</dt>
-                    <dd class="col-9 profile-birthday">
-                        <span>{$account['birthday']|default='-'}</span>
-                        <div hidden>
-                            <input type="text" class="form-control flatpickr" data-format="Y-m-d" data-enable-time="false" name="birthday" placeholder="例如：2020-08-08" />
-                        </div>
-                    </dd>
-                    <dt class="col-3">联系地址:</dt>
-                    <dd class="col-9 profile-address">
-                        <span>{$account['address']|default='-'}</span>
-                        <div class="row row-cols-3 region" hidden>
-                            <div class="col mb-3">
-                                <label class="form-label">国家</label>
-                                <select name="country" class="form-select">
-                                    <option value="">请选择国家</option>
-                                </select>
-                            </div>
-                            <div class="col mb-3">
-                                <label class="form-label">省份</label>
-                                <select name="province" class="form-select">
-                                    <option value="">请选择省份</option>
-                                </select>
-                            </div>
-                            <div class="col mb-3">
-                                <label class="form-label">城市</label>
-                                <select name="city" class="form-select">
-                                    <option value="">请选择城市</option>
-                                </select>
-                            </div>
-                            <div class="col mb-3">
-                                <label class="form-label">区县</label>
-                                <select name="county" class="form-select">
-                                    <option value="">请选择区县</option>
-                                </select>
-                            </div>
-                            <div class="col mb-3">
-                                <label class="form-label">乡镇</label>
-                                <select name="town" class="form-select">
-                                    <option value="">请选择乡镇</option>
-                                </select>
-                            </div>
-                        </div>
-                    </dd>
-                    <dt class="col-3">注册日期:</dt>
-                    <dd class="col-9">{$account['created_at']|default='-'}</dd>
-                </dl>
-            </div>
-        </div>
+        {/if}
     </div>
     <div class="col-xl-8">
 
     </div>
 </div>
 
+<!-- 查找账号 -->
+<div class="modal modal-blur fade" id="modal-member" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">寻找账号</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="输入用户名\手机\邮箱" name="keyword" />
+                </div>
+                <div class="col-auto">
+                    <a href="javascript:;" class="btn btn-white btn-icon btn-search" aria-label="Button">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><circle cx="10" cy="10" r="7"></circle><line x1="21" y1="21" x2="15" y2="15"></line></svg>
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th class="w-1">
+                                <!-- <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices"> -->
+                            </th>
+                            <th>头像</th>
+                            <th>编号</th>
+                            <th>账号</th>
+                            <th>手机邮箱</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary btn-memberSave">确认</button>
+        </div>
+        </div>
+    </div>
+</div>
 
 {/block}
 {block name="script"}
 <script>
 var uid = "{$account['uid']|default=''}";
-$(function(){
-    // 更改头像
-    $('input[name=avatar]').on('change', function(){
-        var avatar = $(this).val();
-        ajax.post('/account/edit', {uid: uid, avatar: avatar}, function(res){
+var modalMember = new bootstrap.Modal(document.getElementById('modal-member'));
+var member = {
+    page: 1,
+    size: 20,
+    ended: false,
+    status: true,
+    keyword: '',
+    data: function(keyword, selector){
+        if (keyword != member.keyword) {
+            member.reset(keyword, selector);
+        }
+        if (!member.status || member.ended) {
+            return;
+        }
+        member.status = false;
+        ajax.post('/account.html', {pageNo: member.page, pageSize: member.size, keyword: member.keyword}, function(res){
+            member.status = true;
             if (res && res.code == 200) {
-                toastr.success('恭喜您、头像替换成功！');
+                if (!res.data.total) {
+                    toastr.error('很抱歉、没有找到相关账户！');
+                } else {
+                    let checkboxOrRadio = 'checkbox';
+                    if ($(selector).parents('table').find('thead tr:eq(0) th:eq(0) *').length == 0) {
+                        checkboxOrRadio = 'radio';
+                    }
+                    var html = '';
+                    for (let i = 0; i < res.data.list.length; i++) {
+                        const ele = res.data.list[i];
+                        html += '<tr>';
+                            html += '<td>';
+                                if (checkboxOrRadio == 'checkbox') {
+                                    html += '<input class="form-check-input align-middle checkBoxItem" type="checkbox" value="' + ele.uid + '">';
+                                } else {
+                                    html += '<input class="form-check-input align-middle checkBoxItem" type="radio" name="memberChooses" value="' + ele.uid + '">';
+                                }
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<a class="avatar" style="background-image: url(' + ele.avatar + ');"></a>';
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
+                                html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<div class="small text-muted">' + ele.nickname + '</div>';
+                                html += '<a href="/account/read.html?uid=' + ele.uid + '" class="text-blue" target="_blank">' + ele.username + '</a>';
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<div class="text-muted">(' + ele.country + ') ' + ele.phone + '</div>';
+                                html += '<div>' + ele.email + '</div>';
+                            html += '</td>';
+                        html += '</tr>';
+                    }
+                    $(selector).append(html);
+                }
+                if (res.data.list.length < res.data.size) {
+                    member.ended = true;
+                } else {
+                    member.page++;
+                }
             } else {
-                toastr.error(res && res.message ? res.message : '很抱歉、头像替换失败！');
+                toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
             }
         });
+    },
+    reset: function(keyword, selector){
+        member.keyword = keyword;
+        member.page = 1;
+        member.size = 20;
+        member.ended = false;
+        $(selector).html('');
+    }
+}
+var account = {
+    // 编辑账户
+    edit: function(params, callback){
+        ajax.post('/account/edit.html', params, function(res){
+            // 信息提示
+            if (res && res.code == 200) {
+                toastr.success('恭喜您、账户数据更新成功！');
+            } else {
+                toastr.error(res && res.message ? res.message : '很抱歉、账户数据更新失败！');
+            }
+            // 回调函数
+            callback && callback(res);
+        });
+    },
+    // 读取账户
+    read: function(uid, callback){
+        ajax.post('/account/read.html', {uid: uid}, function(res){
+            // 信息提示
+            if (res && res.code == 200) {
+            } else {
+                toastr.error(res && res.message ? res.message : '很抱歉、账户信息查询失败！');
+            }
+            // 回调函数
+            callback && callback(res);
+        });
+    }
+}
+$(function(){
+    // 性别选择
+    $('.profile input[name=genders]').on('change', function(){
+        $('.profile input[name=gender]').val($(this).val());
+    });
+    // 更改头像
+    $('input[name=avatar]').on('change', function(){
+        account.edit({uid: uid, avatar: $(this).val()});
+    });
+    // 状态切换
+    $('input[name=status]').on('change', function(){
+        var status = $(this).prop('checked');
+        if (status) {
+            status = 1;
+            $(this).next('span').text('账号状态正常');
+        } else {
+            status = 0;
+            $(this).next('span').text('账号已冻结，类似拉入黑名单');
+        }
+        account.edit({uid: uid, status: status});
     });
     // 前往编辑资料
     $('.btn-goProfile').on('click', function(){
@@ -175,12 +434,101 @@ $(function(){
     });
     // 保存新的资料
     $('.btn-profileSave').on('click', function(){
-        // 按钮切换
-        $(this).prop('hidden', true);
-        $('.btn-goProfile').prop('hidden', false);
-        // 表单切换
-        $('.profile dd > span').prop('hidden', false);
-        $('.profile dd > div').prop('hidden', true);
+        // 按钮禁用
+        $that = $(this);
+        $that.addClass('btn-vk btn-loading disabled');
+        // 提交参数
+        let params = {
+            uid: uid,
+            username: $('.profile input[name=username]').val(),
+            phone: $('.profile input[name=phone]').val(),
+            email: $('.profile input[name=email]').val(),
+            nickname: $('.profile input[name=nickname]').val(),
+            gender: $('.profile input[name=gender]').val(),
+            birthday: $('.profile input[name=birthday]').val(),
+            province: $('.profile select[name=province]').val(),
+            city: $('.profile select[name=city]').val(),
+            county: $('.profile select[name=county]').val(),
+        };
+        $('.profile-username > span').text(params.username);
+        $('.username').text(params.username);
+        $('.profile-phone > span').text(params.phone);
+        $('.profile-email > span').text(params.email);
+        $('.profile-nickname > span').text(params.nickname);
+        $('.profile-gender > span').text(params.gender == 1 ? '男' : '女');
+        $('.profile-birthday > span').text(params.birthday);
+        $('.profile-address > span').text($('.profile select[name=province] option:checked').text() + '' + $('.profile select[name=city] option:checked').text() + '' + $('.profile select[name=county] option:checked').text());
+        // 提交数据
+        account.edit(params, function(){
+            // 表单切换
+            $('.profile dd > span').prop('hidden', false);
+            $('.profile dd > div').prop('hidden', true);
+            // 按钮切换
+            $that.prop('hidden', true);
+            $('.btn-goProfile').prop('hidden', false);
+            // 取消禁用
+            $that.removeClass('btn-vk').removeClass('btn-loading').removeClass('disabled');
+        });
+    });
+    // 保存新的密码
+    $('.btn-passwordSave').on('click', function(){
+        // 按钮禁用
+        $that = $(this);
+        $that.addClass('btn-vk btn-loading disabled');
+        // 提交参数
+        let params = {
+            uid: uid,
+            password: $('input[name=password]').val(),
+            safeword: $('input[name=safeword]').val(),
+        };
+        // 提交数据
+        account.edit(params, function(){
+            // 取消禁用
+            $that.removeClass('btn-vk').removeClass('btn-loading').removeClass('disabled');
+        })
+    });
+    // 更改上级 - 寻找账号
+    $('.btn-goMember').on('click', function(){
+        modalMember.show();
+    });
+    // 寻找账号 - 搜索按钮
+    $('#modal-member .btn-search').on('click', function(){
+        var keyword = $('#modal-member input[name=keyword]').val();
+        if (keyword && keyword.trim().length) {
+            member.data(keyword.trim(), '#modal-member tbody');
+        }
+    });
+    // 寻找账号 - 翻页
+    $('#modal-member .modal-body').on('scroll', function(){
+        var scrollTop = $('#modal-member .modal-body').scrollTop();
+        var winHeight = $('#modal-member .modal-body').outerHeight();
+        let docHeight = $('#modal-member .modal-body table').outerHeight();
+        if ((docHeight - scrollTop) - winHeight < 200) {
+            member.data(member.keyword, '#modal-member tbody');
+        }
+    });
+    // 寻找账号 - 确定
+    $('#modal-member .btn-memberSave').on('click', function(){
+        if ($('#modal-member .modal-body input[name=memberChooses]').length) {
+            var type = $('#modal-member .modal-body input[name=memberChooses]').eq(0).attr('type');
+            if (type == 'radio') {
+                window.target = $('#modal-member .modal-body input[name=memberChooses]:checked').val();
+                modalMember.hide();
+
+                // 更改上级
+                account.edit({uid: uid, inviter: window.target}, function(res){
+                    if (res && res.code == 200) {
+                        // 重新读取上级资料
+                        account.read(window.target, function(res){
+                            if (res && res.code == 200) {
+                                $('.parent .avatar').css('backgroundImage', 'url(' + res.data.avatar + ')');
+                                $('.parent .username').text(res.data.username);
+                            }
+                        });
+                    }
+                });
+            }
+        }
     });
 });
 </script>

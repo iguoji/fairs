@@ -8,7 +8,7 @@ return [
         '/index'                            =>  \App\Http\Admin\Index::class,
 
         // 地区
-        '/region/data'                      =>  \App\Http\Region\Data::class,
+        '/regions'                          =>  \App\Http\Region\Index::class,
         // 上传
         '/file/upload'                      =>  \App\Http\File\Upload::class,
 
@@ -47,9 +47,6 @@ return [
     ],
     // 用户接口
     '*'     =>  [
-        // 地区
-        '/region/data'                      =>  \App\Http\Region\Data::class,
-
         // 账户
         '/account/signup'                   =>  \App\Http\Account\Save::class,
         '/account/signin'                   =>  \App\Http\Account\Signin::class,

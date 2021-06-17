@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS `region`;
 CREATE TABLE `region` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
 	`type` TINYINT DEFAULT 0 COMMENT '类型，1国家，2省，3市，4区县，5乡镇，6村庄',
+	`sort` INT NULL DEFAULT 0 COMMENT '排列顺序',
 
 	`zone` VARCHAR(30) COMMENT '电话区号',
 	`zip` VARCHAR(20) COMMENT '邮编号码',
@@ -34,9 +35,9 @@ CREATE TABLE `region` (
 	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间'
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='地区表';
--- ALTER TABLE `region` ADD UNIQUE `type_province`(`type`, `province`);
--- ALTER TABLE `region` ADD UNIQUE `type_city`(`type`, `city`);
--- ALTER TABLE `region` ADD UNIQUE `type_county`(`type`, `county`);
+ALTER TABLE `region` ADD INDEX `type_province`(`type`, `province`);
+ALTER TABLE `region` ADD INDEX `type_city`(`type`, `city`);
+ALTER TABLE `region` ADD INDEX `type_county`(`type`, `county`);
 
 
 # 银行表
@@ -81,11 +82,10 @@ CREATE TABLE `account` (
 	`gender` TINYINT DEFAULT 0 COMMENT '性别，1男，2女，0未知',
 	`birthday` DATE COMMENT '出生年月',
 
-	`country` VARCHAR(30) COMMENT '国家',
+	`country` VARCHAR(30) DEFAULT '86' COMMENT '国家',
 	`province` VARCHAR(30) COMMENT '省份',
 	`city` VARCHAR(30) COMMENT '城市',
 	`county` VARCHAR(30) COMMENT '区县',
-	`town` VARCHAR(30) COMMENT '乡镇',
 
 	`inviter` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin COMMENT '邀请者',
 
@@ -93,9 +93,8 @@ CREATE TABLE `account` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间',
 
-	INDEX region(`country`, `province`, `city`, `county`, `town`),
+	INDEX region(`country`, `province`, `city`, `county`),
 	UNIQUE INDEX `country_phone`(`country`, `phone`)
-
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='账户表';
 
 # 账户关连表

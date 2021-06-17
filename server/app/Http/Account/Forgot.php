@@ -38,7 +38,7 @@ class Forgot
         // 按情况处理
         if ($action == 'mobile') {
             // 手机 + 验证码/密码
-            $validate->int('country', '国家区号')
+            $validate->string('country', '国家区号')
                 ->require()->length(1, 24)->digit()
                 ->call(function($value){
                     return Region::has(country: $value);

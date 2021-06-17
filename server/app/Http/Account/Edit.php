@@ -25,16 +25,23 @@ class Edit
         $validate = new Validate($params);
 
         // 编号
-        $validate->string('uid', '账号编号')->alphaNum();
+        $validate->string('uid', '账号编号')->require()->alphaNum()->call(function($value){
+            if (!is_array($value)) {
+                $value = [$value];
+            }
+            for ($i = 0;$i < count($value); $i++) {
+                if (!Account::has($value[$i])) {
+                    return false;
+                }
+            }
+            return true;
+        });
 
         // 手机号码
-        $validate->int('country', '国家区号')->length(1, 24)->digit()->call(function($value){
-            return Region::has(country: $value);
-        });
         $validate->int('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){
-                $account = Account::getByPhone($values['country'] ?? '', $value);
+                $account = Account::getByPhone($value);
                 return empty($account) || $account['uid'] == $values['uid'];
             }, message: '很抱歉、该手机号码已被注册！');
         // 邮箱
@@ -59,7 +66,10 @@ class Edit
             ->alphaNum()->length(3, 32)
             ->call(function($value, $values){
                 return $value != $values['uid'] && !empty(Account::get($value));
-            }, message: '很抱歉、指定的邀请码不存在！');
+            }, message: '很抱歉、指定的邀请码不存在！')
+            ->call(function($value, $values){
+                return !in_array($values['uid'], Account::getParents($value));
+            }, message: '很抱歉、无法将上级设置为该账号！');
         // 账户状态
         $validate->int('status', '账户状态');
 
@@ -73,18 +83,16 @@ class Edit
         $validate->int('gender', '性别')->in(0, 1, 2)->digit();
         $validate->string('birthday', '出生年月')->date('Y-m-d');
 
+        // 省市区
         $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $value);
-        })->requireWith('country');
+            return Region::has($value, 2);
+        });
         $validate->string('city', '市')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
-        })->requireWith('country', 'province');
+            return Region::has($value, 3);
+        })->requireWith('province');
         $validate->string('county', '区县')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
-        })->requireWith('country', 'province', 'city');
-        $validate->string('town', '乡镇')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
-        })->requireWith('country', 'province', 'city', 'county');
+            return Region::has($value, 4);
+        })->requireWith('province', 'city');
 
         // 返回结果
         return $validate->check();
@@ -128,6 +136,7 @@ class Edit
      */
     public function handle($req, $res) : mixed
     {
+        // 等待：修改上级的时候，需要做好应对死循环关联的判断
         // 获取身份
         $identity = $req->session->identity();
         // 判断身份
@@ -159,9 +168,16 @@ class Edit
             Db::beginTransaction();
 
             // 修改资料
-            $bool = Account::upd($params['uid'], $params);
-            if (!$bool) {
-                throw new Exception('很抱歉、修改失败请重试！');
+            $uids = $params['uid'];
+            if (!is_array($uids)) {
+                $uids = [$uids];
+            }
+            unset($params['uid']);
+            for ($i = 0;$i < count($uids); $i++) {
+                $bool = Account::upd($uids[$i], $params);
+                if (!$bool) {
+                    throw new Exception('很抱歉、修改失败请重试！');
+                }
             }
 
             // 提交事务
@@ -175,7 +191,7 @@ class Edit
 
         // 返回结果
         if ($req->isAjax()) {
-            return $res->json('', $exception[0] ?? 200, $exception[1] ?? '');
+            return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
         } else {
             return $res->redirect('/account.html', [
                 'exception' =>  $exception,

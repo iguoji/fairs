@@ -59,7 +59,21 @@ class Read
             $params = $this->validate($req->all());
             // 查询账号
             $account = Account::get($params['uid']);
-
+            // 联系地址
+            $region = [];
+            if (!empty($account['county'])) {
+                $region = Region::get($account['county'], 4);
+            } else if (!empty($account['city'])) {
+                $region = Region::get($account['city'], 3);
+            } else if (!empty($account['province'])) {
+                $region = Region::get($account['province'], 2);
+            }
+            $account['address'] = $region['address'] ?? '';
+            // 上级信息
+            $account['parent'] = [];
+            if (!empty($account['inviter'])) {
+                $account['parent'] = Account::get($account['inviter']);
+            }
             // 返回结果
             return $account;
         } else {
@@ -76,11 +90,25 @@ class Read
             try {
                 // 验证参数
                 $params = $this->validate($req->all());
-                // 国家信息
-                $countrys = Region::countrys();
-                // 账户列表
+                // 查询账号
                 $account = Account::get($params['uid']);
+                // 联系地址
+                $region = [];
+                if (!empty($account['county'])) {
+                    $region = Region::get($account['county'], 4);
+                } else if (!empty($account['city'])) {
+                    $region = Region::get($account['city'], 3);
+                } else if (!empty($account['province'])) {
+                    $region = Region::get($account['province'], 2);
+                }
+                $account['address'] = $region['address'] ?? '';
+                // 上级信息
+                $account['parent'] = [];
+                if (!empty($account['inviter'])) {
+                    $account['parent'] = Account::get($account['inviter']);
+                }
             } catch (\Throwable $th) {
+                var_dump($th);
                 // 保存异常
                 $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
             }

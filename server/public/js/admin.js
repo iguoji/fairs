@@ -38,128 +38,68 @@ if (window.bootstrap) {
 }
 // 省市区级联
 var region = {
-    data: function(type, parent, target, selector, callback){
-        var container = selector.split(' ').slice(0, -1).join(' ');
-        switch (type) {
-            case 1:
-                $(container + ' select[name=province]').html('<option value="">请选择省份</option>');
-                $(container + ' select[name=city]').html('<option value="">请选择城市</option>');
-                $(container + ' select[name=county]').html('<option value="">请选择区县</option>');
-                $(container + ' select[name=town]').html('<option value="">请选择乡镇</option>');
-                $(container + ' select[name=village]').html('<option value="">请选择村庄</option>');
-                break;
+    data: function(vdom, params, target, callback){
+        let $container = $(vdom).parents('.region');
+        switch (params.type) {
             case 2:
-                $(container + ' select[name=city]').html('<option value="">请选择城市</option>');
-                $(container + ' select[name=county]').html('<option value="">请选择区县</option>');
-                $(container + ' select[name=town]').html('<option value="">请选择乡镇</option>');
-                $(container + ' select[name=village]').html('<option value="">请选择村庄</option>');
+                $container.find('select[name=province]').html('<option value="">请选择省份</option>');
+                $container.find('select[name=city]').html('<option value="">请选择城市</option>');
+                $container.find('select[name=county]').html('<option value="">请选择区县</option>');
                 break;
             case 3:
-                $(container + ' select[name=county]').html('<option value="">请选择区县</option>');
-                $(container + ' select[name=town]').html('<option value="">请选择乡镇</option>');
-                $(container + ' select[name=village]').html('<option value="">请选择村庄</option>');
+                $container.find('select[name=city]').html('<option value="">请选择城市</option>');
+                $container.find('select[name=county]').html('<option value="">请选择区县</option>');
                 break;
             case 4:
-                $(container + ' select[name=town]').html('<option value="">请选择乡镇</option>');
-                $(container + ' select[name=village]').html('<option value="">请选择村庄</option>');
-                break;
-            case 5:
-                $(container + ' select[name=village]').html('<option value="">请选择村庄</option>');
+                $container.find('select[name=county]').html('<option value="">请选择区县</option>');
                 break;
             default:
                 break;
         }
-
-
-        ajax.post('/region/data', {type: type, parent: parent}, function(res){
+        target = target && target.length ? target : $(vdom).data('default');
+        ajax.post('/regions', params, function(res){
             if (res && res.code == 200) {
                 var html = '';
-                switch (type) {
-                    case 1:
-                        html += '<option value="">请选择国家</option>';
-                        break;
-                    case 2:
-                        html += '<option value="">请选择省份</option>';
-                        break;
-                    case 3:
-                        html += '<option value="">请选择城市</option>';
-                        break;
-                    case 4:
-                        html += '<option value="">请选择区县</option>';
-                        break;
-                    case 5:
-                        html += '<option value="">请选择乡镇</option>';
-                        break;
-                    case 6:
-                        html += '<option value="">请选择村庄</option>';
-                        break;
-                    default:
-                        break;
-                }
                 for (let i = 0; i < res.data.length; i++) {
                     const ele = res.data[i];
-                    if (target == ele.id) {
+                    if (target == ele.id || res.data.length == 1) {
                         html += '<option selected value="' + ele.id + '">' + ele.name + '</option>';
                     } else {
                         html += '<option value="' + ele.id + '">' + ele.name + '</option>';
                     }
                 }
-                $(selector).html(html);
+                $(vdom).append(html);
+                $(vdom).trigger('change');
                 callback && callback(res.data);
             } else {
                 toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
             }
         });
     },
-    countrys: function(selector){
-        region.data(1, '', '', selector);
-
+    provinces: function(vdom, country, target, callback){
+        region.data(vdom, {
+            type: 2,
+            country: country,
+        }, target, callback);
     },
-    provinces: function(country, selector){
-        region.data(2, country, '', selector);
+    citys: function(vdom, province, country, target, callback){
+        region.data(vdom, {
+            type: 3,
+            country: country,
+            province: province,
+        }, target, callback);
     },
-    citys: function(province, selector){
-        region.data(3, province, '', selector);
-    },
-    countys: function(city, selector){
-        region.data(4, city, '', selector);
-    },
-    towns: function(county, selector){
-        region.data(5, county, '', selector);
-    },
-    villages: function(town, selector){
-        region.data(6, town, '', selector);
+    countys: function(vdom, city, province, country, target, callback){
+        region.data(vdom, {
+            type: 4,
+            country: country,
+            province: province,
+            city: city,
+        }, target, callback);
     },
     selected: function(data, container){
-        if (data.country) {
-            // 国家
-            region.data(1, '', data.country, container + ' select[name=country]', function(countrys){
-                // 省份
-                if (countrys && countrys.length) {
-                    region.data(2, data.country, data.province, container + ' select[name=province]', function(provinces){
-                        // 城市
-                        if (provinces && provinces.length) {
-                            region.data(3, data.province, data.city, container + ' select[name=city]', function(citys){
-                                // 区县
-                                if (citys && citys.length) {
-                                    region.data(4, data.city, data.county, container + ' select[name=county]', function(countys){
-                                        // 乡镇
-                                        if (countys && countys.length) {
-                                            region.data(5, data.county, data.town, container + ' select[name=town]', function(towns){
-                                                // 村落
-                                                if (towns && towns.length) {
-                                                    region.data(6, data.town, data.village, container + ' select[name=village]');
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        // 省份
+        region.provinces($(container + ' select[name=province]'), '86', data.province);
     }
 }
 
@@ -228,10 +168,12 @@ $(function(){
         var name = $(ele).attr('name');
         var format = $(ele).data('format');
         var enableTime = $(ele).data('enable-time');
+        var defaultValue = $(ele).data('default');
         window.flatpickrs[name] = $(ele).flatpickr({
             dateFormat: format && format.length ? format : 'Y-m-d H:i:S',
             enableTime: enableTime == 'false' || enableTime == false ? false : true,
             time_24hr: true,
+            defaultDate: defaultValue && defaultValue.trim().length ? defaultValue : null,
         });
     });
     $('.flatpickr-quick').on('click', function(){
@@ -281,23 +223,38 @@ $(function(){
 
 
     // 省市区级联
-    if ($('.region select[name=country]').length) {
-        region.countrys('.region select[name=country]');
-    }
-    $('.region select[name=country]').on('change', function(){
-        region.provinces($(this).val(), '.region select[name=province]');
+    $('.region select[name=province]').each(function(idx, ele){
+        region.provinces(ele, '86');
     });
-    $('.region select[name=province]').on('change', function(){
-        region.citys($(this).val(), '.region select[name=city]');
-    });
-    $('.region select[name=city]').on('change', function(){
-        region.countys($(this).val(), '.region select[name=county]');
-    });
-    $('.region select[name=county]').on('change', function(){
-        region.towns($(this).val(), '.region select[name=town]');
-    });
-    $('.region select[name=town]').on('change', function(){
-        region.villages($(this).val(), '.region select[name=village]');
+    $('.region').on('change', 'select', function(){
+        let $container = $(this).parents('.region');
+        let name = $(this).attr('name');
+        let value = $(this).val();
+        if (value.trim() == '') {
+            switch (name) {
+                case 'province':
+                    $container.find('select[name=city] option:gt(0)').remove();
+                    $container.find('select[name=county] option:gt(0)').remove();
+                    break;
+                case 'city':
+                    $container.find('select[name=county] option:gt(0)').remove();
+                    break;
+            }
+            return;
+        }
+        let country = '86';
+        let province = $container.find('select[name=province]').val();
+        let city = $container.find('select[name=city]').val();
+        switch (name) {
+            case 'province':
+                region.citys($container.find('select[name=city]'), province, country);
+                break;
+            case 'city':
+                region.countys($container.find('select[name=county]'), city, province, country);
+                break;
+            default:
+                break;
+        }
     });
 
 

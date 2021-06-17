@@ -33,7 +33,7 @@ class BindPhone
             ->value();
 
         // 手机号码
-        $validate->int('country', '国家区号')
+        $validate->string('country', '国家区号')
             ->require()->length(1, 24)->digit()
             ->call(function($value){
                 return Region::has(country: $value);
