@@ -38,7 +38,7 @@ class Edit
         });
 
         // 手机号码
-        $validate->int('phone', '手机号码')
+        $validate->string('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){
                 $account = Account::getByPhone($value);
@@ -87,7 +87,7 @@ class Edit
         $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
             return Region::has($value, 2);
         });
-        $validate->string('city', '市')->length(1, 30)->digit()->call(function($value, $values){
+        $validate->string('city', '城市')->length(1, 30)->digit()->call(function($value, $values){
             return Region::has($value, 3);
         })->requireWith('province');
         $validate->string('county', '区县')->length(1, 30)->digit()->call(function($value, $values){
@@ -106,26 +106,22 @@ class Edit
         // 验证对象
         $validate = new Validate($params);
 
+        // 基本资料
         $validate->string('nickname', '昵称')->length(2, 20)->chsDash();
         $validate->string('avatar', '头像')->length(2, 150);
         $validate->int('gender', '性别')->in(1, 2)->digit();
         $validate->string('birthday', '出生年月')->date('Y-m-d');
 
-        $validate->string('country', '国家')->length(1, 24)->digit()->call(function($value){
-            return Region::has(country: $value);
-        })->unset();
+        // 省市区
         $validate->string('province', '省份')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $value);
-        })->requireWith('country');
-        $validate->string('city', '市')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
-        })->requireWith('country', 'province');
+            return Region::has($value, 2);
+        });
+        $validate->string('city', '城市')->length(1, 30)->digit()->call(function($value, $values){
+            return Region::has($value, 3);
+        })->requireWith('province');
         $validate->string('county', '区县')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
-        })->requireWith('country', 'province', 'city');
-        $validate->string('town', '乡镇')->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
-        })->requireWith('country', 'province', 'city', 'county');
+            return Region::has($value, 4);
+        })->requireWith('province', 'city');
 
         // 返回结果
         return $validate->check();
@@ -193,7 +189,7 @@ class Edit
         if ($req->isAjax()) {
             return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
         } else {
-            return $res->redirect('/account.html', [
+            return $res->redirect('/accounts.html', [
                 'exception' =>  $exception,
             ]);
         }

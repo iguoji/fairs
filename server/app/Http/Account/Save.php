@@ -30,10 +30,10 @@ class Save
 
         // 手机号码
         $validate->string('country', '国家区号')->default('86')->length(1, 24)->digit();
-        $validate->int('phone', '手机号码')
+        $validate->string('phone', '手机号码')
             ->length(5, 30)->digit()
             ->call(function($value, $values){
-                return empty(Account::getByPhone($values['country'] ?? '', $value));
+                return empty(Account::getByPhone($value, $values['country']));
             }, message: '很抱歉、该手机号码已被注册！');
         // 邮箱
         $validate->string('email', '邮箱地址')
@@ -83,10 +83,10 @@ class Save
         switch ($action) {
             // 手机 + 短信验证码
             case 'mobile':
-                $validate->int('phone', '手机号码')
+                $validate->string('phone', '手机号码')
                     ->require()->length(5, 30)->digit()
                     ->call(function($value, $values){
-                        return empty(Account::getByPhone($values['country'] ?? '', $value));
+                        return empty(Account::getByPhone($value, $values['country']));
                     }, message: '很抱歉、该手机号码已被注册！');
 
                 $length = Config::get('sms.length', 4);
@@ -192,7 +192,7 @@ class Save
         }
 
         // 返回结果
-        return $res->redirect('/account.html', [
+        return $res->redirect('/accounts.html', [
             'exception' =>  $exception,
         ]);
     }

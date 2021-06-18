@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Account\Authentication;
+namespace App\Http\Account\Relation;
 
 use App\Common\Admin;
 use App\Common\Region;
@@ -11,7 +11,7 @@ use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 实名认证列表
+ * 推广关系列表
  */
 class Index
 {
@@ -71,14 +71,14 @@ class Index
             $params = $this->validate($req->all());
 
             // 认证列表
-            list($authentications, $total) = Authentication::all($params);
+            list($authentications, $total) = Account::all($params);
         } catch (\Throwable $th) {
             // 保存异常
             $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
         }
 
         // 返回结果
-        return $res->html('admin/account/authentication/index', [
+        return $res->html('admin/account/relation/index', [
             'params'            =>  $params,
             'authentications'   =>  $authentications,
             'types'             =>  $types,

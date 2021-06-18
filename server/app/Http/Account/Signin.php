@@ -35,11 +35,11 @@ class Signin
         switch ($action) {
             // 手机 + 短信验证码/密码
             case 'mobile':
-                $validate->string('country', '国家区号')->require()->length(1, 24)->digit();
-                $validate->int('phone', '手机号码')
+                $validate->string('country', '国家区号')->default('86')->length(1, 24)->digit();
+                $validate->string('phone', '手机号码')
                     ->require()->length(5, 30)->digit()
                     ->call(function($value, $values){
-                        return !empty(Account::getByPhone($values['country'] ?? '', $value));
+                        return !empty(Account::getByPhone($value, $values['country']));
                     }, message: '很抱歉、该手机号码不存在！');
 
                 $validate->string('password', '密码')->length(6, 32)->requireWithout('verify_code');
@@ -98,7 +98,7 @@ class Signin
             // 按情况登录
             if (isset($data['country']) && isset($data['phone'])) {
                 // 手机
-                $account = Account::getByPhone($data['country'], $data['phone']);
+                $account = Account::getByPhone($data['phone'], $data['country']);
                 if (empty($account)) {
                     throw new Exception('很抱歉、该手机号码不存在！');
                 }

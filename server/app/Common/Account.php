@@ -218,7 +218,7 @@ class Account
 
 
         // 实名认证
-        $data['authentic'] = Authentic::status($account['uid'], Config::get('app.account.authentic', Authentic::IDCARD));
+        $data['authentication'] = Authentic::status($account['uid'], Config::get('app.account.authentication', Authentic::IDCARD));
 
         // 返回结果
         return $data;
@@ -320,7 +320,7 @@ class Account
         $query->where('a.deleted_at');
 
         // 数据总数
-        $total = (clone $query)->count('id');
+        $total = (clone $query)->count('a.id');
         // 查询数据
         $data = (clone $query)
             ->leftJoin('account', 'parent', 'parent.uid', 'a.inviter')

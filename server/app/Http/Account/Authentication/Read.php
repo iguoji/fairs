@@ -25,7 +25,7 @@ class Read
         // 参数细节
         $validate->string('username', '账号');
         $validate->string('country', '国家');
-        $validate->int('phone', '手机号码');
+        $validate->string('phone', '手机号码');
         $validate->string('email', '邮箱');
         $validate->string('nickname', '昵称');
         $validate->int('status', '状态');

@@ -17,7 +17,7 @@
 <div class="row row-deck row-cards">
     <div class="col-xxl-3 flex-column">
         <!-- 用户信息 -->
-        <div class="card mb-3">
+        <div class="card mb-3 baseinfo">
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-auto">
@@ -317,7 +317,7 @@ var member = {
             return;
         }
         member.status = false;
-        ajax.post('/account.html', {pageNo: member.page, pageSize: member.size, keyword: member.keyword}, function(res){
+        ajax.post('/accounts.html', {pageNo: member.page, pageSize: member.size, keyword: member.keyword}, function(res){
             member.status = true;
             if (res && res.code == 200) {
                 if (!res.data.total) {
@@ -451,7 +451,7 @@ $(function(){
             county: $('.profile select[name=county]').val(),
         };
         $('.profile-username > span').text(params.username);
-        $('.username').text(params.username);
+        $('.baseinfo .username').text(params.username);
         $('.profile-phone > span').text(params.phone);
         $('.profile-email > span').text(params.email);
         $('.profile-nickname > span').text(params.nickname);

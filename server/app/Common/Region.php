@@ -236,6 +236,9 @@ class Region
      */
     public static function has(string $id, int $type = 1) : bool
     {
+        if ($type == 1) {
+            return in_array($id, ['86']);
+        }
         return !empty(static::get($id, $type));
     }
 

@@ -48,7 +48,7 @@ class Edit
         $validate->string('address', '详细地址')->require();
 
         $validate->string('name', '联系人姓名')->require()->length(2, 30)->chsAlpha();
-        $validate->int('phone', '电话号码')->require()->length(5, 30)->digit()->requireWith('country');
+        $validate->string('phone', '电话号码')->require()->length(5, 30)->digit()->requireWith('country');
 
         // 返回结果
         return $validate->check();

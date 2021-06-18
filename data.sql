@@ -96,6 +96,7 @@ CREATE TABLE `account` (
 	INDEX region(`country`, `province`, `city`, `county`),
 	UNIQUE INDEX `country_phone`(`country`, `phone`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='账户表';
+ALTER TABLE `account` ADD `authenticate` INT NULL DEFAULT 0 COMMENT '认证编号' AFTER `inviter`;
 
 # 账户关连表
 DROP TABLE IF EXISTS `account_link`;
@@ -132,9 +133,9 @@ CREATE TABLE `account_authenticate` (
 
 	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户编号',
 	`name` VARCHAR(50) COMMENT '姓名',
-	`code` VARCHAR(50) COMMENT '号码',
+	`idcard` VARCHAR(50) COMMENT '证件号码',
+	`bankcard` varchar(50) COMMENT '银行卡号',
 	`country` VARCHAR(30) COMMENT '国家',
-	`province` VARCHAR(30) COMMENT '省份',
 	`phone` VARCHAR(30) COMMENT '手机号码',
 
 	`front` VARCHAR(150) COMMENT '正面照片',

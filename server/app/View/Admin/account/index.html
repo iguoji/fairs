@@ -1,5 +1,5 @@
 {extend name="layout/admin" }
-{block name="title"}账户{/block}
+{block name="title"}账户列表{/block}
 {block name="content"}
 <div class="page-header d-print-none">
     <div class="row align-items-center">
@@ -198,11 +198,11 @@
                             <th class="w-1">
                                 <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
                             </th>
-                            <th>头像</th>
-                            <th>编号</th>
+                            <th class="w-1">头像</th>
+                            <th class="w-1">编号</th>
                             <th>账号</th>
-                            <th>状态</th>
                             <th>手机邮箱</th>
+                            <th>状态</th>
                             <th>上级</th>
                             <th>性别</th>
                             <th>生日</th>
@@ -228,6 +228,10 @@
                                     <a href="/account/read.html?uid={$account['uid']}" class="text-blue">{$account['username']}</a>
                                 </td>
                                 <td>
+                                    <div class="text-muted">({$account['country']}) {$account['phone']}</div>
+                                    <div>{$account['email']}</div>
+                                </td>
+                                <td>
                                     {if $account['status'] != 1}
                                         <span class="badge bg-azure me-1">冻结</span>
                                         <span class="badge me-1">认证</span>
@@ -237,10 +241,6 @@
                                         <span class="badge bg-green me-1">认证</span>
                                         <span class="badge bg-green me-1">绑卡</span>
                                     {/if}
-                                </td>
-                                <td>
-                                    <div class="text-muted">({$account['country']}) {$account['phone']}</div>
-                                    <div>{$account['email']}</div>
                                 </td>
                                 <td>
                                     {notempty name="$account['inviter']"}

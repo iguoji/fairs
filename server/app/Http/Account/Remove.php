@@ -82,7 +82,7 @@ class Remove
         if ($req->isAjax()) {
             return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
         } else {
-            return $res->redirect('/account.html', [
+            return $res->redirect('/accounts.html', [
                 'exception'     =>  $exception
             ]);
         }

@@ -6,6 +6,8 @@ namespace App\Http\Account\Authentication;
 use App\Common\Admin;
 use App\Common\Region;
 use App\Common\Account;
+use App\Common\Authentication;
+use Minimal\Facades\Db;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
@@ -15,23 +17,27 @@ use Minimal\Foundation\Exception;
 class Edit
 {
     /**
-     * 参数验证
+     * 管理员参数验证
      */
-    public static function validate(array $params) : array
+    public static function adminValidate(array $params) : array
     {
         // 验证对象
         $validate = new Validate($params);
 
         // 参数细节
-        $validate->string('username', '账号');
-        $validate->string('country', '国家');
-        $validate->int('phone', '手机号码');
-        $validate->string('email', '邮箱');
-        $validate->string('nickname', '昵称');
-        $validate->int('status', '状态');
-        $validate->string('inviter', '上级邀请码');
-        $validate->string('created_start_at', '注册起始时间')->date();
-        $validate->string('created_end_at', '注册截止时间')->date();
+        $validate->int('id', '认证编号')->require()->call(function($value){
+            if (!is_array($value)) {
+                $value = [$value];
+            }
+            for ($i = 0;$i < count($value);$i++) {
+                if (!Authentication::has((int) $value[$i])) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        $validate->int('status', '状态')->in(0, 1, 2);
+        $validate->string('reason', '原因');
 
         // 返回结果
         return $validate->check();
@@ -42,43 +48,85 @@ class Edit
      */
     public function handle($req, $res) : mixed
     {
-        // 异常错误
-        $exception = [];
-        // 用户参数
-        $params = [];
-        // 账户列表
-        $accounts = [];
-        // 国家列表
-        $countrys = [];
-        // 账户总数
-        $total = 0;
-        // 每页数量
-        $size = 20;
+        // 获取身份
+        $identity = $req->session->identity();
+        // 判断身份
+        if ($identity == 'admin') {
+            // 管理员编辑
+            return $this->admin($req, $res);
+        } else {
+            // 用户重新提交认证
+            return $this->account($req, $res);
+        }
+    }
 
+    /**
+     * 管理员编辑
+     */
+    public function admin($req, $res): mixed
+    {
         // 权限验证
         $admin = Admin::verify($req);
 
         try {
-            // 验证参数
-            $params = $this->validate($req->all());
-            // 国家信息
-            $countrys = Region::countrys();
-            // 账户列表
-            $params['pageSize'] = $size;
-            list($accounts, $total) = Account::all($params);
+            // 参数检查
+            $params = $this->adminValidate($req->all());
+
+            // 开启事务
+            Db::beginTransaction();
+
+            // 修改资料
+            $idList = $params['id'];
+            if (!is_array($idList)) {
+                $idList = [$idList];
+            }
+            unset($params['id']);
+            for ($i = 0;$i < count($idList); $i++) {
+                $bool = Authentication::upd($idList[$i], $params);
+                if (!$bool) {
+                    throw new Exception('很抱歉、修改失败请重试！');
+                }
+            }
+
+            // 如果是修改的认证状态，那么必须要更新账户那边的认证编号
+            if (isset($params['status'])) {
+                // 获取这一批认证资料所属的用户
+                $uidList = Authentication::getUidList($idList);
+                // 本次调整的状态
+                $status = $params['status'];
+                // 循环处理
+                foreach ($uidList as $id => $uid) {
+                    // 本次请求目的是取消认证
+                    if ($status == 0) {
+                        // 先查找一个最新的已通过的认证编号
+                        $authenticate = Authentication::getAccountLast($uid);
+                        // 更新编号
+                        $id = $authenticate['id'] ?? 0;
+                    }
+                    // 直接更新认证编号
+                    $bool = Account::upd($uid, ['authenticate' => $id]);
+                    if (empty($bool)) {
+                        throw new Exception('很抱歉、更新用户认证编号失败！');
+                    }
+                }
+            }
+
+            // 提交事务
+            Db::commit();
         } catch (\Throwable $th) {
+            // 事务回滚
+            Db::rollback();
             // 保存异常
             $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
         }
 
         // 返回结果
-        return $res->html('admin/account/index', [
-            'params'    =>  $params,
-            'accounts'  =>  $accounts,
-            'countrys'  =>  $countrys,
-            'total'     =>  $total,
-            'size'      =>  $size,
-            'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
-        ]);
+        return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
+        // if ($req->isAjax()) {
+        // } else {
+        //     return $res->redirect('/account/authentications.html', [
+        //         'exception' =>  $exception,
+        //     ]);
+        // }
     }
 }

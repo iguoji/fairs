@@ -13,16 +13,19 @@ return [
         '/file/upload'                      =>  \App\Http\File\Upload::class,
 
         // 账户
-        '/account'                          =>  \App\Http\Account\Index::class,
+        '/accounts'                         =>  \App\Http\Account\Index::class,
         '/account/read'                     =>  \App\Http\Account\Read::class,
         '/account/save'                     =>  \App\Http\Account\Save::class,
         '/account/edit'                     =>  \App\Http\Account\Edit::class,
         '/account/remove'                   =>  \App\Http\Account\Remove::class,
 
-        // 账户 - 关系
-        '/account/authentication'           =>  \App\Http\Account\Authentication\Index::class,
+        // 账户 - 实名认证
+        '/account/authentications'          =>  \App\Http\Account\Authentication\Index::class,
         '/account/authentication/read'      =>  \App\Http\Account\Authentication\Read::class,
         '/account/authentication/edit'      =>  \App\Http\Account\Authentication\Edit::class,
+
+        // 账户 - 推广
+        '/account/relations'                =>  \App\Http\Account\Relation\Index::class,
 
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
@@ -52,12 +55,14 @@ return [
         '/account/signin'                   =>  \App\Http\Account\Signin::class,
         '/account/profile'                  =>  \App\Http\Account\Read::class,
         '/account/edit'                     =>  \App\Http\Account\Edit::class,
-        '/account/authentication'           =>  \App\Http\Account\Authentication::class,
         '/account/safeword'                 =>  \App\Http\Account\Safeword::class,
         '/account/bindPhone'                =>  \App\Http\Account\BindPhone::class,
         '/account/bindEmail'                =>  \App\Http\Account\BindEmail::class,
         '/account/forgot'                   =>  \App\Http\Account\Forgot::class,
         '/account/resetPwd'                 =>  \App\Http\Account\ResetPwd::class,
+
+        // 账户 - 实名认证
+        '/account/authentication'           =>  \App\Http\Account\Authentication\Save::class,
 
         // 收货地址
         '/account/address'                  =>  \App\Http\Address\My::class,
