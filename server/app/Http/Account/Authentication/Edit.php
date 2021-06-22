@@ -116,17 +116,11 @@ class Edit
         } catch (\Throwable $th) {
             // 事务回滚
             Db::rollback();
-            // 保存异常
-            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+            // 抛出异常
+            throw $th;
         }
 
         // 返回结果
-        return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
-        // if ($req->isAjax()) {
-        // } else {
-        //     return $res->redirect('/account/authentications.html', [
-        //         'exception' =>  $exception,
-        //     ]);
-        // }
+        return $res->redirect('/account/authentications.html');
     }
 }

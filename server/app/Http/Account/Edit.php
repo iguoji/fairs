@@ -7,7 +7,9 @@ use Throwable;
 use App\Common\Admin;
 use App\Common\Region;
 use App\Common\Account;
+use App\Common\AccountPromotion;
 use Minimal\Facades\Db;
+use Minimal\Facades\Queue;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
@@ -68,7 +70,7 @@ class Edit
                 return $value != $values['uid'] && !empty(Account::get($value));
             }, message: '很抱歉、指定的邀请码不存在！')
             ->call(function($value, $values){
-                return !in_array($values['uid'], Account::getParents($value));
+                return !in_array($values['uid'], AccountPromotion::getParents($value));
             }, message: '很抱歉、无法将上级设置为该账号！');
         // 账户状态
         $validate->int('status', '账户状态');
@@ -150,9 +152,6 @@ class Edit
      */
     public function admin($req, $res) : mixed
     {
-        // 异常错误
-        $exception = [];
-
         // 授权验证
         $admin = Admin::verify($req);
 
@@ -170,6 +169,11 @@ class Edit
             }
             unset($params['uid']);
             for ($i = 0;$i < count($uids); $i++) {
+                // 存在上级编号则需要先更新推广数据、不然等下被修改后就找不到原本的上级了
+                if (isset($params['inviter'])) {
+                    Queue::task([AccountPromotion::class, 'change', $uids[$i], $params['inviter']]);
+                }
+                // 修改账号
                 $bool = Account::upd($uids[$i], $params);
                 if (!$bool) {
                     throw new Exception('很抱歉、修改失败请重试！');
@@ -181,18 +185,12 @@ class Edit
         } catch (\Throwable $th) {
             // 事务回滚
             Db::rollback();
-            // 保存异常
-            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+            // 抛出异常
+            throw $th;
         }
 
         // 返回结果
-        if ($req->isAjax()) {
-            return $res->json([], $exception[0] ?? 200, $exception[1] ?? '恭喜您、操作成功！');
-        } else {
-            return $res->redirect('/accounts.html', [
-                'exception' =>  $exception,
-            ]);
-        }
+        return $res->redirect('/accounts.html');
     }
 
     /**

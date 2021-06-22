@@ -97,6 +97,7 @@ CREATE TABLE `account` (
 	UNIQUE INDEX `country_phone`(`country`, `phone`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='账户表';
 ALTER TABLE `account` ADD `authenticate` INT NULL DEFAULT 0 COMMENT '认证编号' AFTER `inviter`;
+ALTER TABLE `account` ADD INDEX `inviter`(`inviter`);
 
 # 账户关连表
 DROP TABLE IF EXISTS `account_link`;
@@ -150,6 +151,22 @@ CREATE TABLE `account_authenticate` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户认证表';
+
+# 账户推广表
+DROP TABLE IF EXISTS `account_promotion`;
+CREATE TABLE `account_promotion` (
+	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+
+	`uid` VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL UNIQUE COMMENT '用户编号',
+	`one` INT NULL DEFAULT 0 COMMENT '直推下级',
+	`two` INT NULL DEFAULT 0 COMMENT '二级下级',
+	`three` INT NULL DEFAULT 0 COMMENT '三级下级',
+	`four` INT NULL DEFAULT 0 COMMENT '四级下级',
+	`five` INT NULL DEFAULT 0 COMMENT '五级下级',
+
+	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间'
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户推广表';
 
 # 账户地址表
 DROP TABLE IF EXISTS `account_address`;

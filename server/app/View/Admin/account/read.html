@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="row row-deck row-cards">
+<div class="row row-cards">
     <div class="col-xxl-3 flex-column">
         <!-- 用户信息 -->
         <div class="card mb-3 baseinfo">
@@ -204,7 +204,7 @@
                         <span class="avatar avatar-lg" style="background-image: url({$account['parent']['avatar']});"></span>
                     </div>
                     <div class="col">
-                        <div class="card-title mb-2 username">{$account['parent']['username']}</div>
+                        <a class="card-title mb-2 username" href="/account/read.html?uid={$account['parent']['uid']}">{$account['parent']['username']}</a>
                         <div class="mb-2"><span class="badge bg-green-lt">普通会员</span></div>
                         <div class="row g-2 align-items-center">
                             <div class="col-auto">
@@ -249,8 +249,46 @@
             </div>
         {/if}
     </div>
-    <div class="col-xl-8">
-
+    <div class="col-xxl-9">
+        <!-- 扩展信息 -->
+        <div class="card">
+            <ul class="nav nav-tabs account-extends" data-bs-toggle="tabs">
+                <li class="nav-item">
+                    <a href="#account-promotion" class="nav-link px-4 py-3" data-bs-toggle="tab">推广</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#account-logs" class="nav-link px-4 py-3" data-bs-toggle="tab">日志</a>
+                </li>
+            </ul>
+            <div class="card-body">
+                <div class="tab-content">
+                    <!-- 推广细节 -->
+                    <div class="tab-pane fade" id="account-promotion">
+                        <div class="table-responsive">
+                            <table class="table card-table table-vcenter text-nowrap datatable accounts">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1">头像</th>
+                                        <th class="w-1">编号</th>
+                                        <th>账号</th>
+                                        <th>手机邮箱</th>
+                                        <th>一级</th>
+                                        <th>二级</th>
+                                        <th>三级</th>
+                                        <th>四级</th>
+                                        <th>五级</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="account-promotion-container"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="account-logs">
+                        日志详细情况
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -303,82 +341,10 @@
 <script>
 var uid = "{$account['uid']|default=''}";
 var modalMember = new bootstrap.Modal(document.getElementById('modal-member'));
-var member = {
-    page: 1,
-    size: 20,
-    ended: false,
-    status: true,
-    keyword: '',
-    data: function(keyword, selector){
-        if (keyword != member.keyword) {
-            member.reset(keyword, selector);
-        }
-        if (!member.status || member.ended) {
-            return;
-        }
-        member.status = false;
-        ajax.post('/accounts.html', {pageNo: member.page, pageSize: member.size, keyword: member.keyword}, function(res){
-            member.status = true;
-            if (res && res.code == 200) {
-                if (!res.data.total) {
-                    toastr.error('很抱歉、没有找到相关账户！');
-                } else {
-                    let checkboxOrRadio = 'checkbox';
-                    if ($(selector).parents('table').find('thead tr:eq(0) th:eq(0) *').length == 0) {
-                        checkboxOrRadio = 'radio';
-                    }
-                    var html = '';
-                    for (let i = 0; i < res.data.list.length; i++) {
-                        const ele = res.data.list[i];
-                        html += '<tr>';
-                            html += '<td>';
-                                if (checkboxOrRadio == 'checkbox') {
-                                    html += '<input class="form-check-input align-middle checkBoxItem" type="checkbox" value="' + ele.uid + '">';
-                                } else {
-                                    html += '<input class="form-check-input align-middle checkBoxItem" type="radio" name="memberChooses" value="' + ele.uid + '">';
-                                }
-                            html += '</td>';
-                            html += '<td>';
-                                html += '<a class="avatar" style="background-image: url(' + ele.avatar + ');"></a>';
-                            html += '</td>';
-                            html += '<td>';
-                                html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
-                                html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
-                            html += '</td>';
-                            html += '<td>';
-                                html += '<div class="small text-muted">' + ele.nickname + '</div>';
-                                html += '<a href="/account/read.html?uid=' + ele.uid + '" class="text-blue" target="_blank">' + ele.username + '</a>';
-                            html += '</td>';
-                            html += '<td>';
-                                html += '<div class="text-muted">(' + ele.country + ') ' + ele.phone + '</div>';
-                                html += '<div>' + ele.email + '</div>';
-                            html += '</td>';
-                        html += '</tr>';
-                    }
-                    $(selector).append(html);
-                }
-                if (res.data.list.length < res.data.size) {
-                    member.ended = true;
-                } else {
-                    member.page++;
-                }
-            } else {
-                toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
-            }
-        });
-    },
-    reset: function(keyword, selector){
-        member.keyword = keyword;
-        member.page = 1;
-        member.size = 20;
-        member.ended = false;
-        $(selector).html('');
-    }
-}
 var account = {
     // 编辑账户
     edit: function(params, callback){
-        ajax.post('/account/edit.html', params, function(res){
+        ajax.post('/account/edit', params, function(res){
             // 信息提示
             if (res && res.code == 200) {
                 toastr.success('恭喜您、账户数据更新成功！');
@@ -391,7 +357,7 @@ var account = {
     },
     // 读取账户
     read: function(uid, callback){
-        ajax.post('/account/read.html', {uid: uid}, function(res){
+        ajax.post('/account/read', {uid: uid}, function(res){
             // 信息提示
             if (res && res.code == 200) {
             } else {
@@ -400,7 +366,99 @@ var account = {
             // 回调函数
             callback && callback(res);
         });
-    }
+    },
+    // 查找账户
+    search: {
+        handle: null,
+        init: function(){
+            this.handle = new ajax.dataset('/accounts', '#modal-member .modal-body', '#modal-member .modal-body table tbody', function(data){
+                let checkboxOrRadio = 'checkbox';
+                if ($('#modal-member .modal-body table').find('thead tr:eq(0) th:eq(0) *').length == 0) {
+                    checkboxOrRadio = 'radio';
+                }
+                if (!data || !data.length) {
+                    toastr.error('很抱歉、没有找到相关账户！');
+                    return false;
+                }
+                var html = '';
+                for (let i = 0; i < data.length; i++) {
+                    const ele = data[i];
+                    html += '<tr>';
+                        html += '<td>';
+                            if (checkboxOrRadio == 'checkbox') {
+                                html += '<input class="form-check-input align-middle checkBoxItem" type="checkbox" value="' + ele.uid + '">';
+                            } else {
+                                html += '<input class="form-check-input align-middle checkBoxItem" type="radio" name="memberChooses" value="' + ele.uid + '">';
+                            }
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<a class="avatar" style="background-image: url(' + ele.avatar + ');"></a>';
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
+                            html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<div class="small text-muted">' + (ele.nickname ? ele.nickname : '') + '</div>';
+                            html += '<a href="/account/read.html?uid=' + ele.uid + '" class="text-blue" target="_blank">' + ele.username + '</a>';
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<div class="text-muted">(' + ele.country + ') ' + (ele.phone ? ele.phone : '') + '</div>';
+                            html += '<div>' + (ele.email ? ele.email : '') + '</div>';
+                        html += '</td>';
+                    html += '</tr>';
+                }
+                $('#modal-member .modal-body table tbody').append(html);
+            }, function(res){
+                console.log(res);
+            });
+        },
+        data: function(params){
+            if (!this.handle) {
+                this.init();
+            }
+            this.handle.fetch(params);
+        },
+        reset: function(){
+            if (this.handle) {
+                this.handle.reset();
+            }
+        }
+    },
+    // 推广列表
+    promotion: {
+        init: function(){
+            new ajax.dataset('/account/promotion/read', window, '.account-promotion-container', function(data){
+                var html = '';
+                for (let i = 0; i < data.length; i++) {
+                    const ele = data[i];
+                    html += '<tr>';
+                        html += '<td><a class="avatar" href="javascript:;" style="background-image: url(' + ele.avatar + ');"></a></td>';
+                        html += '<td>';
+                            html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
+                            html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<div class="small text-muted">' + (ele.nickname ? ele.nickname : '') + '</div>';
+                            html += '<a href="/account/read.html?uid=' + ele.uid + '#account-promotion" target="_blank" class="text-blue">' + ele.username + '</a>';
+                        html += '</td>';
+                        html += '<td>';
+                            html += '<div class="text-muted">(' + ele.country + ') ' + (ele.phone ? ele.phone : '') + '</div>';
+                            html += '<div>' + (ele.email ? ele.email : '') + '</div>';
+                        html += '</td>';
+                        html += '<td>' + (ele.one ? ele.one : 0) + '</td>';
+                        html += '<td>' + (ele.two ? ele.two : 0) + '</td>';
+                        html += '<td>' + (ele.three ? ele.three : 0) + '</td>';
+                        html += '<td>' + (ele.four ? ele.four : 0) + '</td>';
+                        html += '<td>' + (ele.five ? ele.five : 0) + '</td>';
+                    html += '</tr>';
+                }
+                $('.account-promotion-container').append(html);
+            }, function(res){
+                console.log(res);
+            }).fetch({inviter: uid});
+        },
+    },
 }
 $(function(){
     // 性别选择
@@ -495,17 +553,19 @@ $(function(){
     $('#modal-member .btn-search').on('click', function(){
         var keyword = $('#modal-member input[name=keyword]').val();
         if (keyword && keyword.trim().length) {
-            member.data(keyword.trim(), '#modal-member tbody');
+            // member.data(keyword.trim(), '#modal-member tbody');
+            account.search.reset();
+            account.search.data({keyword: keyword});
         }
     });
     // 寻找账号 - 翻页
     $('#modal-member .modal-body').on('scroll', function(){
-        var scrollTop = $('#modal-member .modal-body').scrollTop();
-        var winHeight = $('#modal-member .modal-body').outerHeight();
-        let docHeight = $('#modal-member .modal-body table').outerHeight();
-        if ((docHeight - scrollTop) - winHeight < 200) {
-            member.data(member.keyword, '#modal-member tbody');
-        }
+        // var scrollTop = $('#modal-member .modal-body').scrollTop();
+        // var winHeight = $('#modal-member .modal-body').outerHeight();
+        // let docHeight = $('#modal-member .modal-body table').outerHeight();
+        // if ((docHeight - scrollTop) - winHeight < 200) {
+        //     member.data(member.keyword, '#modal-member tbody');
+        // }
     });
     // 寻找账号 - 确定
     $('#modal-member .btn-memberSave').on('click', function(){
@@ -521,8 +581,9 @@ $(function(){
                         // 重新读取上级资料
                         account.read(window.target, function(res){
                             if (res && res.code == 200) {
-                                $('.parent .avatar').css('backgroundImage', 'url(' + res.data.avatar + ')');
-                                $('.parent .username').text(res.data.username);
+                                $('.parent .avatar').css('backgroundImage', 'url(' + res.data.account.avatar + ')');
+                                $('.parent .username').text(res.data.account.username);
+                                $('.parent .username').attr('href', '/account/read.html?uid=' + res.data.account.uid);
                             }
                         });
                     }
@@ -530,6 +591,23 @@ $(function(){
             }
         }
     });
+
+    // 拓展选项 - 推广详情
+    $('.account-extends .nav-link').on('shown.bs.tab', function(ev){
+        var href = $(this).attr('href');
+        if (!href) {
+            return false;
+        }
+        var hrefs = href.split('-');
+        if (hrefs.length < 2) {
+            return false;
+        }
+        var module = hrefs[1];
+        account[module].init();
+    });
+    if (window.location.hash && window.location.hash.length) {
+        $('.account-extends .nav-link[href="' + window.location.hash + '"]').tab('show');
+    }
 });
 </script>
 {/block}

@@ -33,6 +33,7 @@ class Index
         $validate->string('phone', '手机号码');
         $validate->string('created_start_at', '申请起始时间')->date();
         $validate->string('created_end_at', '申请截止时间')->date();
+
         $validate->int('pageNo', '当前页码')->default(0);
         $validate->int('pageSize', '每页数量')->default(20);
 
@@ -45,8 +46,6 @@ class Index
      */
     public function handle($req, $res) : mixed
     {
-        // 异常错误
-        $exception = [];
         // 用户参数
         $params = [];
         // 认证列表
@@ -66,25 +65,20 @@ class Index
         // 权限验证
         $admin = Admin::verify($req);
 
-        try {
-            // 验证参数
-            $params = $this->validate($req->all());
+        // 验证参数
+        $params = $this->validate($req->all());
 
-            // 认证列表
-            list($authentications, $total) = Authentication::all($params);
-        } catch (\Throwable $th) {
-            // 保存异常
-            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
-        }
+        // 认证列表
+        list($authentications, $total) = Authentication::all($params);
+
 
         // 返回结果
         return $res->html('admin/account/authentication/index', [
             'params'            =>  $params,
-            'authentications'   =>  $authentications,
+            'list'              =>  $authentications,
+            'total'             =>  $total,
             'types'             =>  $types,
             'statuses'          =>  $statuses,
-            'total'             =>  $total,
-            'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
         ]);
     }
 }

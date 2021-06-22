@@ -25,7 +25,8 @@ return [
         '/account/authentication/edit'      =>  \App\Http\Account\Authentication\Edit::class,
 
         // 账户 - 推广
-        '/account/relations'                =>  \App\Http\Account\Relation\Index::class,
+        '/account/promotions'               =>  \App\Http\Account\Promotion\Index::class,
+        '/account/promotion/read'           =>  \App\Http\Account\Promotion\Read::class,
 
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,

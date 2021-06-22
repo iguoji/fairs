@@ -1,0 +1,107 @@
+{extend name="layout/admin" }
+{block name="title"}账户推广{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Promotions</div>
+            <h2 class="page-title">推广</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <form method="GET" class="card">
+            <div class="card-header">
+                <h3 class="card-title">数据筛选</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-xl-2 mb-3">
+                        <label class="form-label">账号关键字</label>
+                        <input type="text" class="form-control" name="keyword" placeholder="用户名\手机\邮箱" value="{$params['keyword']|default=''}" />
+                    </div>
+                    <div class="col-sm-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">上级编号</label>
+                        <input type="text" class="form-control" name="inviter" placeholder="上级编号" value="{$params['inviter']|default=''}" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary">查询数据</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">账户列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable accounts">
+                    <thead>
+                        <tr>
+                            <th class="w-1">
+                                <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
+                            </th>
+                            <th class="w-1">头像</th>
+                            <th class="w-1">编号</th>
+                            <th>账号</th>
+                            <th>手机邮箱</th>
+                            <th>一级</th>
+                            <th>二级</th>
+                            <th>三级</th>
+                            <th>四级</th>
+                            <th>五级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $list as $key => $account}
+                            <tr>
+                                <td>
+                                    <input class="form-check-input align-middle checkBoxItem" type="checkbox" value="{$account['id']}" />
+                                </td>
+                                <td>
+                                    <a class="avatar" href="javascript:;" style="background-image: url({$account['avatar']});"></a>
+                                </td>
+                                <td>
+                                    <div class="small text-muted mb-1">{$account['uid']}</div>
+                                    <div><span class="badge bg-green-lt">普通会员</span></div>
+                                </td>
+                                <td>
+                                    <div class="small text-muted">{$account['nickname']}</div>
+                                    <a href="/account/read.html?uid={$account['uid']}#account-promotion" target="_blank" class="text-blue">{$account['username']}</a>
+                                </td>
+                                <td>
+                                    <div class="text-muted">({$account['country']}) {$account['phone']}</div>
+                                    <div>{$account['email']}</div>
+                                </td>
+                                <td>{$account['one']|default='0'}</td>
+                                <td>{$account['two']|default='0'}</td>
+                                <td>{$account['three']|default='0'}</td>
+                                <td>{$account['four']|default='0'}</td>
+                                <td>{$account['five']|default='0'}</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                {:pagination($total, $params['pageSize'])}
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+$(function(){
+});
+</script>
+{/block}

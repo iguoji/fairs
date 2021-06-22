@@ -45,9 +45,9 @@ class Rbac
                         ['查看账户认证详情', '/account/authentication/read.html', '', [], 0],
                         ['编辑账户认证', '/account/authentication/edit.html', '', [], 0],
                     ]],
-                    ['推广', '/account/relations.html', '', [
-                        ['查看账户关系详情', '/account/relation/read.html', '', [], 0],
-                        ['编辑账户关系', '/account/relation/edit.html', '', [], 0],
+                    ['推广', '/account/promotions.html', '', [
+                        ['查看账户关系详情', '/account/promotion/read.html', '', [], 0],
+                        ['编辑账户关系', '/account/promotion/edit.html', '', [], 0],
                     ]],
                     ['银行卡', '/account/banks.html', '', [
                         ['查看账户银行卡详情', '/account/bank/read.html', '', [], 0],

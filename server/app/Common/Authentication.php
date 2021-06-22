@@ -93,10 +93,13 @@ class Authentication
         // 数据总数
         $total = (clone $query)->count('aa.id');
         // 查询数据
-        $data = $query->orderByDesc('id')->all(
-            'aa.*',
-            'a.username', ['a.country', 'account_country'], 'a.phone', 'a.email', 'a.nickname', 'a.avatar',
-        );
+        $data = $query
+            ->orderByDesc('id')
+            ->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
+            ->all(
+                'aa.*',
+                'a.username', ['a.country', 'account_country'], 'a.phone', 'a.email', 'a.nickname', 'a.avatar',
+            );
         // 循环数据
         foreach ($data as $key => $value) {
             // 类型

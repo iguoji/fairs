@@ -50,77 +50,42 @@ class Read
      */
     public function read($req, $res) : mixed
     {
+        // 验证参数
+        $params = [];
+        // 国家信息
+        $countrys = [];
+        // 账户列表
+        $account = [];
+
         // 授权验证
         $admin = Admin::verify($req);
 
-        // Ajax
-        if ($req->isAjax()) {
-            // 参数验证
-            $params = $this->validate($req->all());
-            // 查询账号
-            $account = Account::get($params['uid']);
-            // 联系地址
-            $region = [];
-            if (!empty($account['county'])) {
-                $region = Region::get($account['county'], 4);
-            } else if (!empty($account['city'])) {
-                $region = Region::get($account['city'], 3);
-            } else if (!empty($account['province'])) {
-                $region = Region::get($account['province'], 2);
-            }
-            $account['address'] = $region['address'] ?? '';
-            // 上级信息
-            $account['parent'] = [];
-            if (!empty($account['inviter'])) {
-                $account['parent'] = Account::get($account['inviter']);
-            }
-            // 返回结果
-            return $account;
-        } else {
-
-            // 验证参数
-            $params = [];
-            // 国家信息
-            $countrys = [];
-            // 账户列表
-            $account = [];
-            // 异常信息
-            $exception = [];
-
-            try {
-                // 验证参数
-                $params = $this->validate($req->all());
-                // 查询账号
-                $account = Account::get($params['uid']);
-                // 联系地址
-                $region = [];
-                if (!empty($account['county'])) {
-                    $region = Region::get($account['county'], 4);
-                } else if (!empty($account['city'])) {
-                    $region = Region::get($account['city'], 3);
-                } else if (!empty($account['province'])) {
-                    $region = Region::get($account['province'], 2);
-                }
-                $account['address'] = $region['address'] ?? '';
-                // 上级信息
-                $account['parent'] = [];
-                if (!empty($account['inviter'])) {
-                    $account['parent'] = Account::get($account['inviter']);
-                }
-            } catch (\Throwable $th) {
-                var_dump($th);
-                // 保存异常
-                $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
-            }
-
-            // 返回结果
-            return $res->html('admin/account/read', [
-                'params'    =>  $params,
-                'account'   =>  $account,
-                'countrys'  =>  $countrys,
-                'exception' =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
-            ]);
+        // 验证参数
+        $params = $this->validate($req->all());
+        // 查询账号
+        $account = Account::get($params['uid']);
+        // 联系地址
+        $region = [];
+        if (!empty($account['county'])) {
+            $region = Region::get($account['county'], 4);
+        } else if (!empty($account['city'])) {
+            $region = Region::get($account['city'], 3);
+        } else if (!empty($account['province'])) {
+            $region = Region::get($account['province'], 2);
         }
+        $account['address'] = $region['address'] ?? '';
+        // 上级信息
+        $account['parent'] = [];
+        if (!empty($account['inviter'])) {
+            $account['parent'] = Account::get($account['inviter']);
+        }
+
+        // 返回结果
+        return $res->html('admin/account/read', [
+            'params'    =>  $params,
+            'account'   =>  $account,
+            'countrys'  =>  $countrys,
+        ]);
     }
 
     /**

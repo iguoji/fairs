@@ -9,9 +9,11 @@ use App\Common\Mail;
 use App\Common\Admin;
 use App\Common\Wallet;
 use App\Common\Account;
+use App\Common\AccountPromotion;
 use Minimal\Facades\Db;
 use Minimal\Http\Validate;
 use Minimal\Facades\Log;
+use Minimal\Facades\Queue;
 use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
 
@@ -149,33 +151,34 @@ class Save
         // 判断身份
         if ($identity == 'admin') {
             // 管理员添加
-            return $this->save($req, $res);
+            return $this->admin($req, $res);
         } else {
             // 用户自行注册
-            return $this->signup($req, $res);
+            return $this->account($req, $res);
         }
     }
 
     /**
-     * 添加账号
+     * 管理员添加账号
      */
-    public function save($req, $res) : mixed
+    public function admin($req, $res) : mixed
     {
-        // 异常错误
-        $exception = [];
-
         // 权限验证
         $admin = Admin::verify($req);
 
         try {
             // 参数检查
-            $data = self::saveValidate($req->all());
+            $params = self::saveValidate($req->all());
 
             // 开启事务
             Db::beginTransaction();
 
             // 注册账号
-            $uid = Account::add($data);
+            $uid = Account::add($params);
+            // 存在上级编号则需要更新推广数据
+            if (isset($params['inviter'])) {
+                Queue::task([AccountPromotion::class, 'change', $uid, $params['inviter']]);
+            }
             // 注册钱包
             $bool = Wallet::new($uid);
             if (!$bool) {
@@ -187,39 +190,41 @@ class Save
         } catch (Throwable $th) {
             // 事务回滚
             Db::rollback();
-            // 保存异常
-            $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
+            // 抛出异常
+            throw $th;
         }
 
         // 返回结果
-        return $res->redirect('/accounts.html', [
-            'exception' =>  $exception,
-        ]);
+        return $res->redirect('/accounts.html');
     }
 
     /**
-     * 账号注册
+     * 用户自行注册账号
      */
-    public function signup($req, $res) : mixed
+    public function account($req, $res) : mixed
     {
         // 参数检查
-        $data = self::signupValidate($req->all());
+        $params = self::signupValidate($req->all());
 
         try {
             // 开启事务
             Db::beginTransaction();
 
             // 补充账号
-            if (isset($data['country']) && isset($data['phone']) && !isset($data['username'])) {
+            if (isset($params['country']) && isset($params['phone']) && !isset($params['username'])) {
                 // 手机注册
-                $data['username'] = $data['country'] . '_' . $data['phone'];
-            } else if (isset($data['email']) && !isset($data['username'])) {
+                $params['username'] = $params['country'] . '_' . $params['phone'];
+            } else if (isset($params['email']) && !isset($params['username'])) {
                 // 邮箱注册
-                $data['username'] = str_replace(['@', '.'], ['_', '_'], $data['email']);
+                $params['username'] = str_replace(['@', '.'], ['_', '_'], $params['email']);
             }
 
             // 注册账号
-            $uid = Account::add($data);
+            $uid = Account::add($params);
+            // 存在上级编号则需要更新推广数据
+            if (isset($params['inviter'])) {
+                Queue::task([AccountPromotion::class, 'change', $uid, $params['inviter']]);
+            }
 
             // 注册钱包
             $bool = Wallet::new($uid);

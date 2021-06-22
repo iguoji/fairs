@@ -453,20 +453,6 @@ class Account
     }
 
     /**
-     * 获取所有的上级列表
-     */
-    public static function getParents(string $uid) : array
-    {
-        $array = [];
-        $inviter = Db::table('account')->where('uid', $uid)->value('inviter');
-        if (!empty($inviter)) {
-            $array[] = $inviter;
-            array_push($array, ...static::getParents($inviter));
-        }
-        return $array;
-    }
-
-    /**
      * 删除账户
      */
     public static function del(string $uid) : bool

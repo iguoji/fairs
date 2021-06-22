@@ -1,8 +1,14 @@
 // Ajax
 var ajax = {
+    /**
+     * POST请求
+     */
     post: function(url, data, callback){
         $.post(url, data, callback);
     },
+    /**
+     * 文件上传
+     */
     upload: function(url, data, callback){
         var formData = new FormData();
         for (var key in data) {
@@ -18,7 +24,88 @@ var ajax = {
             dataType:"json",
             success : callback
         });
-    }
+    },
+    /**
+     * 数据列表
+     */
+    dataset: function(url, scroll, container, success, fail, page, size){
+        // 返回对象
+        return {
+            url: url,
+            page: page ? page : 1,
+            size: size ? size : 20,
+            status: true,
+            success: success,
+            fail: fail,
+            scroll: scroll,
+            container: container,
+            params: {},
+            bindEvent: false,
+            reset: function(){
+                this.page = 1;
+                this.size = 20;
+                this.status = true;
+                $(this.container).empty();
+            },
+            event: function(){
+                // 当前对象
+                var that = this;
+                // 监听事件
+                $(scroll).on('scroll', function(){
+                    var cHeight = $(container).height();
+                    var sHeight = $(scroll).height();
+                    var sTop = $(scroll).scrollTop();
+                    if (cHeight - (sTop + sHeight) < sHeight / 5) {
+                        that.fetch();
+                    }
+                });
+                // 标记已绑定事件
+                that.bindEvent = true;
+            },
+            fetch: function(params){
+                // 绑定事件
+                if (!this.bindEvent) {
+                    this.event();
+                }
+                // 状态不对
+                if (!this.status) {
+                    return false;
+                }
+                // 标记状态
+                this.status = false;
+                // 准备参数
+                if (params) {
+                    this.params = params;
+                } else if(!this.params) {
+                    this.params = {};
+                }
+                this.params.pageNo = this.page;
+                this.params.pageSize = this.size;
+                // 请求数据
+                var that = this;
+                ajax.post(this.url, this.params, function(res){
+                    // 更改状态
+                    that.status = true;
+                    // 按结果处理
+                    if (res && res.code == 200 && res.data && res.data.list) {
+                        // 结束还是下一页
+                        if (!res.data.list || res.data.list.length < that.size) {
+                            that.status = false;
+                        } else {
+                            that.page++;
+                        }
+                        // 回调函数
+                        that.success && that.success(res.data.list);
+                    } else {
+                        // 错误提示
+                        toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
+                        // 回调函数
+                        that.fail && that.fail(res);
+                    }
+                });
+            }
+        }
+    },
 }
 // 确认框
 if (window.bootstrap) {

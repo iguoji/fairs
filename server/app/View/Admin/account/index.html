@@ -211,7 +211,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {foreach $accounts as $key => $account}
+                        {foreach $list as $key => $account}
                             <tr>
                                 <td>
                                     <input class="form-check-input align-middle checkBoxItem" type="checkbox" value="{$account['uid']}" />
@@ -225,7 +225,7 @@
                                 </td>
                                 <td>
                                     <div class="small text-muted">{$account['nickname']}</div>
-                                    <a href="/account/read.html?uid={$account['uid']}" class="text-blue">{$account['username']}</a>
+                                    <a href="/account/read.html?uid={$account['uid']}" target="_blank" class="text-blue">{$account['username']}</a>
                                 </td>
                                 <td>
                                     <div class="text-muted">({$account['country']}) {$account['phone']}</div>
@@ -250,7 +250,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="small text-muted">{$account['parent']['nickname']}</div>
-                                            <a class="text-reset btn-goEdit" data-uid="{$account['parent']['uid']}">{$account['parent']['username']}</a>
+                                            <a href="/account/read.html?uid={$account['parent']['uid']}"  target="_blank" class="text-blue">{$account['parent']['username']}</a>
                                         </div>
                                     </div>
                                     {/notempty}
@@ -273,7 +273,7 @@
                 </table>
             </div>
             <div class="card-footer">
-                {:pagination($total, $size)}
+                {:pagination($total, $params['pageSize'])}
             </div>
         </div>
     </div>
@@ -311,21 +311,9 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="modal-body">
-                    <div class="row">
-                        <div class="col-lg-6 mb-3">
-                            <label class="form-label">个性昵称</label>
-                            <input type="text" class="form-control" name="nickname" placeholder="选填，例如：张三" />
-                        </div>
-                        <div class="col-lg-6 mb-3">
-                            <label class="form-label">出生年月</label>
-                            <input type="date" class="form-control" name="birthday" placeholder="选填，例如：张三" />
-                        </div>
-                    </div>
-                </div> -->
                 <div class="modal-footer">
                     <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">取消</a>
-                    <button type="submit" class="btn btn-primary ms-auto">
+                    <button type="submit" class="btn btn-primary btn-create ms-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                         立即创建
                     </button>
@@ -345,7 +333,7 @@ var remove = function(){
         uids.push($(ele).val());
     });
     if (uids.length) {
-        ajax.post('/account/remove.html', {uid: uids}, function(res){
+        ajax.post('/account/remove', {uid: uids}, function(res){
             if (res && res.code == 200) {
                 toastr.success('恭喜您、操作成功！');
                 window.location.reload();
@@ -364,7 +352,7 @@ $(function(){
             uids.push($(ele).val());
         });
         if (uids.length) {
-            ajax.post('/account/edit.html', {uid: uids, status: status}, function(res){
+            ajax.post('/account/edit', {uid: uids, status: status}, function(res){
                 if (res && res.code == 200) {
                     toastr.success('恭喜您、操作成功！');
                     window.location.reload();
@@ -373,6 +361,13 @@ $(function(){
                 }
             });
         }
+    });
+    // 添加数据
+    $('#modal-save .btn-create').on('click', function(){
+        // 按钮禁用
+        $(this).addClass('btn-vk btn-loading disabled');
+        // 继续操作
+        return true;
     });
 });
 </script>

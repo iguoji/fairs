@@ -142,11 +142,12 @@
                             <th>反面</th>
                             <th>手持</th>
                             <th>视频</th>
+                            <th>时间</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {foreach $authentications as $key => $authentication}
+                        {foreach $list as $key => $authentication}
                             <tr>
                                 <td>
                                     <input class="form-check-input align-middle checkBoxItem" type="checkbox" value="{$authentication['id']}" />
@@ -160,7 +161,7 @@
                                 </td>
                                 <td>
                                     <div class="small text-muted">{$authentication['nickname']}</div>
-                                    <a href="/account/read.html?uid={$authentication['uid']}" class="text-blue">{$authentication['username']}</a>
+                                    <a href="/account/read.html?uid={$authentication['uid']}" target="_blank" class="text-blue">{$authentication['username']}</a>
                                 </td>
                                 <td>
                                     <div class="text-muted">({$authentication['account_country']}) {$authentication['phone']}</div>
@@ -184,6 +185,10 @@
                                 <td><a class="avatar" href="{$authentication['back']}" target="_blank" style="background-image: url({$authentication['back']});"></a></td>
                                 <td><a class="avatar" href="{$authentication['hold']}" target="_blank" style="background-image: url({$authentication['hold']});"></a></td>
                                 <td><a class="avatar" href="{$authentication['video']}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 4v16l13 -8z" /></svg></a></td>
+                                <td>
+                                    <div class="small text-muted">提交：{$authentication['created_at']}</div>
+                                    <div class="small text-muted">审核：{$authentication['updated_at']}</div>
+                                </td>
                                 <td class="text-end">
                                     {notempty name="$authentication['reason']"}
                                         <button class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="left" title="{$authentication['reason']}">原因</button>

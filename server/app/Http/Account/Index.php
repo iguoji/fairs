@@ -57,8 +57,6 @@ class Index
      */
     public function handle($req, $res) : mixed
     {
-        // 异常错误
-        $exception = [];
         // 用户参数
         $params = [];
         // 账户列表
@@ -96,67 +94,25 @@ class Index
         ];
         // 账户总数
         $total = 0;
-        // 每页数量
-        $size = 20;
 
         // 权限验证
         $admin = Admin::verify($req);
 
-        // Ajax
-        if ($req->isAjax()) {
-            // 验证参数
-            $params = $this->validate($req->all());
-            // 账户列表
-            $params['pageSize'] = $size;
-            list($accounts, $total) = Account::all($params);
+        // 验证参数
+        $params = $this->validate($req->all());
+        // 账户列表
+        list($accounts, $total) = Account::all($params);
 
-            // 返回结果
-            return [
-                'list'  =>  $accounts,
-                'total' =>  $total,
-                'page'  =>  $params['pageNo'],
-                'size'  =>  $size,
-            ];
-        } else {
-            try {
-                // 验证参数
-                $params = $this->validate($req->all());
-                // 账号参数
-                $username = $params['username'] ?? '';
-                if (isset($params['username'])) {
-                    if (ctype_digit($params['username'])) {
-                        $params['phone'] = $params['username'];
-                        unset($params['username']);
-                    } else if (filter_var($params['username'], FILTER_VALIDATE_EMAIL)) {
-                        $params['email'] = $params['username'];
-                        unset($params['username']);
-                    }
-                }
-                // 账户列表
-                $params['pageSize'] = $size;
-                list($accounts, $total) = Account::all($params);
-                // 参数补齐
-                if (!isset($params['username'])) {
-                    $params['username'] = $username;
-                }
-            } catch (\Throwable $th) {
-                // 保存异常
-                $exception = [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ];
-            }
-
-            // 返回结果
-            return $res->html('admin/account/index', [
-                'params'            =>  $params,
-                'accounts'          =>  $accounts,
-                'total'             =>  $total,
-                'size'              =>  $size,
-                'levels'            =>  $levels,
-                'statuses'          =>  $statuses,
-                'authentications'   =>  $authentications,
-                'isBindCards'       =>  $isBindCards,
-                'genders'           =>  $genders,
-                'exception'         =>  json_encode($exception, JSON_UNESCAPED_UNICODE),
-            ]);
-        }
+        // 返回结果
+        return $res->html('admin/account/index', [
+            'params'            =>  $params,
+            'list'              =>  $accounts,
+            'total'             =>  $total,
+            'levels'            =>  $levels,
+            'statuses'          =>  $statuses,
+            'authentications'   =>  $authentications,
+            'isBindCards'       =>  $isBindCards,
+            'genders'           =>  $genders,
+        ]);
     }
 }
