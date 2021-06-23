@@ -11,20 +11,118 @@ use Minimal\Facades\Db;
 class AccountBank
 {
     /**
+     * 全部银行卡
+     */
+    public static function all(array $params) : array
+    {
+        // 查询对象
+        $query = Db::table('account_bank', 'ab')
+            ->join('account', 'a', 'a.uid', 'ab.uid')
+            ->join('bank', 'b', 'b.id', 'ab.bank');
+
+        // 条件：是否为默认
+        if (isset($params['is_default'])) {
+            $query->where('ab.is_default', $params['is_default']);
+        }
+        // 条件：按账户查询
+        if (isset($params['uid'])) {
+            $query->where('ab.uid', $params['uid']);
+        }
+        // 条件：按账户关键字查询
+        if (isset($params['keyword'])) {
+            $query->where(function($query1) use($params){
+                $query1->orWhere('a.username', 'like', '%' . $params['keyword'] . '%')
+                    ->orWhere('a.phone', 'like', '%' . $params['keyword'] . '%')
+                    ->orWhere('a.email', 'like', '%' . $params['keyword'] . '%');
+            });
+        }
+        // 条件：按银行查询
+        if (isset($params['bank'])) {
+            $query->where('ab.bank', $params['bank']);
+        }
+        // 条件：按姓名查询
+        if (isset($params['name'])) {
+            $query->where('ab.name', 'like', '%' . $params['name'] . '%');
+        }
+        // 条件：按卡号查询
+        if (isset($params['card'])) {
+            $query->where('ab.card', 'like', '%' . $params['card'] . '%');
+        }
+        // 条件：按添加起始时间查询
+        if (isset($params['created_start_at'])) {
+            $query->where('ab.created_at', '>=', $params['created_start_at']);
+        }
+        // 条件：按添加截止时间查询
+        if (isset($params['created_end_at'])) {
+            $query->where('ab.created_at', '<=', $params['created_end_at']);
+        }
+        // 条件：不含已删除
+        $query->where('ab.deleted_at');
+
+        // 数据总数
+        $total = (clone $query)->count('ab.id');
+        // 查询数据
+        $data = $query->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
+            ->orderByDesc('ab.id')
+            ->all(
+                'ab.id', 'ab.is_default', 'ab.name', 'ab.card', 'ab.address', 'ab.created_at',
+                'ab.bank', ['b.name' => 'bank_name'], 'b.type',
+                'a.uid', 'a.username', 'a.country', 'a.phone', 'a.email', 'a.avatar', 'a.nickname',
+            );
+        // 整理数据
+        // 返回结果
+        return [$data, $total];
+    }
+
+    /**
      * 我的银行卡
      */
     public static function my(string $uid) : array
     {
-        return Db::table('account_bank', 'ab')
-            ->join('bank', 'b', 'b.id', 'ab.bank')
-            ->where('ab.deleted_at')
-            ->where('ab.uid', $uid)
+        // 查询对象
+        $query = Db::table('account_bank', 'ab')
+            ->join('bank', 'b', 'b.id', 'ab.bank');
+
+        // 条件：是否为默认
+        if (isset($params['is_default'])) {
+            $query->where('ab.is_default', $params['is_default']);
+        }
+        // 条件：按银行查询
+        if (isset($params['bank'])) {
+            $query->where('ab.bank', $params['bank']);
+        }
+        // 条件：按姓名查询
+        if (isset($params['name'])) {
+            $query->where('ab.name', 'like', '%' . $params['name'] . '%');
+        }
+        // 条件：按卡号查询
+        if (isset($params['card'])) {
+            $query->where('ab.card', 'like', '%' . $params['card'] . '%');
+        }
+        // 条件：按添加起始时间查询
+        if (isset($params['created_start_at'])) {
+            $query->where('ab.created_at', '>=', $params['created_start_at']);
+        }
+        // 条件：按添加截止时间查询
+        if (isset($params['created_end_at'])) {
+            $query->where('ab.created_at', '<=', $params['created_end_at']);
+        }
+        // 条件：不含已删除
+        $query->where('ab.deleted_at');
+
+        // 数据总数
+        $total = (clone $query)->count('ab.id');
+        // 查询数据
+        $data = $query->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
             ->orderByDesc('ab.is_default')
-            ->orderByDesc('ab.updated_at')
+            ->orderByDesc('ab.id')
             ->all(
-                'ab.id', 'ab.is_default', 'ab.name', 'ab.card',
-                ['b.name' => 'bank'], 'b.type', 'ab.address'
+                'ab.id', 'ab.is_default', 'ab.name', 'ab.card', 'ab.address',
+                'ab.bank', ['b.name' => 'bank_name'], 'b.type',
             );
+        // 整理数据
+        // 返回结果
+        return [$data, $total];
     }
 
     /**

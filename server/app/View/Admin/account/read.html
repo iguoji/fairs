@@ -70,12 +70,15 @@
                     {/if}
                 </label>
                 <div>
-                    {if $account['status'] != 1}
-                        <span class="badge me-1">认证</span>
-                        <span class="badge me-1">绑卡</span>
-                    {else /}
+                    {if $account['authenticate'] != 0}
                         <span class="badge bg-green me-1">认证</span>
+                    {else /}
+                        <span class="badge me-1">认证</span>
+                    {/if}
+                    {if $account['bank_count'] > 0}
                         <span class="badge bg-green me-1">绑卡</span>
+                    {else /}
+                        <span class="badge me-1">绑卡</span>
                     {/if}
                 </div>
             </div>
@@ -257,6 +260,12 @@
                     <a href="#account-promotion" class="nav-link px-4 py-3" data-bs-toggle="tab">推广</a>
                 </li>
                 <li class="nav-item">
+                    <a href="#account-bank" class="nav-link px-4 py-3" data-bs-toggle="tab">银行卡</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#account-address" class="nav-link px-4 py-3" data-bs-toggle="tab">收货地址</a>
+                </li>
+                <li class="nav-item">
                     <a href="#account-logs" class="nav-link px-4 py-3" data-bs-toggle="tab">日志</a>
                 </li>
             </ul>
@@ -283,6 +292,47 @@
                             </table>
                         </div>
                     </div>
+                    <!-- 银行卡列表 -->
+                    <div class="tab-pane fade" id="account-bank">
+                        <div class="table-responsive">
+                            <table class="table card-table table-vcenter text-nowrap datatable banks">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1">编号</th>
+                                        <th>银行</th>
+                                        <th>默认</th>
+                                        <th>姓名</th>
+                                        <th>卡号</th>
+                                        <th>地址</th>
+                                        <th>添加时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="account-bank-container"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- 收货地址列表 -->
+                    <div class="tab-pane fade" id="account-address">
+                        <div class="table-responsive">
+                            <table class="table card-table table-vcenter text-nowrap datatable addresses">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1">编号</th>
+                                        <th>默认</th>
+                                        <th>姓名</th>
+                                        <th>号码</th>
+                                        <th>省份</th>
+                                        <th>城市</th>
+                                        <th>区县</th>
+                                        <th>详细地址</th>
+                                        <th>添加时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="account-address-container"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- 用户日志 -->
                     <div class="tab-pane fade" id="account-logs">
                         日志详细情况
                     </div>
@@ -427,36 +477,111 @@ var account = {
     },
     // 推广列表
     promotion: {
+        handle: null,
         init: function(){
-            new ajax.dataset('/account/promotion/read', window, '.account-promotion-container', function(data){
-                var html = '';
-                for (let i = 0; i < data.length; i++) {
-                    const ele = data[i];
-                    html += '<tr>';
-                        html += '<td><a class="avatar" href="javascript:;" style="background-image: url(' + ele.avatar + ');"></a></td>';
-                        html += '<td>';
-                            html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
-                            html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
-                        html += '</td>';
-                        html += '<td>';
-                            html += '<div class="small text-muted">' + (ele.nickname ? ele.nickname : '') + '</div>';
-                            html += '<a href="/account/read.html?uid=' + ele.uid + '#account-promotion" target="_blank" class="text-blue">' + ele.username + '</a>';
-                        html += '</td>';
-                        html += '<td>';
-                            html += '<div class="text-muted">(' + ele.country + ') ' + (ele.phone ? ele.phone : '') + '</div>';
-                            html += '<div>' + (ele.email ? ele.email : '') + '</div>';
-                        html += '</td>';
-                        html += '<td>' + (ele.one ? ele.one : 0) + '</td>';
-                        html += '<td>' + (ele.two ? ele.two : 0) + '</td>';
-                        html += '<td>' + (ele.three ? ele.three : 0) + '</td>';
-                        html += '<td>' + (ele.four ? ele.four : 0) + '</td>';
-                        html += '<td>' + (ele.five ? ele.five : 0) + '</td>';
-                    html += '</tr>';
-                }
-                $('.account-promotion-container').append(html);
-            }, function(res){
-                console.log(res);
-            }).fetch({inviter: uid});
+            if (!this.handle) {
+                $('.account-promotion-container').empty();
+                this.handle = new ajax.dataset('/account/promotions', window, '.account-promotion-container', function(data){
+                    var html = '';
+                    for (let i = 0; i < data.length; i++) {
+                        const ele = data[i];
+                        html += '<tr>';
+                            html += '<td><a class="avatar" href="javascript:;" style="background-image: url(' + ele.avatar + ');"></a></td>';
+                            html += '<td>';
+                                html += '<div class="small text-muted mb-1">' + ele.uid + '</div>';
+                                html += '<div><span class="badge bg-green-lt">普通会员</span></div>';
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<div class="small text-muted">' + (ele.nickname ? ele.nickname : '') + '</div>';
+                                html += '<a href="/account/read.html?uid=' + ele.uid + '#account-promotion" target="_blank" class="text-blue">' + ele.username + '</a>';
+                            html += '</td>';
+                            html += '<td>';
+                                html += '<div class="text-muted">(' + ele.country + ') ' + (ele.phone ? ele.phone : '') + '</div>';
+                                html += '<div>' + (ele.email ? ele.email : '') + '</div>';
+                            html += '</td>';
+                            html += '<td>' + (ele.one ? ele.one : 0) + '</td>';
+                            html += '<td>' + (ele.two ? ele.two : 0) + '</td>';
+                            html += '<td>' + (ele.three ? ele.three : 0) + '</td>';
+                            html += '<td>' + (ele.four ? ele.four : 0) + '</td>';
+                            html += '<td>' + (ele.five ? ele.five : 0) + '</td>';
+                        html += '</tr>';
+                    }
+                    $('.account-promotion-container').append(html);
+                }, function(res){
+                    console.log(res);
+                });
+                this.handle.fetch({inviter: uid, notempty: false});
+            }
+        },
+    },
+    // 银行列表
+    bank: {
+        handle: null,
+        init: function(){
+            if (!this.handle) {
+                $('.account-bank-container').empty();
+                this.handle = new ajax.dataset('/account/banks', window, '.account-bank-container', function(data){
+                    var html = '';
+                    for (let i = 0; i < data.length; i++) {
+                        const ele = data[i];
+                        html += '<tr>';
+                            html += '<td>' + ele.id + '</td>';
+                            html += '<td>' + ele.bank_name + '</td>';
+                            html += '<td>';
+                                if (ele.is_default == 1) {
+                                    html += '<span class="badge bg-success me-1"></span> 默认';
+                                } else {
+                                    html += '<span class="badge me-1"></span> 非默认';
+                                }
+                            html += '</td>';
+                            html += '<td>' + ele.name + '</td>';
+                            html += '<td>' + ele.card + '</td>';
+                            html += '<td>' + (ele.address ? ele.address : '') + '</td>';
+                            html += '<td>' + ele.created_at + '</td>';
+                        html += '</tr>';
+                    }
+                    $('.account-bank-container').append(html);
+                }, function(res){
+                    console.log(res);
+                });
+                this.handle.fetch({uid: uid});
+            }
+        },
+    },
+    // 收货地址列表
+    address: {
+        handle: null,
+        init: function(){
+            if (!this.handle) {
+                $('.account-address-container').empty();
+                this.handle = ajax.dataset('/account/addresses', window, '.account-address-container', function(data){
+                    var html = '';
+                    for (let i = 0; i < data.length; i++) {
+                        const ele = data[i];
+                        html += '<tr>';
+                            html += '<td>' + ele.id + '</td>';
+                            html += '<td>';
+                                if (ele.is_default == 1) {
+                                    html += '<span class="badge bg-success me-1"></span> 默认';
+                                } else {
+                                    html += '<span class="badge me-1"></span> 非默认';
+                                }
+                            html += '</td>';
+                            html += '<td>' + ele.name + '</td>';
+                            html += '<td>' + (ele.country ? '(' + ele.country + ') ' : '') + (ele.phone ? ele.phone : '') + '</td>';
+                            html += '<td>' + (ele.province_name ? ele.province_name : '') + '</td>';
+                            html += '<td>' + (ele.city_name ? ele.city_name : '') + '</td>';
+                            html += '<td>' + (ele.county_name ? ele.county_name : '') + '</td>';
+                            html += '<td>' + (ele.address ? ele.address : '') + '</td>';
+                            html += '<td>' + ele.created_at + '</td>';
+                        html += '</tr>';
+                    }
+                    $('.account-address-container').append(html);
+                }, function(res){
+                    console.log(res);
+                });
+                this.handle.fetch({uid: uid});
+            }
         },
     },
 }
@@ -553,19 +678,9 @@ $(function(){
     $('#modal-member .btn-search').on('click', function(){
         var keyword = $('#modal-member input[name=keyword]').val();
         if (keyword && keyword.trim().length) {
-            // member.data(keyword.trim(), '#modal-member tbody');
             account.search.reset();
             account.search.data({keyword: keyword});
         }
-    });
-    // 寻找账号 - 翻页
-    $('#modal-member .modal-body').on('scroll', function(){
-        // var scrollTop = $('#modal-member .modal-body').scrollTop();
-        // var winHeight = $('#modal-member .modal-body').outerHeight();
-        // let docHeight = $('#modal-member .modal-body table').outerHeight();
-        // if ((docHeight - scrollTop) - winHeight < 200) {
-        //     member.data(member.keyword, '#modal-member tbody');
-        // }
     });
     // 寻找账号 - 确定
     $('#modal-member .btn-memberSave').on('click', function(){

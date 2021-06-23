@@ -7,6 +7,7 @@ return [
     'mysql'             =>  [
         'host'          =>  '127.0.0.1',
         'port'          =>  3306,
+        'timeout'       =>  20,
 
         'dbname'        =>  'fairs',
         'username'      =>  'root',

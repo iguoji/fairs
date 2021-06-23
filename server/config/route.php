@@ -26,7 +26,12 @@ return [
 
         // 账户 - 推广
         '/account/promotions'               =>  \App\Http\Account\Promotion\Index::class,
-        '/account/promotion/read'           =>  \App\Http\Account\Promotion\Read::class,
+
+        // 账户 - 银行卡
+        '/account/banks'                    =>  \App\Http\Account\Bank\Index::class,
+
+        // 账户 - 收货地址
+        '/account/addresses'                =>  \App\Http\Account\Address\Index::class,
 
         // 权限
         '/signin'                           =>  \App\Http\Rbac\Signin::class,
@@ -66,17 +71,17 @@ return [
         '/account/authentication'           =>  \App\Http\Account\Authentication\Save::class,
 
         // 收货地址
-        '/account/address'                  =>  \App\Http\Address\My::class,
-        '/account/address/save'             =>  \App\Http\Address\Save::class,
-        '/account/address/edit'             =>  \App\Http\Address\Edit::class,
-        '/account/address/remove'           =>  \App\Http\Address\Remove::class,
-        '/account/address/default'          =>  \App\Http\Address\UseDefault::class,
+        '/account/address'                  =>  \App\Http\Account\Address\Index::class,
+        '/account/address/save'             =>  \App\Http\Account\Address\Save::class,
+        '/account/address/edit'             =>  \App\Http\Account\Address\Edit::class,
+        '/account/address/remove'           =>  \App\Http\Account\Address\Remove::class,
+        '/account/address/default'          =>  \App\Http\Account\Address\UseDefault::class,
 
         // 我的银行卡
-        '/account/bank'                     =>  \App\Http\AccountBank\My::class,
-        '/account/bank/save'                =>  \App\Http\AccountBank\Save::class,
-        '/account/bank/edit'                =>  \App\Http\AccountBank\Edit::class,
-        '/account/bank/remove'              =>  \App\Http\AccountBank\Remove::class,
-        '/account/bank/default'             =>  \App\Http\AccountBank\UseDefault::class,
+        '/account/banks'                    =>  \App\Http\Account\Bank\Index::class,
+        '/account/bank/save'                =>  \App\Http\Account\Bank\Save::class,
+        '/account/bank/edit'                =>  \App\Http\Account\Bank\Edit::class,
+        '/account/bank/remove'              =>  \App\Http\Account\Bank\Remove::class,
+        '/account/bank/default'             =>  \App\Http\Account\Bank\UseDefault::class,
     ],
 ];

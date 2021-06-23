@@ -4,9 +4,6 @@ declare(strict_types=1);
 namespace App\Common;
 
 use Minimal\Facades\Db;
-use Minimal\Facades\App;
-use Minimal\Facades\Log;
-use Minimal\Support\Str;
 use Minimal\Facades\Cache;
 use Minimal\Facades\Config;
 use Minimal\Foundation\Exception;
@@ -61,97 +58,6 @@ class Account
     {
         $secret = $secret ?? Config::get('app.secret', 'QQ123567231');
         return md5(sha1($secret) . crc32($chars));
-    }
-
-    /**
-     * 模拟数据
-     * php minimal \\App\\Common\\Account mock xE7c
-     */
-    public static function mock(string $inviter = '', string|int $count = 10000) : bool
-    {
-        return \Swoole\Coroutine\run(function() use($inviter, $count){
-            // 获取缓存
-            $config = Config::get('cache', []);
-            $config['pool'] = 1;
-            App::set('cache', new \Minimal\Cache\Manager($config, 1));
-
-            // 获取数据库
-            $config = Config::get('db', []);
-            $config['pool'] = 1;
-            App::set('database', new \Minimal\Database\Manager($config, 1));
-
-            // 起始编号
-            $index = Cache::inc('account:mock');
-            // 添加数量
-            $count = (int) $count;
-            // 统一密码
-            $password = '123456';
-            // 已添加的用户编号
-            $uids = [$inviter];
-
-            try {
-                // 开启事务
-                Db::beginTransaction();
-
-                // 当前时间
-                $now = date('YmdHis');
-                $date = date('Y-m-d H:i:s');
-                $time = time();
-
-                // 江浙沪地区数据
-                $regions = Db::table('region')->where('province', 'in', ['11', '31', '44'])->where('type', 4)->all('province', 'city', 'county');
-                $regionCount = count($regions);
-
-                // 循环处理
-                for ($i = 0; $i < $count; $i++, $index++) {
-                    // 随机地区
-                    $region = $regions[mt_rand(0, $regionCount - 1)];
-                    // 注册账号
-                    $uid = Account::add([
-                        'type'          =>  1,                                  // 账户类型
-                        'status'        =>  mt_rand(0, 10) <= 1 ? 0 : 1,        // 账户状态
-                        'level'         =>  1,                                  // 账户等级
-                        'username'      =>  'test_' . $now . '_' . $index,
-                        'password'      =>  $password,
-                        'safeword'      =>  $password,
-                        'phone'         =>  16800000000 + $index,
-                        'email'         =>  $index . '_' . $now . '@test.dev',
-                        'nickname'      =>  Str::random(mt_rand(2, 6), 4),
-                        'gender'        =>  mt_rand(1, 2),
-                        'birthday'      =>  date('Y-m-d', mt_rand(0, $time)),
-                        'province'      =>  $region['province'],
-                        'city'          =>  $region['city'],
-                        'county'        =>  $region['county'],
-                        'inviter'       =>  $uids[0],
-                        'created_at'    =>  $date,
-                    ]);
-                    // 注册钱包
-                    $bool = Wallet::new($uid);
-                    if (!$bool) {
-                        throw new Exception('很抱歉、钱包创建失败请重试！');
-                    }
-                    // 保存编号
-                    $uids[] = $uid;
-                    // 更换上级
-                    if (($i > 0 && $i % 50 == 0) || empty($uids[0])) {
-                        array_shift($uids);
-                    }
-                }
-
-                // 提交事务
-                Db::commit();
-            } catch (\Throwable $th) {
-                // 事务回滚
-                Db::rollback();
-                // 保存异常
-                Log::debug($th->getMessage(), [$th->getCode(), $th->getMessage(), method_exists($th, 'getData') ? $th->getData() : [] ]);
-            }
-
-            // 返回结果
-            Cache::set('account:mock', $index);
-            Log::debug('成功添加：' . count($uids));
-
-        }) > 0;
     }
 
     /**
@@ -218,7 +124,7 @@ class Account
 
 
         // 实名认证
-        $data['authentication'] = Authentic::status($account['uid'], Config::get('app.account.authentication', Authentic::IDCARD));
+        $data['authentication'] = Authentication::status($account['uid'], Config::get('app.account.authentication', Authentication::IDCARD));
 
         // 返回结果
         return $data;
@@ -248,6 +154,10 @@ class Account
         if (isset($params['level'])) {
             $query->where('a.level', $params['level']);
         }
+        // 条件：按实名认证查询
+        if (isset($params['authenticate'])) {
+            $query->where('a.authenticate', $params['authenticate'] == 1 ? '!=' : '=', '0');
+        }
 
         // 条件：按编号查询
         if (isset($params['uid'])) {
@@ -255,7 +165,7 @@ class Account
         }
         // 条件：按账号关键字查询
         if (isset($params['keyword'])) {
-            $query->orWhere(function($query1) use($params){
+            $query->where(function($query1) use($params){
                 $query1->orWhere('a.username', 'like', '%' . $params['keyword'] . '%')
                     ->orWhere('a.phone', 'like', '%' . $params['keyword'] . '%')
                     ->orWhere('a.email', 'like', '%' . $params['keyword'] . '%');
@@ -316,7 +226,7 @@ class Account
         if (isset($params['created_end_at'])) {
             $query->where('a.created_at', '<=', $params['created_end_at']);
         }
-        // 条件：已删除
+        // 条件：不含已删除
         $query->where('a.deleted_at');
 
         // 数据总数
@@ -339,14 +249,7 @@ class Account
         // 循环数据
         foreach ($data as $key => $value) {
             // 地址
-            $region = [];
-            if (!empty($value['county'])) {
-                $region = Region::get($value['county'], 4);
-            } else if (!empty($value['city'])) {
-                $region = Region::get($value['city'], 3);
-            } else if (!empty($value['province'])) {
-                $region = Region::get($value['province'], 2);
-            }
+            $region = Region::find($value);
             $value['address'] = $region['address'] ?? '';
             // 上级
             $value['parent'] = [
@@ -360,6 +263,8 @@ class Account
                 'avatar'    =>  $value['parent_avatar'],
             ];
             unset($value['parent_username'], $value['parent_country'], $value['parent_phone'], $value['parent_email'], $value['parent_username'], $value['parent_nickname']);
+            // 绑卡数量
+            $value['bank_count'] = AccountBank::count($value['uid']);
             // 保存
             $data[$key] = $value;
         }
@@ -368,7 +273,29 @@ class Account
     }
 
     /**
-     * 添加账号
+     * 添加新的账号
+     */
+    public static function new(array $data) : string
+    {
+        // 添加账号
+        $uid = static::add($data);
+        // 注册钱包
+        $bool = Wallet::new($uid);
+        if (!$bool) {
+            throw new Exception('很抱歉、钱包创建失败请重试！');
+        }
+        // 推广数据
+        $bool = AccountPromotion::add(['uid' => $uid]);
+        if (!$bool) {
+            throw new Exception('很抱歉、推广数据创建失败请重试！');
+        }
+
+        // 返回结果
+        return $uid;
+    }
+
+    /**
+     * 添加数据
      */
     public static function add(array $data) : string
     {

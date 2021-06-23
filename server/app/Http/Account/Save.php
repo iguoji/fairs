@@ -159,31 +159,21 @@ class Save
     }
 
     /**
-     * 管理员添加账号
+     * 管理员
      */
     public function admin($req, $res) : mixed
     {
         // 权限验证
         $admin = Admin::verify($req);
+        // 参数检查
+        $params = self::saveValidate($req->all());
 
         try {
-            // 参数检查
-            $params = self::saveValidate($req->all());
-
             // 开启事务
             Db::beginTransaction();
 
             // 注册账号
-            $uid = Account::add($params);
-            // 存在上级编号则需要更新推广数据
-            if (isset($params['inviter'])) {
-                Queue::task([AccountPromotion::class, 'change', $uid, $params['inviter']]);
-            }
-            // 注册钱包
-            $bool = Wallet::new($uid);
-            if (!$bool) {
-                throw new Exception('很抱歉、钱包创建失败请重试！');
-            }
+            $uid = Account::new($params);
 
             // 提交事务
             Db::commit();
@@ -199,7 +189,7 @@ class Save
     }
 
     /**
-     * 用户自行注册账号
+     * 用户
      */
     public function account($req, $res) : mixed
     {
@@ -220,17 +210,7 @@ class Save
             }
 
             // 注册账号
-            $uid = Account::add($params);
-            // 存在上级编号则需要更新推广数据
-            if (isset($params['inviter'])) {
-                Queue::task([AccountPromotion::class, 'change', $uid, $params['inviter']]);
-            }
-
-            // 注册钱包
-            $bool = Wallet::new($uid);
-            if (!$bool) {
-                throw new Exception('很抱歉、钱包创建失败请重试！');
-            }
+            $uid = Account::new($params);
 
             // 立即登录
             $account = Account::signin($req, Account::get($uid));

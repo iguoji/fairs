@@ -1,0 +1,193 @@
+{extend name="layout/admin" }
+{block name="title"}收货地址{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">addresses</div>
+            <h2 class="page-title">收货地址</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <form method="GET" class="card">
+            <div class="card-header">
+                <h3 class="card-title">数据筛选</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-xl-2 mb-3">
+                        <label class="form-label">账号关键字</label>
+                        <input type="text" class="form-control" name="keyword" placeholder="用户名\手机\邮箱" value="{$params['keyword']|default=''}" />
+                    </div>
+                    <div class="col-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">是否为默认</label>
+                        <select class="form-select" name="is_default">
+                            {foreach $defaults as $key => $default}
+                                {if isset($params['is_default']) && $key == $params['is_default']}
+                                    <option value="{$key}" selected>{$default}</option>
+                                {else /}
+                                    <option value="{$key}">{$default}</option>
+                                {/if}
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">联系人姓名</label>
+                        <input type="text" class="form-control" name="name" placeholder="联系人姓名" value="{$params['name']|default=''}" />
+                    </div>
+                    <div class="col-sm-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">联系号码</label>
+                        <input type="text" class="form-control" name="phone" placeholder="联系号码" value="{$params['phone']|default=''}" />
+                    </div>
+                    <div class=" col-md-12 col-xl-6 col-xxl-4 mb-3">
+                        <div class="row region">
+                            <div class="col">
+                                <label class="form-label">省份</label>
+                                <select name="province" class="form-select" data-default="{$params['province']|default=''}">
+                                    <option value="">请选择省份</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">城市</label>
+                                <select name="city" class="form-select" data-default="{$params['city']|default=''}">
+                                    <option value="">请选择城市</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">区县</label>
+                                <select name="county" class="form-select" data-default="{$params['county']|default=''}">
+                                    <option value="">请选择区县</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">添加起始时间</label>
+                        <input type="text" class="form-control flatpickr" name="created_start_at" placeholder="2021-08-08 12:30:00" value="{$params['created_start_at']|default=''}" />
+                    </div>
+                    <div class="col-sm-6 col-md-3 col-xl-2 mb-3">
+                        <label class="form-label">添加截止时间</label>
+                        <input type="text" class="form-control flatpickr" name="created_end_at" placeholder="2021-08-08 12:30:00" value="{$params['created_end_at']|default=''}" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">时间区间</label>
+                        <div class="form-selectgroup">
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="today" />
+                                <span class="form-selectgroup-label">今天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="yesterday" />
+                                <span class="form-selectgroup-label">昨天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="lastSevenDays" />
+                                <span class="form-selectgroup-label">近7天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-quick" data-target="created_start_at,created_end_at" type="radio" name="date_choose" value="nearly30Days" />
+                                <span class="form-selectgroup-label">近30天</span>
+                            </label>
+                            <label class="form-selectgroup-item">
+                                <input class="form-selectgroup-input flatpickr-clear" data-target="created_start_at,created_end_at" type="radio" name="date_choose" />
+                                <span class="form-selectgroup-label">清除时间</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary">查询数据</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">收货地址列表</h3>
+                <div class="card-options"></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable authentications">
+                    <thead>
+                        <tr>
+                            <th class="w-1">
+                                <input class="form-check-input m-0 align-middle checkBoxChoose" type="checkbox" aria-label="Select all invoices">
+                            </th>
+                            <th class="w-1">头像</th>
+                            <th class="w-1">编号</th>
+                            <th>账号</th>
+                            <th>手机邮箱</th>
+                            <th>默认</th>
+                            <th>姓名</th>
+                            <th>号码</th>
+                            <th>省份</th>
+                            <th>城市</th>
+                            <th>区县</th>
+                            <th>详细地址</th>
+                            <th>添加时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $list as $key => $address}
+                            <tr>
+                                <td>
+                                    <input class="form-check-input align-middle checkBoxItem" type="checkbox" value="{$address['id']}" />
+                                </td>
+                                <td>
+                                    <a class="avatar" href="javascript:;" style="background-image: url({$address['avatar']});"></a>
+                                </td>
+                                <td>
+                                    <div class="small text-muted mb-1">{$address['uid']}</div>
+                                    <div><span class="badge bg-green-lt">普通会员</span></div>
+                                </td>
+                                <td>
+                                    <div class="small text-muted">{$address['nickname']}</div>
+                                    <a href="/account/read.html?uid={$address['uid']}#account-address" target="_blank" class="text-blue">{$address['username']}</a>
+                                </td>
+                                <td>
+                                    <div class="text-muted">({$address['account_country']}) {$address['account_phone']}</div>
+                                    <div>{$address['email']}</div>
+                                </td>
+                                <td>
+                                    {if $address['is_default'] == 1}
+                                        <span class="badge bg-success me-1"></span> 默认
+                                    {else /}
+                                        <span class="badge me-1"></span> 非默认
+                                    {/if}
+                                </td>
+                                <td>{$address['name']}</td>
+                                <td>({$address['country']}) {$address['phone']}</td>
+                                <td>{$address['province_name']}</td>
+                                <td>{$address['city_name']}</td>
+                                <td>{$address['county_name']}</td>
+                                <td>{$address['address']}</td>
+                                <td>{$address['created_at']}</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                {:pagination($total, $params['pageSize'])}
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+</script>
+{/block}

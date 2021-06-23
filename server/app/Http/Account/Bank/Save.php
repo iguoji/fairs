@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\AccountBank;
+namespace App\Http\Account\Bank;
 
 use Throwable;
 use App\Common\Bank;

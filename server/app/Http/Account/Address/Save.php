@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Address;
+namespace App\Http\Account\Address;
 
 use Throwable;
 use App\Common\Region;
 use App\Common\Account;
-use App\Common\Address;
+use App\Common\AccountAddress;
 use Minimal\Facades\Db;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
@@ -26,21 +26,18 @@ class Save
 
         $validate->int('is_default', '是否设为默认地址')->in(0, 1)->default(0);
 
-        $validate->string('country', '国家')->require()->length(1, 24)->digit()->call(function($value){
-            return Region::has(country: $value);
+        $validate->string('country', '国家')->default('86')->length(1, 24)->digit()->call(function($value){
+            return Region::has($value);
         });
         $validate->string('province', '省份')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $value);
-        })->requireWith('country');
+            return Region::has($value, 2);
+        });
         $validate->string('city', '市')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $value);
-        })->requireWith('country', 'province');
+            return Region::has($value, 3);
+        })->requireWith('province');
         $validate->string('county', '区县')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $value);
-        })->requireWith('country', 'province', 'city');
-        $validate->string('town', '乡镇')->require()->length(1, 30)->digit()->call(function($value, $values){
-            return Region::has(country: $values['country'] ?? '', province: $values['province'] ?? '', city: $values['city'] ?? '', county: $values['county'] ?? '', town: $value);
-        })->requireWith('country', 'province', 'city', 'county');
+            return Region::has($value, 4);
+        })->requireWith('province', 'city');
 
         $validate->string('address', '详细地址')->require();
 
@@ -68,12 +65,12 @@ class Save
 
             // 取消现有默认
             if (!empty($data['is_default'])) {
-                Address::cancelCurrentDefault($uid);
+                AccountAddress::cancelCurrentDefault($uid);
             }
 
             // 执行保存
             $data['uid'] = $uid;
-            if (!Address::add($data)) {
+            if (!AccountAddress::add($data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 

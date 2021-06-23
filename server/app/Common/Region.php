@@ -228,7 +228,23 @@ class Region
     {
         list($field, $fields) = static::getFieldByType($type);
 
-        return Db::table('region')->where('type', $type)->where($field, $id)->first(...$fields);
+        return Db::table('region')->where('type', $type)->where($field, $id)->first();
+    }
+
+    /**
+     * 查找地区
+     */
+    public static function find(array $region) : array
+    {
+        $data = [];
+        if (!empty($region['county'])) {
+            $data = static::get($region['county'], 4);
+        } else if (!empty($region['city'])) {
+            $data = static::get($region['city'], 3);
+        } else if (!empty($region['province'])) {
+            $data = static::get($region['province'], 2);
+        }
+        return $data;
     }
 
     /**

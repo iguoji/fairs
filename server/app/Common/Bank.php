@@ -11,6 +11,23 @@ use Minimal\Facades\Db;
 class Bank
 {
     /**
+     * 所有银行卡
+     */
+    public static function all(array $params = []) : array
+    {
+        // 查询对象
+        $query = Db::table('bank');
+
+        // 数据总数
+        $total = (clone $query)->count('id');
+        // 查询数据
+        $data = $query->orderByDesc('sort')->all();
+
+        // 返回结果
+        return [$data, $total];
+    }
+
+    /**
      * 是否存在
      */
     public static function has(int $id) : bool

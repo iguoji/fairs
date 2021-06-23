@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\AccountBank;
+namespace App\Http\Account\Bank;
 
 use Throwable;
 use App\Common\Bank;
@@ -12,9 +12,9 @@ use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 设置为默认银行卡
+ * 删除银行卡
  */
-class UseDefault
+class Remove
 {
     /**
      * 参数验证
@@ -27,8 +27,6 @@ class UseDefault
         $validate->int('id', '银行卡编号')->require()->digit()->call(function($value) use($uid){
             return AccountBank::has((int) $value, $uid);
         }, message: '很抱歉、银行卡编号不存在！');
-
-        $validate->int('is_default', '是否设为默认银行卡')->in(0, 1)->default(1);
 
         // 返回结果
         return $validate->check();
@@ -49,13 +47,10 @@ class UseDefault
             // 开启事务
             Db::beginTransaction();
 
-            // 取消现有默认
-            AccountBank::cancelCurrentDefault($uid);
-
-            // 执行修改
-            $id = $data['id'];
-            unset($data['id']);
-            if (!empty($data['is_default']) && !AccountBank::upd($id, $data)) {
+            // 执行删除
+            if (!AccountBank::upd($data['id'], [
+                'deleted_at'    =>  date('Y-m-d H:i:s')
+            ])) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 

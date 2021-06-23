@@ -25,6 +25,7 @@ class Index
         // 参数细节
         $validate->string('keyword', '账号关键字');
         $validate->string('inviter', '上级编号');
+        $validate->bool('notempty', '不含空数据');
 
         $validate->int('pageNo', '当前页码')->default(0);
         $validate->int('pageSize', '每页数量')->default(20);
@@ -52,7 +53,6 @@ class Index
         // 验证参数
         $params = $this->validate($req->all());
         // 账户列表
-        $params['notempty'] = true;
         list($accounts, $total) = AccountPromotion::all($params);
 
         // 返回结果

@@ -44,7 +44,7 @@ class AccountPromotion
             $query->where('a.inviter', $params['inviter']);
         }
         // 条件：有推广数据的人
-        if (isset($params['notempty'])) {
+        if (isset($params['notempty']) && !empty($params['notempty'])) {
             $query->where(function($query1) {
                 foreach (static::FIELDS as $key => $field) {
                     $query1->orWhere('ap.' . $field, '!=', 0);

@@ -26,6 +26,7 @@ class Index
         $validate->int('type', '类型');
         $validate->int('status', '状态');
         $validate->int('level', '等级');
+        $validate->int('authenticate', '是否实名认证');
         $validate->string('uid', '编号');
         $validate->string('keyword', '账号关键字');
         $validate->string('username', '用户名');

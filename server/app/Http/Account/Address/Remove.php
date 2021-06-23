@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Address;
+namespace App\Http\Account\Address;
 
 use Throwable;
 use App\Common\Account;
-use App\Common\Address;
+use App\Common\AccountAddress;
 use Minimal\Facades\Db;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
@@ -24,7 +24,7 @@ class Remove
         $validate = new Validate($params);
 
         $validate->int('id', '收货地址编号')->require()->digit()->call(function($value) use($uid){
-            return Address::has((int) $value, $uid);
+            return AccountAddress::has((int) $value, $uid);
         }, message: '很抱歉、收货地址编号不存在！');
 
         // 返回结果
@@ -47,7 +47,7 @@ class Remove
             Db::beginTransaction();
 
             // 执行删除
-            if (!Address::upd($data['id'], [
+            if (!AccountAddress::upd($data['id'], [
                 'deleted_at'    =>  date('Y-m-d H:i:s')
             ])) {
                 throw new Exception('很抱歉、操作失败请重试！');

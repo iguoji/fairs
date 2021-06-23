@@ -98,7 +98,7 @@ class Authentication
             ->page($params['pageNo'] ?? 1, $params['size'] ?? 20)
             ->all(
                 'aa.*',
-                'a.username', ['a.country', 'account_country'], 'a.phone', 'a.email', 'a.nickname', 'a.avatar',
+                'a.username', ['a.country' => 'account_country'], ['a.phone' => 'account_phone'], 'a.email', 'a.nickname', 'a.avatar',
             );
         // 循环数据
         foreach ($data as $key => $value) {

@@ -1,20 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\AccountBank;
+namespace App\Http\Account\Address;
 
 use Throwable;
-use App\Common\Bank;
 use App\Common\Account;
-use App\Common\AccountBank;
+use App\Common\AccountAddress;
 use Minimal\Facades\Db;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;
 
 /**
- * 删除银行卡
+ * 设置为默认收货地址
  */
-class Remove
+class UseDefault
 {
     /**
      * 参数验证
@@ -24,9 +23,11 @@ class Remove
         // 验证对象
         $validate = new Validate($params);
 
-        $validate->int('id', '银行卡编号')->require()->digit()->call(function($value) use($uid){
-            return AccountBank::has((int) $value, $uid);
-        }, message: '很抱歉、银行卡编号不存在！');
+        $validate->int('id', '收货地址编号')->require()->digit()->call(function($value) use($uid){
+            return AccountAddress::has((int) $value, $uid);
+        }, message: '很抱歉、收货地址编号不存在！');
+
+        $validate->int('is_default', '是否设为默认地址')->in(0, 1)->default(1);
 
         // 返回结果
         return $validate->check();
@@ -47,10 +48,13 @@ class Remove
             // 开启事务
             Db::beginTransaction();
 
-            // 执行删除
-            if (!AccountBank::upd($data['id'], [
-                'deleted_at'    =>  date('Y-m-d H:i:s')
-            ])) {
+            // 取消现有默认
+            AccountAddress::cancelCurrentDefault($uid);
+
+            // 执行修改
+            $id = $data['id'];
+            unset($data['id']);
+            if (!AccountAddress::upd($id, $data)) {
                 throw new Exception('很抱歉、操作失败请重试！');
             }
 

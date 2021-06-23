@@ -6,6 +6,7 @@ namespace App\Http\Account;
 use App\Common\Admin;
 use App\Common\Region;
 use App\Common\Account;
+use App\Common\AccountBank;
 use Minimal\Http\Validate;
 
 /**
@@ -38,17 +39,17 @@ class Read
         // 判断身份
         if ($identity == 'admin') {
             // 管理员查看/读取
-            return $this->read($req, $res);
+            return $this->admin($req, $res);
         } else {
             // 用户自行读取
-            return $this->profile($req, $res);
+            return $this->account($req, $res);
         }
     }
 
     /**
-     * 读取资料
+     * 管理员
      */
-    public function read($req, $res) : mixed
+    public function admin($req, $res) : mixed
     {
         // 验证参数
         $params = [];
@@ -65,20 +66,15 @@ class Read
         // 查询账号
         $account = Account::get($params['uid']);
         // 联系地址
-        $region = [];
-        if (!empty($account['county'])) {
-            $region = Region::get($account['county'], 4);
-        } else if (!empty($account['city'])) {
-            $region = Region::get($account['city'], 3);
-        } else if (!empty($account['province'])) {
-            $region = Region::get($account['province'], 2);
-        }
+        $region = Region::find($account);
         $account['address'] = $region['address'] ?? '';
         // 上级信息
         $account['parent'] = [];
         if (!empty($account['inviter'])) {
             $account['parent'] = Account::get($account['inviter']);
         }
+        // 绑卡数量
+        $account['bank_count'] = AccountBank::count($account['uid']);
 
         // 返回结果
         return $res->html('admin/account/read', [
@@ -89,9 +85,9 @@ class Read
     }
 
     /**
-     * 读取档案
+     * 用户
      */
-    public function profile($req, $res) : mixed
+    public function account($req, $res) : mixed
     {
         // 授权验证
         $uid = Account::verify($req);
