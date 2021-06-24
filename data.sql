@@ -1,9 +1,9 @@
-# 创建数据库
+-- 创建数据库
 DROP DATABASE IF EXISTS fairs;
 CREATE DATABASE IF NOT EXISTS fairs DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
 USE fairs;
 
-# 测试表
+-- 测试表
 DROP TABLE IF EXISTS `test`;
 CREATE TABLE `test` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -11,7 +11,7 @@ CREATE TABLE `test` (
 	`time` DECIMAL(30,10) DEFAULT 0 COMMENT '时间戳'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='测试表';
 
-# 地区表
+-- 地区表
 DROP TABLE IF EXISTS `region`;
 CREATE TABLE `region` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -40,7 +40,7 @@ ALTER TABLE `region` ADD INDEX `type_city`(`type`, `city`);
 ALTER TABLE `region` ADD INDEX `type_county`(`type`, `county`);
 
 
-# 银行表
+-- 银行表
 DROP TABLE IF EXISTS `bank`;
 CREATE TABLE `bank` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -61,7 +61,7 @@ INSERT INTO `bank` VALUES
 	(NULL, 'WEB', 1, 'ALIPAY', '支付宝', 666666, 1, CURRENT_TIMESTAMP(), NULL),
 	(NULL, 'WEB', 1, 'WECHAT', '微信', 666660, 1, CURRENT_TIMESTAMP(), NULL);
 
-# 账户表
+-- 账户表
 DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -99,7 +99,7 @@ CREATE TABLE `account` (
 ALTER TABLE `account` ADD `authenticate` INT NULL DEFAULT 0 COMMENT '认证编号' AFTER `inviter`;
 ALTER TABLE `account` ADD INDEX `inviter`(`inviter`);
 
-# 账户关连表
+-- 账户关连表
 DROP TABLE IF EXISTS `account_link`;
 CREATE TABLE `account_link` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -125,7 +125,7 @@ CREATE TABLE `account_link` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='账户关连表';
 
-# 账户认证表
+-- 账户认证表
 DROP TABLE IF EXISTS `account_authenticate`;
 CREATE TABLE `account_authenticate` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -152,7 +152,7 @@ CREATE TABLE `account_authenticate` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户认证表';
 
-# 账户推广表
+-- 账户推广表
 DROP TABLE IF EXISTS `account_promotion`;
 CREATE TABLE `account_promotion` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -168,7 +168,7 @@ CREATE TABLE `account_promotion` (
 	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户推广表';
 
-# 账户地址表
+-- 账户地址表
 DROP TABLE IF EXISTS `account_address`;
 CREATE TABLE `account_address` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -191,7 +191,7 @@ CREATE TABLE `account_address` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户地址表';
 
-# 账户银行卡表
+-- 账户银行卡表
 DROP TABLE IF EXISTS `account_bank`;
 CREATE TABLE `account_bank` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -212,7 +212,7 @@ CREATE TABLE `account_bank` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='账户银行卡表';
 
-# 钱包表
+-- 钱包表
 DROP TABLE IF EXISTS `wallet`;
 CREATE TABLE `wallet` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -238,7 +238,7 @@ CREATE TABLE `wallet` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='钱包表';
 
-# 钱包记录表
+-- 钱包记录表
 DROP TABLE IF EXISTS `wallet_record`;
 CREATE TABLE `wallet_record` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -260,7 +260,39 @@ CREATE TABLE `wallet_record` (
 
 
 
-# 管理员表
+-- 商品类目
+DROP TABLE IF EXISTS `catalog`;
+CREATE TABLE `catalog` (
+	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+	`sort` INT NULL DEFAULT 0 COMMENT '排列顺序',
+	`status` INT NOT NULL DEFAULT 1 COMMENT '状态',
+	`parent` INT NULL DEFAULT 0 COMMENT '上级编号',
+	`name` VARCHAR(100) NOT NULL COMMENT '名称',
+	`icon` VARCHAR(250) NULL COMMENT '图标',
+	`keywords` TEXT NULL COMMENT '关键字',
+	`description` TEXT NULL COMMENT '描述',
+	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
+	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='商品类目';
+
+-- 商品品牌
+DROP TABLE IF EXISTS `brand`;
+CREATE TABLE `brand` (
+	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
+	`sort` INT NULL DEFAULT 0 COMMENT '排列顺序',
+	`status` INT NOT NULL DEFAULT 1 COMMENT '状态',
+	`name` VARCHAR(100) NOT NULL COMMENT '名称',
+	`icon` VARCHAR(250) NULL COMMENT '图标',
+	`created_at` TIMESTAMP NULL DEFAULT NULL COMMENT '创建时间',
+	`updated_at` TIMESTAMP NULL DEFAULT NULL COMMENT '修改时间',
+	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='商品品牌';
+
+
+
+
+-- 管理员表
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -293,7 +325,7 @@ CREATE TABLE `admin` (
 	INDEX region(`country`, `province`, `city`, `county`, `town`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
 
-# 管理员记录
+-- 管理员记录
 DROP TABLE IF EXISTS `admin_log`;
 CREATE TABLE `admin_log` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -311,7 +343,7 @@ CREATE TABLE `admin_log` (
 	KEY `created_at` (`created_at`)
 ) ENGINE=MYISAM DEFAULT CHARSET=utf8 COMMENT='管理员 - 记录';
 
-# 权限角色表
+-- 权限角色表
 DROP TABLE IF EXISTS `rbac_role`;
 CREATE TABLE `rbac_role` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -324,7 +356,7 @@ CREATE TABLE `rbac_role` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='权限角色表';
 
-# 权限节点表
+-- 权限节点表
 DROP TABLE IF EXISTS `rbac_node`;
 CREATE TABLE `rbac_node` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -339,7 +371,7 @@ CREATE TABLE `rbac_node` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='权限节点表';
 
-# 权限关联表
+-- 权限关联表
 DROP TABLE IF EXISTS `rbac_relation`;
 CREATE TABLE `rbac_relation` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',
@@ -350,7 +382,7 @@ CREATE TABLE `rbac_relation` (
 	`deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间'
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='权限关联表';
 
-# 权限关联表
+-- 权限关联表
 DROP TABLE IF EXISTS `rbac_relation`;
 CREATE TABLE `rbac_relation` (
 	`id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT '系统编号',

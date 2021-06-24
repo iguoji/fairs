@@ -353,7 +353,7 @@ $(function(){
         if (files.length) {
             $that = $(this);
             $parent = $(this).parents('.avatar-upload');
-            ajax.upload('/file/upload', {file: files[0]}, function(res){
+            ajax.upload('/upload', {file: files[0]}, function(res){
                 $that.after($that.clone().val('').attr('index', Date.now())).remove();;
                 if (res && res.code == 200) {
                     $parent.css('backgroundImage', 'url(' + res.data.url + ')');
@@ -361,7 +361,7 @@ $(function(){
                     $input.val(res.data.url);
                     $input.trigger('change');
                 } else {
-                    toastr(res && res.message ? res.message : '很抱歉、服务器繁忙！');
+                    toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
                 }
             });
         }
@@ -369,11 +369,7 @@ $(function(){
     // 图片清除
     $('.avatar-upload-clear').on('click', function(){
         $container = $(this).parents('.avatar-container');
-        var oldValue = $container.find('.avatar-input').val();
-        if (oldValue.trim() == '') {
-            return;
-        }
-        $container.find('.avatar-input').val('  ');
+        $container.find('.avatar-input').val('');
         $container.find('.avatar-input').trigger('change');
         $container.find('.avatar').css('backgroundImage', 'none');
     });

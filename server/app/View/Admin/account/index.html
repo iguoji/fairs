@@ -80,9 +80,9 @@
                     </div>
                     <div class="col-6 col-md-3 col-xl-2 mb-3">
                         <label class="form-label">是否绑卡</label>
-                        <select class="form-select" name="isBindCard">
+                        <select class="form-select" name="is_bind_card">
                             {foreach $isBindCards as $key => $isBindCard}
-                                {if isset($params['isBindCard']) && $key == $params['isBindCard']}
+                                {if isset($params['is_bind_card']) && $key == $params['is_bind_card']}
                                     <option value="{$key}" selected>{$isBindCard}</option>
                                 {else /}
                                     <option value="{$key}">{$isBindCard}</option>

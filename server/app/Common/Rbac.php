@@ -16,6 +16,7 @@ class Rbac
 {
     /**
      * 初始化
+     * php minimal \\App\\Common\\Rbac init
      */
     public static function init() : bool
     {
@@ -62,12 +63,24 @@ class Rbac
                 ]],
 
                 ['商品管理', '', $icon_goods, [
-                    ['类目', '/catalog/index.html', '', [
+                    ['类目', '/catalogs.html', '', [
+                        ['查看类目详情', '/catalog/read.html', '', [], 0],
                         ['添加类目', '/catalog/save.html', '', [], 0],
                         ['编辑类目', '/catalog/edit.html', '', [], 0],
                         ['删除类目', '/catalog/remove.html', '', [], 0],
                     ]],
-                    ['仓库', '/store/index.html'],
+                    ['品牌', '/brands.html', '', [
+                        ['查看品牌详情', '/brand/read.html', '', [], 0],
+                        ['添加品牌', '/brand/save.html', '', [], 0],
+                        ['编辑品牌', '/brand/edit.html', '', [], 0],
+                        ['删除品牌', '/brand/remove.html', '', [], 0],
+                    ]],
+                    ['仓库', '/store.html', '', [
+                        ['查看商品详情', '/store/read.html', '', [], 0],
+                        ['添加商品', '/store/save.html', '', [], 0],
+                        ['编辑商品', '/store/edit.html', '', [], 0],
+                        ['删除商品', '/store/remove.html', '', [], 0],
+                    ]],
                 ]],
 
                 ['权限管理', '', $icon_goods, [

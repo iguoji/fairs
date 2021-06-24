@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Http\File;
 
 use Minimal\Facades\App;
+use Minimal\Facades\Log;
 use Minimal\Facades\Config;
 use Minimal\Http\Validate;
 use Minimal\Foundation\Exception;

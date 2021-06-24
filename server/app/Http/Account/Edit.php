@@ -81,7 +81,7 @@ class Edit
 
         // 社交属性
         $validate->string('nickname', '昵称')->length(2, 20)->chsDash();
-        $validate->string('avatar', '头像')->length(2, 150);
+        $validate->string('avatar', '头像')->nullable(true)->length(0, 150);
         $validate->int('gender', '性别')->in(0, 1, 2)->digit();
         $validate->string('birthday', '出生年月')->date('Y-m-d');
 
@@ -162,6 +162,7 @@ class Edit
             // 开启事务
             Db::beginTransaction();
 
+            \Minimal\Facades\Log::debug($req->path(), $params);
             // 修改资料
             $uids = $params['uid'];
             if (!is_array($uids)) {

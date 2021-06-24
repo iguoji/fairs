@@ -173,6 +173,7 @@ class Save
             Db::beginTransaction();
 
             // 注册账号
+            \Minimal\Facades\Log::debug($req->path(), $params);
             $uid = Account::new($params);
 
             // 提交事务

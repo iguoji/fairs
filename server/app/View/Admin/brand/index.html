@@ -1,0 +1,265 @@
+{extend name="layout/admin" }
+{block name="title"}商品品牌{/block}
+{block name="content"}
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Brands</div>
+            <h2 class="page-title">品牌</h2>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-list">
+                {if true === :\App\Common\Admin::check('/brand/save.html') }
+                <a href="#" class="btn btn-primary d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-save">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    添加新的品牌
+                </a>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">品牌列表</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable datalist">
+                    <thead>
+                        <tr>
+                            <th class="w-1">编号</th>
+                            <th>名称</th>
+                            <th>状态</th>
+                            <th>图标</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $list as $key => $item}
+                            <tr>
+                                <td>{$item['id']}</td>
+                                <td>
+                                    {if true === :\App\Common\Admin::check('/brand/read.html') }
+                                    <a class="btn-goRead" href="javascript:;" data-id="{$item['id']}">{$item['name']}</a>
+                                    {else /}
+                                    <a class="" href="javascript:;" data-id="{$item['id']}">{$item['name']}</a>
+                                    {/if}
+                                </td>
+                                <td>
+                                    {if $item['status'] != 1}
+                                        <span class="badge bg-azure me-1"></span> 冻结
+                                    {else /}
+                                        <span class="badge bg-green me-1"></span> 正常
+                                    {/if}
+                                </td>
+                                <td><span class="avatar" style="background-image: url({$item['icon']});"></span></td>
+                                <td class="text-end">
+                                    {if true === :\App\Common\Admin::check('/brand/edit.html') }
+                                    <button class="btn btn-sm btn-goEdit" data-id="{$item['id']}">编辑</button>
+                                    {/if}
+                                    {if true === :\App\Common\Admin::check('/brand/remove.html') }
+                                    <a href="/brand/remove.html?id={$item['id']}" class="btn btn-sm btn-danger btn-modal-confirm">删除</a>
+                                    {/if}
+                                </td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modal-save" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="/brand/save.html" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加新的品牌</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-auto mb-3">
+                            <div class="avatar-container">
+                                <input class="avatar-input" type="hidden" name="icon" />
+                                <a href="javascript:;" class="avatar-upload-clear">清除</a>
+                                <a class="avatar avatar-upload rounded">
+                                    <input type="file" accept="image/*" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span class="avatar-upload-text">图标</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">名称</label>
+                            <input type="text" class="form-control" name="name" placeholder="必填，输入品牌名称" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">排列顺序</label>
+                            <input type="text" class="form-control" name="sort" placeholder="选填，数值越大越靠前" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">当前状态</label>
+                            <select name="status" class="form-select">
+                                <option value="1">正常</option>
+                                <option value="0">冻结</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">取消</a>
+                    <button type="submit" class="btn btn-primary btn-create ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                        立即创建
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modal-read" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">查看品牌</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-auto mb-3">
+                        <span class="avatar avatar-md rounded"></span>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label">名称</label>
+                        <input type="text" class="form-control" name="name" placeholder="必填，输入品牌名称" disabled />
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label">排列顺序</label>
+                        <input type="text" class="form-control" name="sort" placeholder="选填，数值越大越靠前" disabled />
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label">当前状态</label>
+                        <select name="status" class="form-select" disabled>
+                            <option value="1">正常</option>
+                            <option value="0">冻结</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modal-edit" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="/brand/edit.html" method="POST">
+                <input type="hidden" name="id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">编辑品牌</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-auto mb-3">
+                            <div class="avatar-container">
+                                <input class="avatar-input" type="hidden" name="icon" />
+                                <a href="javascript:;" class="avatar-upload-clear">清除</a>
+                                <a class="avatar avatar-upload rounded">
+                                    <input type="file" accept="image/*" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span class="avatar-upload-text">图标</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">名称</label>
+                            <input type="text" class="form-control" name="name" placeholder="必填，输入品牌名称" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">排列顺序</label>
+                            <input type="text" class="form-control" name="sort" placeholder="选填，数值越大越靠前" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">当前状态</label>
+                            <select name="status" class="form-select">
+                                <option value="1">正常</option>
+                                <option value="0">冻结</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">取消</a>
+                    <button type="submit" class="btn btn-primary btn-create ms-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                        提交更改
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+var modalRead = new bootstrap.Modal(document.getElementById('modal-read'));
+var modalEdit = new bootstrap.Modal(document.getElementById('modal-edit'));
+$(function(){
+    // 查看品牌
+    $('.btn-goRead').on('click', function(){
+        // 判断状态
+        if ($(this).hasClass('btn-loading')) {
+            return false;
+        }
+        // 添加状态
+        $(this).addClass('btn-loading btn-light');
+        // 读取数据
+        var $that = $(this);
+        ajax.post('/brand/read', {id: $(this).data('id')}, function(res){
+            $that.removeClass('btn-loading btn-light');
+            if (res && res.code == 200) {
+                modalRead.show();
+                $('#modal-read .avatar').css('backgroundImage', 'url(' + (res.data.icon ? res.data.icon : '') + ')');
+                $('#modal-read input[name=name]').val(res.data.name);
+                $('#modal-read input[name=sort]').val(res.data.sort);
+                $('#modal-read select[name=status]').val(res.data.status);
+            } else {
+                toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
+            }
+        });
+    });
+    // 去编辑品牌
+    $('.btn-goEdit').on('click', function(){
+        // 判断状态
+        if ($(this).hasClass('btn-loading')) {
+            return false;
+        }
+        // 添加状态
+        $(this).addClass('btn-loading');
+        // 读取数据
+        var $that = $(this);
+        ajax.post('/brand/read', {id: $(this).data('id')}, function(res){
+            $that.removeClass('btn-loading');
+            if (res && res.code == 200) {
+                modalEdit.show();
+                $('#modal-edit input[name=id]').val(res.data.id);
+                $('#modal-edit .avatar').css('backgroundImage', 'url(' + (res.data.icon ? res.data.icon : '') + ')');
+                $('#modal-edit .avatar-input').val(res.data.icon ? res.data.icon : '');
+                $('#modal-edit input[name=name]').val(res.data.name);
+                $('#modal-edit input[name=sort]').val(res.data.sort);
+                $('#modal-edit select[name=status]').val(res.data.status);
+            } else {
+                toastr.error(res && res.message ? res.message : '很抱歉、服务器繁忙！');
+            }
+        });
+    });
+});
+</script>
+{/block}

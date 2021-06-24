@@ -24,9 +24,10 @@ class Index
 
         // 参数细节
         $validate->int('type', '类型');
-        $validate->int('status', '状态');
         $validate->int('level', '等级');
+        $validate->int('status', '状态');
         $validate->int('authenticate', '是否实名认证');
+        $validate->int('is_bind_card', '是否绑卡');
         $validate->string('uid', '编号');
         $validate->string('keyword', '账号关键字');
         $validate->string('username', '用户名');
@@ -34,7 +35,7 @@ class Index
         $validate->string('email', '邮箱地址');
 
         $validate->string('nickname', '昵称');
-        $validate->string('gender', '性别')->in('0', '1', '2');
+        $validate->int('gender', '性别')->in('0', '1', '2');
         $validate->string('birthday', '出生年月')->date('Y-m-d');
 
         $validate->string('country', '国家')->digit();
